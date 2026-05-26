@@ -1,24 +1,33 @@
-# Compiled Object & Binary files
-*.o
-*.obj
+# Derleme Çıktıları ve Executable Dosyalar (Windows/C)
 *.exe
 *.out
-*.app
+*.o
+*.obj
 *.dll
-*.so
-*.dylib
+*.lib
+*.a
 
-# CMake Build Directories
-cmake-build-debug/
-cmake-build-release/
-CMakeFiles/
-CMakeCache.txt
-cmake_install.cmake
-Makefile
+# Derleme Klasörleri
+bin/
+build/
+out/
+Debug/
+Release/
+x64/
+x86/
 
-# JetBrains/CLion IDE configuration directory
+# IDE ve Editör Klasörleri
+.vscode/
 .idea/
+*.suo
+*.user
+*.sln
+cmake-build-*/
 
-# Local system files
-Thumbs.db
+# Log ve Hata Dosyaları
+*.log
+*.err
+
+# İşletim Sistemi Geçici Dosyaları
 .DS_Store
+Thumbs.db

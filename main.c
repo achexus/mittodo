@@ -6,7 +6,7 @@
 #include <conio.h>
 
 // ============================================================================
-// 1. SYSTEM DEFINITIONS & METRIC FLAGS (100% ASCII Safe)
+// 1. SYSTEM DEFINITIONS & METRIC FLAGS
 // ============================================================================
 #define COLOR_GOLD    "\033[1;33m"
 #define COLOR_CYAN    "\033[1;36m"
@@ -16,16 +16,26 @@
 #define COLOR_DARK    "\033[1;30m"
 
 typedef enum {
-    LANG_EN = 1,
-    LANG_TR
-} Language;
-
-typedef enum {
     STORY_UNASSIGNED = -1,
-    STORY_TRADITIONAL,
-    STORY_UNCROWNED,
+    STORY_TRADITIONAL, // Aggressive Defiance
+    STORY_UNCROWNED,   // Calm Observation
     STORY_EXILED
 } StoryState;
+
+typedef enum {
+    NATURE_UNASSIGNED = -1,
+    NATURE_CALM,
+    NATURE_AGGRESSIVE
+} Nature;
+
+typedef enum {
+    CLASS_UNASSIGNED = 0,
+    CLASS_RULER,
+    CLASS_SOLDIER,
+    CLASS_ARTIST,
+    CLASS_DIPLOMAT,
+    CLASS_MERCHANT
+} ClassType;
 
 typedef struct {
     char player_name[50];
@@ -33,81 +43,110 @@ typedef struct {
     char archetype_alignment[50];
     StoryState story;
 
-    // Advanced 7-Parametric Vectors
-    int ms; // Logic & Strategy
-    int kh; // Charisma & Rhetoric
-    int fk; // Physical Strength
-    int hc; // Precision & Agility
-    int mb; // Mystic Bond & Prophecy
-    int sm; // Political Legitimacy
-    int kd; // Chaotic Resistance
+    // Mindset & Anomaly System
+    Nature player_nature;
+    Nature god_nature;
+    ClassType chosen_class;
+    char class_name[30];
+    int affinity;
+    bool is_pure;
+    char final_title[100];
+
+    // The 5-Parametric Vector System
+    int zk; // Intelligence / Logic
+    int gc; // Might / Power
+    int on; // Honor / Sacrifice
+    int eb; // Dexterity / Personal Skills
+    int rb; // Faith / Celestial Connection
 } CharacterProfile;
 
 typedef struct {
     char god[30];
     char archetype[50];
-    int ms, kh, fk, hc, mb, sm, kd;
+    int zk, gc, on, eb, rb;
 } ArchetypeMatrix;
 
-// Global matrix of 30 exact mythological profiles
-ArchetypeMatrix database[30] = {
-    {"Zeus", "The Sovereign", 1, 2, 1, 0, 1, 2, 0},
-    {"Zeus", "The Stormbringer", 1, 0, 2, 0, 2, 1, 1},
-    {"Zeus", "The Arbiter", 2, 1, 0, 0, 0, 2, 1},
-    {"Poseidon", "The Earth-Shaker", 1, 0, 2, 0, 1, 0, 2},
-    {"Poseidon", "The Abyssal Master", 2, 1, 1, 1, 2, 0, 0},
-    {"Poseidon", "The Wild Tamer", 0, 0, 2, 2, 1, 0, 2},
-    {"Athena", "The Tactician", 2, 1, 1, 2, 0, 1, 0},
-    {"Athena", "The Polias", 2, 2, 0, 1, 0, 2, 0},
-    {"Ares", "The Berserker", 0, 0, 2, 1, 0, 0, 2},
-    {"Ares", "The Rebel Vanguard", 0, 2, 1, 0, 1, 0, 2},
-    {"Apollo", "The Oracle", 2, 1, 0, 0, 2, 1, 0},
-    {"Apollo", "The Plague-Bringer", 1, 0, 1, 2, 2, 0, 0},
-    {"Artemis", "The Lone Stalker", 1, 0, 0, 2, 1, 0, 2},
-    {"Artemis", "The Beast Master", 1, 0, 1, 1, 2, 0, 1},
-    {"Hephaestus", "The Grand Forgemaster", 2, 0, 1, 2, 0, 0, 1},
-    {"Hephaestus", "The Iron Wall", 1, 0, 2, 1, 0, 1, 2},
-    {"Hermes", "The Trickster", 1, 2, 0, 2, 0, 0, 1},
-    {"Hermes", "The Herald", 2, 2, 0, 1, 0, 1, 0},
-    {"Dionysus", "The Liberator", 0, 2, 0, 0, 2, 0, 2},
-    {"Dionysus", "The Hedonist", 1, 1, 0, 2, 1, 0, 2},
-    {"Hera", "The Iron Queen", 1, 2, 1, 0, 0, 2, 1},
-    {"Hera", "The Sovereign Avenger", 2, 2, 0, 1, 0, 1, 1},
-    {"Demeter", "The Harvester", 1, 0, 1, 1, 2, 1, 0},
-    {"Demeter", "The Winter Scourge", 0, 0, 2, 0, 1, 1, 2},
-    {"Aphrodite", "The Siren", 1, 2, 0, 1, 2, 0, 0},
-    {"Aphrodite", "The Golden Presence", 1, 2, 0, 0, 1, 2, 0},
-    {"Hades", "The Lord of Wealth", 2, 1, 1, 1, 1, 2, 0},
-    {"Hades", "The Soul Collector", 1, 0, 1, 0, 2, 2, 1},
-    {"Hestia", "The Hearth Keeper", 1, 1, 0, 1, 2, 1, 1},
-    {"Hestia", "The Eternal Flame", 2, 0, 0, 0, 2, 2, 1}
+// Global matrix of 48 calibrated unique historical profiles
+ArchetypeMatrix database[48] = {
+    {"Zeus", "The Absolute Sky Sovereign", 0, 5, 5, 0, 0},
+    {"Zeus", "The Cloud Arbiter", 4, 1, 5, 0, 0},
+    {"Zeus", "The Thunder Wrath", 0, 7, 0, 0, 3},
+    {"Zeus", "The Hospitality Oathkeeper", 2, 0, 6, 0, 2},
+    {"Poseidon", "The Earth-Shaker", 0, 10, 0, 0, 0},
+    {"Poseidon", "The Abyssal Master", 1, 3, 0, 0, 6},
+    {"Poseidon", "The Wild Equine Tamer", 0, 5, 0, 5, 0},
+    {"Poseidon", "The Tidal Ravager", 2, 6, 0, 0, 1},
+    {"Athena", "The Supreme Tactician", 8, 0, 2, 0, 0},
+    {"Athena", "The Citadel Protector", 3, 2, 5, 0, 0},
+    {"Athena", "The Divine Weaver", 5, 0, 0, 5, 0},
+    {"Athena", "The Counselor of Heroes", 6, 0, 3, 1, 0},
+    {"Athena", "The Just Judgment", 5, 0, 4, 0, 1},
+    {"Hades", "The Underworld Autocrat", 3, 2, 5, 0, 0},
+    {"Hades", "The Lord of Wealth", 4, 0, 2, 4, 0},
+    {"Hades", "The Soul Collector", 0, 3, 0, 0, 7},
+    {"Hades", "The Inexorable Judge", 4, 1, 4, 0, 1},
+    {"Ares", "The Blind Berserker", 0, 9, 0, 1, 0},
+    {"Ares", "The Bloodlust Vanguard", 0, 6, 0, 4, 0},
+    {"Ares", "The Rebel Warlord", 0, 7, 0, 0, 0},
+    {"Ares", "The Dread Champion", 0, 5, 1, 0, 4},
+    {"Apollo", "The Radiant Prophet", 0, 0, 0, 0, 10},
+    {"Apollo", "The Sun Bowman", 1, 0, 0, 8, 1},
+    {"Apollo", "The Golden Maestro", 3, 0, 5, 2, 0},
+    {"Apollo", "The Plague Bringer", 4, 0, 0, 3, 3},
+    {"Artemis", "The Midnight Stalker", 0, 0, 0, 9, 1},
+    {"Artemis", "The Forest Matriarch", 1, 0, 0, 2, 7},
+    {"Artemis", "The Silver Arrow", 0, 2, 0, 6, 0},
+    {"Hephaestus", "The Forgemaster Architect", 2, 0, 0, 8, 0},
+    {"Hephaestus", "The Volcanic Juggernaut", 0, 6, 0, 4, 0},
+    {"Hephaestus", "The Outcast Innovator", 4, 0, 0, 2, 0},
+    {"Hephaestus", "The Iron Trapmaster", 3, 1, 0, 6, 0},
+    {"Hermes", "The Phantom Thief", 0, 0, 0, 10, 0},
+    {"Hermes", "The Golden Herald", 5, 0, 3, 2, 0},
+    {"Hermes", "The Crossroads Guide", 2, 0, 0, 3, 5},
+    {"Hermes", "The Divine Trickster", 6, 0, 0, 4, 0},
+    {"Dionysus", "The Madness Bringer", 0, 0, 0, 0, 9},
+    {"Dionysus", "The Hedonist Vagabond", 3, 0, 0, 2, 3},
+    {"Dionysus", "The Cult Liberator", 0, 0, 0, 0, 5},
+    {"Hera", "The Zenith Matriarch", 0, 0, 10, 0, 0},
+    {"Hera", "The Palace Intriguer", 6, 0, 4, 0, 0},
+    {"Hera", "The Royal Avenger", 2, 2, 5, 1, 0},
+    {"Demeter", "The Eternal Harvester", 0, 0, 0, 5, 5},
+    {"Demeter", "The Winter Famine", 0, 5, 0, 0, 5},
+    {"Demeter", "The Earth Mother", 0, 0, 2, 0, 6},
+    {"Aphrodite", "The Siren Puppetmaster", 1, 0, 0, 1, 8},
+    {"Aphrodite", "The Golden Presence", 0, 0, 8, 0, 2},
+    {"Aphrodite", "The Loom of Desire", 4, 0, 0, 4, 1}
 };
 
 // ============================================================================
-// 2. GLOBAL SYSTEM STATE
-// ============================================================================
-Language current_language = LANG_EN;
-
-// ============================================================================
-// 3. FUNCTION PROTOTYPES
+// 2. FUNCTION PROTOTYPES
 // ============================================================================
 void set_cursor_visibility(bool visible);
 void clear_screen(void);
 bool render_lightning_storm(int frame);
 void render_menu_options(bool is_flashing);
 
-// Core Modules
 bool scene_start_journey(CharacterProfile* profile);
 void execute_parametric_test(CharacterProfile* profile);
 void evaluate_cosmic_alignment(CharacterProfile* profile);
+void scene_class_selection(CharacterProfile* profile);
+void get_god_affinity_data(const char* god_name, Nature* nature, int* r, int* s, int* a, int* d, int* m);
+void calculate_final_title(CharacterProfile* profile);
+
+int get_parametric_input(void);
+void print_permanent_choices(void);
 void scene_continue_journey(void);
 void scene_language_options(void);
 void scene_system_status(CharacterProfile* profile);
 
 // ============================================================================
-// 4. MAIN GAME LOOP
+// 3. MAIN GAME LOOP
 // ============================================================================
 int main(void) {
+#ifdef _WIN32
+    SetConsoleOutputCP(65001); // Enable UTF-8 Output for Turkish Characters
+#endif
+
     bool running = true;
     int frame_counter = 0;
 
@@ -116,7 +155,14 @@ int main(void) {
         .god_alignment = "UNASSIGNED",
         .archetype_alignment = "UNASSIGNED",
         .story = STORY_UNASSIGNED,
-        .ms = 0, .kh = 0, .fk = 0, .hc = 0, .mb = 0, .sm = 0, .kd = 0
+        .player_nature = NATURE_UNASSIGNED,
+        .god_nature = NATURE_UNASSIGNED,
+        .chosen_class = CLASS_UNASSIGNED,
+        .affinity = 0,
+        .is_pure = false,
+        .class_name = "UNASSIGNED",
+        .final_title = "UNASSIGNED",
+        .zk = 0, .gc = 0, .on = 0, .eb = 0, .rb = 0
     };
 
     clear_screen();
@@ -124,52 +170,38 @@ int main(void) {
 
     while (running) {
         printf("\033[H");
-
         bool is_flashing = render_lightning_storm(frame_counter);
         render_menu_options(is_flashing);
 
         if (_kbhit()) {
             char input_char = _getch();
-
             switch (input_char) {
                 case '1':
                     set_cursor_visibility(true);
-                    if (!scene_start_journey(&player)) {
-                        running = false;
-                    }
+                    if (!scene_start_journey(&player)) running = false;
                     set_cursor_visibility(false);
                     break;
-                case '2':
-                    scene_continue_journey();
-                    break;
-                case '3':
-                    scene_language_options();
-                    break;
+                case '2': scene_continue_journey(); break;
+                case '3': scene_language_options(); break;
                 case '4':
                     clear_screen();
                     printf(COLOR_WHITE "\n \"You cannot escape your destiny; you can only delay it.\"\n" COLOR_RESET);
                     running = false;
                     break;
-                case '0':
-                    scene_system_status(&player);
-                    break;
-                default:
-                    break;
+                case '0': scene_system_status(&player); break;
+                default: break;
             }
         }
-
         frame_counter++;
         Sleep(80);
     }
-
     set_cursor_visibility(true);
     return 0;
 }
 
 // ============================================================================
-// 5. ENGINE MODULE DEFINITIONS
+// 4. CORE ENGINE MODULES
 // ============================================================================
-
 void set_cursor_visibility(bool visible) {
 #ifdef _WIN32
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -238,9 +270,7 @@ bool render_lightning_storm(int frame) {
         return false;
     }
     else {
-        printf("\033[K\n");
-        printf("\033[K\n");
-        printf("\033[K\n");
+        printf("\033[K\n"); printf("\033[K\n"); printf("\033[K\n");
         return false;
     }
 }
@@ -263,16 +293,23 @@ void render_menu_options(bool is_flashing) {
 }
 
 // ============================================================================
-// 6. CINEMATIC NARRATIVE AND MATRIX TESTING
+// 5. NARRATIVE TRIAL ENGINE
 // ============================================================================
-
 bool scene_start_journey(CharacterProfile* profile) {
     clear_screen();
     char choice = '0';
     bool valid_input = false;
 
-    printf(COLOR_RED "\n\n\n\n\n\n                  I   D   L   E   R   ! ! !\n\n\n\n\n\n" COLOR_RESET);
-    printf(COLOR_DARK " [Press ANY KEY to open your eyes] " COLOR_RESET);
+    printf(COLOR_RED "\n\n\n");
+    printf("                 _____   _____    _        ______  _____   _  _  _ \n");
+    printf("                |_   _| |  __ \\  | |      |  ____||  __ \\ | || || |\n");
+    printf("                  | |   | |  | | | |      | |__   | |__) || || || |\n");
+    printf("                  | |   | |  | | | |      |  __|  |  _  / | || || |\n");
+    printf("                 _| |_  | |__| | | |____  | |____ | | \\ \\ |_||_||_|\n");
+    printf("                |_____| |_____/  |______| |______||_|  \\_\\(_)(_)(_)\n");
+    printf("\n\n\n\n" COLOR_RESET);
+
+    printf(COLOR_DARK "                     [Press ANY KEY to open your eyes] " COLOR_RESET);
     _getch(); clear_screen();
 
     printf(COLOR_WHITE "\n\n  AWAKE... " COLOR_RESET); printf(COLOR_RED "You have no tomorrow.\n\n" COLOR_RESET);
@@ -306,18 +343,44 @@ bool scene_start_journey(CharacterProfile* profile) {
     }
     else if (choice == '2') {
         profile->story = STORY_UNCROWNED;
+        profile->player_nature = NATURE_CALM; // Logged as Calm Mindset
     }
     else if (choice == '3') {
         profile->story = STORY_TRADITIONAL;
+        profile->player_nature = NATURE_AGGRESSIVE; // Logged as Aggressive Mindset
     }
 
     execute_parametric_test(profile);
     return true;
 }
 
+int get_parametric_input(void) {
+    while (1) {
+        if (_kbhit()) {
+            char ch = _getch();
+            if (ch >= '1' && ch <= '9') return ch - '0';
+            if (ch == '0') return 10;
+        }
+        Sleep(20);
+    }
+}
+
+void print_permanent_choices(void) {
+    printf("  [" COLOR_CYAN "1" COLOR_RESET "] I resolve this directly through my intellect.\n");
+    printf("  [" COLOR_CYAN "2" COLOR_RESET "] I rely purely on my own might.\n");
+    printf("  [" COLOR_CYAN "3" COLOR_RESET "] I sacrifice everything for my honor.\n");
+    printf("  [" COLOR_CYAN "4" COLOR_RESET "] I trust in my own skills.\n");
+    printf("  [" COLOR_CYAN "5" COLOR_RESET "] I overcome this through absolute faith in celestial justice.\n");
+    printf("  [" COLOR_CYAN "6" COLOR_RESET "] I resolve this cunningly and through stealth.\n");
+    printf("  [" COLOR_CYAN "7" COLOR_RESET "] I strike savagely and without restraint.\n");
+    printf("  [" COLOR_CYAN "8" COLOR_RESET "] I break the rules and play dirty.\n");
+    printf("  [" COLOR_CYAN "9" COLOR_RESET "] I surrender entirely to the will of the cosmic order.\n");
+    printf("  [" COLOR_CYAN "0" COLOR_RESET "] I submit and negotiate out of fear.\n\n");
+}
+
 void execute_parametric_test(CharacterProfile* profile) {
     clear_screen();
-    char ch;
+    int choice;
 
     printf(COLOR_GOLD " =============================================================\n");
     printf("                THE TRIAL OF THE COSMIC ENTITY                \n");
@@ -327,71 +390,96 @@ void execute_parametric_test(CharacterProfile* profile) {
     printf(COLOR_DARK " [Press ANY KEY to begin the trial] " COLOR_RESET);
     _getch();
 
-    // QUESTION 1: The Roadblock (Tests FK, HC, KD)
+    // TRIAL 1
     clear_screen();
-    printf(COLOR_GOLD "\n [TRIAL 1] A colossus rock blocks the path to your destiny. How do you clear it?\n\n" COLOR_RESET);
-    printf("  [1] Smash it with raw physical force.\n");
-    printf("  [2] Analyze its weaknesses and dismantle it precisely.\n");
-    printf("  [3] Climb over it blindly, enduring the bruises.\n\n");
-    printf(COLOR_CYAN " Choice (1-3): " COLOR_RESET);
-    while(1) { if(_kbhit()) { ch = _getch(); if(ch >= '1' && ch <= '3') break; } Sleep(2); }
-    if(ch == '1') profile->fk += 2; if(ch == '2') profile->hc += 2; if(ch == '3') profile->kd += 2;
+    printf(COLOR_GOLD "\n [TRIAL 1] The First Uprising (General of the Armies): You are in a great\n");
+    printf(" war against a new, arrogant, and ruthless council seeking to seize the\n");
+    printf(" heavens. You have been chosen as the military leader and supreme general\n");
+    printf(" of your lineage. The enemy's celestial wrath is about to shatter your\n");
+    printf(" frontlines, and your army wants to retreat. How do you handle this military\n");
+    printf(" crisis and test of leadership?\n\n" COLOR_RESET);
+    print_permanent_choices();
+    printf(COLOR_CYAN " Instinct Vector (1-0): " COLOR_RESET);
+    choice = get_parametric_input();
+    if(choice == 1)  profile->zk += 2; else if(choice == 2)  profile->gc += 2;
+    else if(choice == 3)  profile->on += 2; else if(choice == 4)  profile->eb += 2;
+    else if(choice == 5)  profile->rb += 2; else if(choice == 6)  { profile->zk += 2; profile->on -= 1; }
+    else if(choice == 7)  { profile->gc += 2; profile->zk -= 1; } else if(choice == 8)  { profile->eb += 2; profile->on -= 2; }
+    else if(choice == 9)  { profile->rb += 1; profile->gc -= 1; } else if(choice == 10) { profile->on += 1; profile->gc -= 2; }
 
-    // QUESTION 2: The Gateway Extortion (Tests SM, KH, HC)
+    // TRIAL 2
     clear_screen();
-    printf(COLOR_GOLD "\n [TRIAL 2] A corrupt guard demands your pride and coins to enter the gates. Your move?\n\n" COLOR_RESET);
-    printf("  [1] Cite the supreme laws of the high kings to command him.\n");
-    printf("  [2] Convince him with magnetic charm and smooth lies.\n");
-    printf("  [3] Slip past his sight and steal his key from his belt.\n\n");
-    printf(COLOR_CYAN " Choice (1-3): " COLOR_RESET);
-    while(1) { if(_kbhit()) { ch = _getch(); if(ch >= '1' && ch <= '3') break; } Sleep(2); }
-    if(ch == '1') profile->sm += 2; if(ch == '2') profile->kh += 2; if(ch == '3') profile->hc += 2;
+    printf(COLOR_GOLD "\n [TRIAL 2] The Condemnation Session (Stance Against the Tyrant): The war is\n");
+    printf(" lost. The new tyrant of the apex has chained you and your entire lineage.\n");
+    printf(" Before the eyes of all, he sentences you to a severe, eternal, and exemplary\n");
+    printf(" exile. As you are banished to the darkest edge of the world, what will be\n");
+    printf(" your stance against this new authority that condemns you?\n\n" COLOR_RESET);
+    print_permanent_choices();
+    printf(COLOR_CYAN " Instinct Vector (1-0): " COLOR_RESET);
+    choice = get_parametric_input();
+    if(choice == 1)  profile->zk += 2; else if(choice == 2)  profile->gc += 2; else if(choice == 3)  profile->on += 2; else if(choice == 4)  profile->eb += 2; else if(choice == 5)  profile->rb += 2; else if(choice == 6)  { profile->zk += 2; profile->on -= 1; } else if(choice == 7)  { profile->gc += 2; profile->zk -= 1; } else if(choice == 8)  { profile->eb += 2; profile->on -= 2; } else if(choice == 9)  { profile->rb += 1; profile->gc -= 1; } else if(choice == 10) { profile->on += 1; profile->gc -= 2; }
 
-    // QUESTION 3: The Cryptic Archive (Tests MS, MB, FK)
+    // TRIAL 3
     clear_screen();
-    printf(COLOR_GOLD "\n [TRIAL 3] A glowing seal blocks a chamber of ancient power. How do you bypass it?\n\n" COLOR_RESET);
-    printf("  [1] Solve the mathematical riddle inscribed on the stone.\n");
-    printf("  [2] Channel the raw divine energy, offering your faith.\n");
-    printf("  [3] Kick the door down, ignoring the magical recoil.\n\n");
-    printf(COLOR_CYAN " Choice (1-3): " COLOR_RESET);
-    while(1) { if(_kbhit()) { ch = _getch(); if(ch >= '1' && ch <= '3') break; } Sleep(2); }
-    if(ch == '1') profile->ms += 2; if(ch == '2') profile->mb += 2; if(ch == '3') { profile->fk += 1; profile->kd += 1; }
+    printf(COLOR_GOLD "\n [TRIAL 3] The Borrowed Burden (Trust and Deception): A cunning mortal\n");
+    printf(" stands before you, offering to briefly take over the eternal burden on your\n");
+    printf(" shoulders. However, your instincts whisper that the moment you turn your back,\n");
+    printf(" he will break his promise and flee, locking you in this dungeon forever.\n");
+    printf(" How do you resolve this crisis of deception?\n\n" COLOR_RESET);
+    print_permanent_choices();
+    printf(COLOR_CYAN " Instinct Vector (1-0): " COLOR_RESET);
+    choice = get_parametric_input();
+    if(choice == 1)  profile->zk += 2; else if(choice == 2)  profile->gc += 2; else if(choice == 3)  profile->on += 2; else if(choice == 4)  profile->eb += 2; else if(choice == 5)  profile->rb += 2; else if(choice == 6)  { profile->zk += 2; profile->on -= 1; } else if(choice == 7)  { profile->gc += 2; profile->zk -= 1; } else if(choice == 8)  { profile->eb += 2; profile->on -= 2; } else if(choice == 9)  { profile->rb += 1; profile->gc -= 1; } else if(choice == 10) { profile->on += 1; profile->gc -= 2; }
 
-    // QUESTION 4: The Riot Encirclement (Tests KH, MS, MB)
+    // TRIAL 4
     clear_screen();
-    printf(COLOR_GOLD "\n [TRIAL 4] An angry mob surrounds you, screaming for blood. How do you handle them?\n\n" COLOR_RESET);
-    printf("  [1] Tame their rage with an electrifying public speech.\n");
-    printf("  [2] Outmaneuver them using immediate tactical positioning.\n");
-    printf("  [3] Pray for a sudden terrifying omen from the sky.\n\n");
-    printf(COLOR_CYAN " Choice (1-3): " COLOR_RESET);
-    while(1) { if(_kbhit()) { ch = _getch(); if(ch >= '1' && ch <= '3') break; } Sleep(2); }
-    if(ch == '1') profile->kh += 2; if(ch == '2') { profile->ms += 1; profile->sm += 1; } if(ch == '3') profile->mb += 2;
+    printf(COLOR_GOLD "\n [TRIAL 4] The Cursed Stranger (Theft of Destiny): An arrogant stranger\n");
+    printf(" arrives at your door, demanding sanctuary. However, ancient prophecies have\n");
+    printf(" whispered that this man will steal a priceless legacy from your bloodline.\n");
+    printf(" Moreover, in his satchel, he carries the head of a cursed entity whose gaze\n");
+    printf(" turns all living things to cold stone. How do you confront this danger?\n\n" COLOR_RESET);
+    print_permanent_choices();
+    printf(COLOR_CYAN " Instinct Vector (1-0): " COLOR_RESET);
+    choice = get_parametric_input();
+    if(choice == 1)  profile->zk += 2; else if(choice == 2)  profile->gc += 2; else if(choice == 3)  profile->on += 2; else if(choice == 4)  profile->eb += 2; else if(choice == 5)  profile->rb += 2; else if(choice == 6)  { profile->zk += 2; profile->on -= 1; } else if(choice == 7)  { profile->gc += 2; profile->zk -= 1; } else if(choice == 8)  { profile->eb += 2; profile->on -= 2; } else if(choice == 9)  { profile->rb += 1; profile->gc -= 1; } else if(choice == 10) { profile->on += 1; profile->gc -= 2; }
+
+    // TRIAL 5
+    clear_screen();
+    printf(COLOR_GOLD "\n [TRIAL 5] Siege of the Sacred Garden (Defense of the Legacy): Your lineage's\n");
+    printf(" greatest sanctuary, your most heavily guarded divine garden and the ancient\n");
+    printf(" relics within, have been besieged by ambitious, foreign raiders. How do\n");
+    printf(" you make your final move to protect your family and this deep-rooted legacy?\n\n" COLOR_RESET);
+    print_permanent_choices();
+    printf(COLOR_CYAN " Instinct Vector (1-0): " COLOR_RESET);
+    choice = get_parametric_input();
+    if(choice == 1)  profile->zk += 2; else if(choice == 2)  profile->gc += 2; else if(choice == 3)  profile->on += 2; else if(choice == 4)  profile->eb += 2; else if(choice == 5)  profile->rb += 2; else if(choice == 6)  { profile->zk += 2; profile->on -= 1; } else if(choice == 7)  { profile->gc += 2; profile->zk -= 1; } else if(choice == 8)  { profile->eb += 2; profile->on -= 2; } else if(choice == 9)  { profile->rb += 1; profile->gc -= 1; } else if(choice == 10) { profile->on += 1; profile->gc -= 2; }
 
     evaluate_cosmic_alignment(profile);
+
+    // YENI MEKANİK BURADA DEVREYE GİRİYOR
+    scene_class_selection(profile);
 }
 
 void evaluate_cosmic_alignment(CharacterProfile* profile) {
     clear_screen();
     int min_distance = 999;
-    int distances[30];
+    int distances[48];
     int match_count = 0;
-    int tied_indices[30];
+    int tied_indices[48];
 
-    for (int i = 0; i < 30; i++) {
-        int d = abs(profile->ms - database[i].ms) +
-                abs(profile->kh - database[i].kh) +
-                abs(profile->fk - database[i].fk) +
-                abs(profile->hc - database[i].hc) +
-                abs(profile->mb - database[i].mb) +
-                abs(profile->sm - database[i].sm) +
-                abs(profile->kd - database[i].kd);
+    for (int i = 0; i < 48; i++) {
+        int d = abs(profile->zk - database[i].zk) +
+                abs(profile->gc - database[i].gc) +
+                abs(profile->on - database[i].on) +
+                abs(profile->eb - database[i].eb) +
+                abs(profile->rb - database[i].rb);
         distances[i] = d;
         if (d < min_distance) {
             min_distance = d;
         }
     }
 
-    for (int i = 0; i < 30; i++) {
+    for (int i = 0; i < 48; i++) {
         if (distances[i] == min_distance) {
             tied_indices[match_count] = i;
             match_count++;
@@ -408,7 +496,7 @@ void evaluate_cosmic_alignment(CharacterProfile* profile) {
         strcpy(profile->archetype_alignment, database[idx].archetype);
 
         printf(COLOR_WHITE "  The Cosmic Entity narrows its massive eyes, laughing sarcastically:\n\n" COLOR_RESET);
-        printf(COLOR_CYAN "  \"Aaaa a child of %s [ %s ]... How predictable.\"\n\n" COLOR_RESET,
+        printf(COLOR_CYAN "  \"Aaaa, a child of %s [ %s ]... How shockingly predictable.\"\n\n" COLOR_RESET,
                profile->god_alignment, profile->archetype_alignment);
     }
     else {
@@ -448,7 +536,118 @@ void evaluate_cosmic_alignment(CharacterProfile* profile) {
         }
     }
 
-    printf("\n\n" COLOR_WHITE " [Press ANY KEY to return to the Storm Menu and check your Status] " COLOR_RESET);
+    printf("\n\n" COLOR_WHITE " [Press ANY KEY to continue to the Path of Destiny] " COLOR_RESET);
+    _getch();
+}
+
+// ============================================================================
+// 6. CLASS SELECTION & ANOMALY SYSTEM
+// ============================================================================
+
+void get_god_affinity_data(const char* god_name, Nature* nature, int* r, int* s, int* a, int* d, int* m) {
+    if (strcmp(god_name, "Zeus") == 0)      { *nature = NATURE_AGGRESSIVE; *r=100; *s=70; *a=10; *d=60; *m=20; }
+    else if (strcmp(god_name, "Hera") == 0) { *nature = NATURE_AGGRESSIVE; *r=95;  *s=40; *a=20; *d=80; *m=30; }
+    else if (strcmp(god_name, "Hades") == 0){ *nature = NATURE_CALM;       *r=95;  *s=40; *a=10; *d=50; *m=80; }
+    else if (strcmp(god_name, "Athena")== 0){ *nature = NATURE_CALM;       *r=85;  *s=95; *a=60; *d=70; *m=40; }
+    else if (strcmp(god_name, "Ares") == 0) { *nature = NATURE_AGGRESSIVE; *r=30;  *s=100;*a=5;  *d=5;  *m=10; }
+    else if (strcmp(god_name, "Poseidon")==0){*nature = NATURE_AGGRESSIVE; *r=80;  *s=85; *a=15; *d=30; *m=50; }
+    else if (strcmp(god_name, "Apollo")== 0){ *nature = NATURE_CALM;       *r=60;  *s=70; *a=100;*d=60; *m=30; }
+    else if (strcmp(god_name, "Hephaestus")==0){*nature = NATURE_CALM;     *r=20;  *s=50; *a=95; *d=10; *m=80; }
+    else if (strcmp(god_name, "Aphrodite")==0){*nature= NATURE_AGGRESSIVE; *r=50;  *s=10; *a=90; *d=85; *m=50; }
+    else if (strcmp(god_name, "Dionysus")== 0){*nature= NATURE_AGGRESSIVE; *r=30;  *s=20; *a=95; *d=60; *m=50; }
+    else if (strcmp(god_name, "Hermes") == 0){*nature = NATURE_CALM;       *r=20;  *s=20; *a=40; *d=95; *m=100;}
+    else if (strcmp(god_name, "Artemis") ==0){*nature = NATURE_CALM;       *r=30;  *s=85; *a=20; *d=10; *m=10; }
+    else if (strcmp(god_name, "Demeter") ==0){*nature = NATURE_CALM;       *r=60;  *s=10; *a=30; *d=40; *m=80; }
+    else { *nature = NATURE_UNASSIGNED; *r=50; *s=50; *a=50; *d=50; *m=50; } // Fallback
+}
+
+void scene_class_selection(CharacterProfile* profile) {
+    clear_screen();
+    int r, s, a, d, m;
+    get_god_affinity_data(profile->god_alignment, &profile->god_nature, &r, &s, &a, &d, &m);
+
+    // Determine if Pure or Cross
+    profile->is_pure = (profile->player_nature == profile->god_nature);
+
+    printf(COLOR_GOLD " =============================================================\n");
+    printf("                    THE PATH OF DESTINY                       \n");
+    printf(" =============================================================\n\n" COLOR_RESET);
+    printf(COLOR_WHITE "  You bear the blood of %s. Now, claim your role in this world.\n\n" COLOR_RESET, profile->god_alignment);
+
+    printf("  [" COLOR_CYAN "1" COLOR_RESET "] RULER    (Authority & Leadership)\n");
+    printf("  [" COLOR_CYAN "2" COLOR_RESET "] SOLDIER  (War & Discipline)\n");
+    printf("  [" COLOR_CYAN "3" COLOR_RESET "] ARTIST   (Inspiration & Craft)\n");
+    printf("  [" COLOR_CYAN "4" COLOR_RESET "] DIPLOMAT (Communication & Negotiation)\n");
+    printf("  [" COLOR_CYAN "5" COLOR_RESET "] MERCHANT (Economy & Resources)\n\n");
+    printf(COLOR_CYAN " Select your societal class (1-5): " COLOR_RESET);
+
+    char choice;
+    bool valid = false;
+    while (!valid) {
+        if (_kbhit()) {
+            choice = _getch();
+            if (choice >= '1' && choice <= '5') {
+                valid = true;
+                switch(choice) {
+                    case '1': profile->chosen_class = CLASS_RULER; strcpy(profile->class_name, "Ruler"); profile->affinity = r; break;
+                    case '2': profile->chosen_class = CLASS_SOLDIER; strcpy(profile->class_name, "Soldier"); profile->affinity = s; break;
+                    case '3': profile->chosen_class = CLASS_ARTIST; strcpy(profile->class_name, "Artist"); profile->affinity = a; break;
+                    case '4': profile->chosen_class = CLASS_DIPLOMAT; strcpy(profile->class_name, "Diplomat"); profile->affinity = d; break;
+                    case '5': profile->chosen_class = CLASS_MERCHANT; strcpy(profile->class_name, "Merchant"); profile->affinity = m; break;
+                }
+            }
+        }
+        Sleep(20);
+    }
+
+    calculate_final_title(profile);
+}
+
+void calculate_final_title(CharacterProfile* profile) {
+    int aff = profile->affinity;
+    bool pure = profile->is_pure;
+
+    if (profile->chosen_class == CLASS_RULER) {
+        if(aff >= 90) strcpy(profile->final_title, pure ? "Divine Sovereign" : "Dread Tyrant");
+        else if(aff >= 50) strcpy(profile->final_title, pure ? "Just Monarch" : "Pragmatic Autocrat");
+        else if(aff >= 10) strcpy(profile->final_title, pure ? "Visionary Guide" : "Chaotic Demagogue");
+        else strcpy(profile->final_title, pure ? "Transcendent Overlord" : "Lord of Anarchy");
+    }
+    else if (profile->chosen_class == CLASS_SOLDIER) {
+        if(aff >= 90) strcpy(profile->final_title, pure ? "Sword of War" : "Rider of the Apocalypse");
+        else if(aff >= 50) strcpy(profile->final_title, pure ? "Honorable Commander" : "Ruthless Mercenary");
+        else if(aff >= 10) strcpy(profile->final_title, pure ? "Unorthodox Tactician" : "Phantom Guerrilla");
+        else strcpy(profile->final_title, pure ? "Peaceful Blademaster" : "Walking Calamity");
+    }
+    else if (profile->chosen_class == CLASS_ARTIST) {
+        if(aff >= 90) strcpy(profile->final_title, pure ? "Cosmic Creator" : "Mind-Bending Genius");
+        else if(aff >= 50) strcpy(profile->final_title, pure ? "Master Artisan" : "Avant-Garde Rebel");
+        else if(aff >= 10) strcpy(profile->final_title, pure ? "Eccentric Surrealist" : "Provocative Illusionist");
+        else strcpy(profile->final_title, pure ? "Bard of the Void" : "Reality Weaver");
+    }
+    else if (profile->chosen_class == CLASS_DIPLOMAT) {
+        if(aff >= 90) strcpy(profile->final_title, pure ? "Divine Mediator" : "Mind Puppeteer");
+        else if(aff >= 50) strcpy(profile->final_title, pure ? "Chief Negotiator" : "Shadow Broker");
+        else if(aff >= 10) strcpy(profile->final_title, pure ? "Unpredictable Envoy" : "Chaos Whisperer");
+        else strcpy(profile->final_title, pure ? "Silent Oracle" : "Concept Distorter");
+    }
+    else if (profile->chosen_class == CLASS_MERCHANT) {
+        if(aff >= 90) strcpy(profile->final_title, pure ? "Golden Sovereign" : "Underworld Emperor");
+        else if(aff >= 50) strcpy(profile->final_title, pure ? "Trade Baron" : "Black Market Cartel");
+        else if(aff >= 10) strcpy(profile->final_title, pure ? "Enigmatic Collector" : "Fortune Smuggler");
+        else strcpy(profile->final_title, pure ? "Weaver of Fates" : "Calamity Speculator");
+    }
+
+    clear_screen();
+    printf(COLOR_RED " =============================================================\n");
+    printf("                      YOUR TRUE FORM AWAKENS                  \n");
+    printf(" =============================================================\n\n" COLOR_RESET);
+
+    printf(COLOR_WHITE "  Bloodline Affinity : " COLOR_CYAN "%d%%\n" COLOR_RESET, aff);
+    printf(COLOR_WHITE "  Mindset Alignment  : %s\n", pure ? COLOR_GOLD "PURE (Harmonious)" COLOR_RESET : COLOR_RED "CROSS (Anomalous)" COLOR_RESET);
+    printf(COLOR_WHITE "  Destined Title     : " COLOR_GOLD "[ %s ]\n\n" COLOR_RESET, profile->final_title);
+
+    printf(COLOR_DARK " [Press ANY KEY to finalize your destiny] " COLOR_RESET);
     _getch();
     clear_screen();
 }
@@ -486,18 +685,18 @@ void scene_system_status(CharacterProfile* profile) {
     printf("  * Character State    : %s\n", profile->player_name);
     printf("  * Story Background   : %s\n", (profile->story == STORY_UNASSIGNED) ? "UNASSIGNED" : story_map[profile->story]);
 
-    printf("\n  --- ASSIGNED GOD & ARCHETYPE MATRICES ---\n");
+    printf("\n  --- ASSIGNED GOD & DESTINY MATRICES ---\n");
     printf("  * God Alignment      : " COLOR_GOLD "%s\n" COLOR_RESET, profile->god_alignment);
-    printf("  * Situational Class  : " COLOR_CYAN "%s\n" COLOR_RESET, profile->archetype_alignment);
+    printf("  * Final Class        : " COLOR_CYAN "%s\n" COLOR_RESET, profile->class_name);
+    printf("  * Blood Affinity     : %d%%\n", profile->affinity);
+    printf("  * Ultimate Title     : " COLOR_GOLD "%s\n" COLOR_RESET, profile->final_title);
 
-    printf("\n  --- ACTIVE 7-PARAMETRIC ATTRIBUTES ---\n");
-    printf("  * [MS] Logic & Strategy       : %d points\n", profile->ms);
-    printf("  * [KH] Charisma & Rhetoric    : %d points\n", profile->kh);
-    printf("  * [FK] Physical Strength      : %d points\n", profile->fk);
-    printf("  * [HÇ] Precision & Agility     : %d points\n", profile->hc);
-    printf("  * [MB] Mystic Bond & Prophecy : %d points\n", profile->mb);
-    printf("  * [SM] Political Legitimacy   : %d points\n", profile->sm);
-    printf("  * [KD] Chaotic Resistance     : %d points\n", profile->kd);
+    printf("\n  --- ACTIVE 5-PARAMETRIC ATTRIBUTES ---\n");
+    printf("  * [ZK] Intelligence (Logic) : %d points\n", profile->zk);
+    printf("  * [GC] Might (Power)        : %d points\n", profile->gc);
+    printf("  * [ON] Honor (Sacrifice)    : %d points\n", profile->on);
+    printf("  * [EB] Personal Skills      : %d points\n", profile->eb);
+    printf("  * [RB] Celestial Faith      : %d points\n", profile->rb);
     printf("  -------------------------------------------------------------\n\n");
     printf(COLOR_WHITE " [Press ANY KEY to return safely to the Storm Menu] " COLOR_RESET);
     _getch();
