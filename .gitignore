@@ -1,0 +1,24 @@
+# Compiled Object & Binary files
+*.o
+*.obj
+*.exe
+*.out
+*.app
+*.dll
+*.so
+*.dylib
+
+# CMake Build Directories
+cmake-build-debug/
+cmake-build-release/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# JetBrains/CLion IDE configuration directory
+.idea/
+
+# Local system files
+Thumbs.db
+.DS_Store
