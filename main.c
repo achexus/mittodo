@@ -53,17 +53,17 @@ typedef struct {
     char final_title[100];
 
     // The 5-Parametric Vector System
-    int zk; // Intelligence / Logic
-    int gc; // Might / Power
-    int on; // Honor / Sacrifice
-    int eb; // Dexterity / Personal Skills
-    int rb; // Faith / Celestial Connection
+    int intel; // Intelligence / Logic
+    int might; // Might / Power
+    int honor; // Honor / Sacrifice
+    int skill; // Dexterity / Personal Skills
+    int faith; // Faith / Celestial Connection
 } CharacterProfile;
 
 typedef struct {
     char god[30];
     char archetype[50];
-    int zk, gc, on, eb, rb;
+    int intel, might, honor, skill, faith; // UPDATED
 } ArchetypeMatrix;
 
 // Global matrix of 48 calibrated unique historical profiles
@@ -138,6 +138,7 @@ void print_permanent_choices(void);
 void scene_continue_journey(void);
 void scene_language_options(void);
 void scene_system_status(CharacterProfile* profile);
+void display_character_sheet(CharacterProfile* profile);
 
 // ============================================================================
 // 3. MAIN GAME LOOP
@@ -162,7 +163,7 @@ int main(void) {
         .is_pure = false,
         .class_name = "UNASSIGNED",
         .final_title = "UNASSIGNED",
-        .zk = 0, .gc = 0, .on = 0, .eb = 0, .rb = 0
+        .intel = 0, .might = 0, .honor = 0, .skill = 0, .faith = 0
     };
 
     clear_screen();
@@ -178,6 +179,18 @@ int main(void) {
             switch (input_char) {
                 case '1':
                     set_cursor_visibility(true);
+
+                    // --- YENİ EKLENEN KISIM: HER YENİ OYUNDA STATLARI SIFIRLA ---
+                    player.intel = 0;
+                    player.might = 0;
+                    player.honor = 0;
+                    player.skill = 0;
+                    player.faith = 0;
+                    player.affinity = 0;
+                    strcpy(player.god_alignment, "UNASSIGNED");
+                    strcpy(player.class_name, "UNASSIGNED");
+                    // ------------------------------------------------------------
+
                     if (!scene_start_journey(&player)) running = false;
                     set_cursor_visibility(false);
                     break;
@@ -312,15 +325,25 @@ bool scene_start_journey(CharacterProfile* profile) {
     printf(COLOR_DARK "                     [Press ANY KEY to open your eyes] " COLOR_RESET);
     _getch(); clear_screen();
 
+    // --- İSİM ALMA İŞLEMİ BURAYA TAŞINDI ---
     printf(COLOR_WHITE "\n\n  AWAKE... " COLOR_RESET); printf(COLOR_RED "You have no tomorrow.\n\n" COLOR_RESET);
-    printf(COLOR_GOLD "  Rise now. Or blind your ears to my call and never set foot upon this path.\n\n\n" COLOR_RESET);
+    printf(COLOR_CYAN "  What was your name before the fall? : " COLOR_RESET);
+
+    set_cursor_visibility(true);
+    scanf(" %[^\n]", profile->player_name);
+    set_cursor_visibility(false);
+    clear_screen();
+
+    // İsim alındıktan sonra hikaye oyuncunun ismiyle devam ediyor
+    printf(COLOR_GOLD "\n\n  Rise now, %s. Or blind your ears to my call and never set foot upon this path.\n\n\n" COLOR_RESET, profile->player_name);
     printf(COLOR_DARK " [Press ANY KEY to confront the ultimatum] " COLOR_RESET);
     _getch(); clear_screen();
+    // ----------------------------------------
 
     printf(COLOR_RED "\n  #############################################################################\n");
     printf("  #                               F  L  E  E  ! ! !                           #\n");
     printf("  #############################################################################\n\n\n" COLOR_RESET);
-    printf(COLOR_WHITE "  The cosmic frequencies demand an instant reaction:\n\n" COLOR_RESET);
+    // ... fonksiyonun geri kalanı aynı (Escape, Stand frozen, Roar back) ...    printf(COLOR_WHITE "  The cosmic frequencies demand an instant reaction:\n\n" COLOR_RESET);
     printf("  [" COLOR_CYAN "1" COLOR_RESET "] Escape silently into the shadows (Run away).\n");
     printf("  [" COLOR_CYAN "2" COLOR_RESET "] Stand frozen and endure the tempest silently (Calm observation).\n");
     printf("  [" COLOR_CYAN "3" COLOR_RESET "] Roar back at the heavens and strike the ground (Fierce defiance).\n\n");
@@ -400,12 +423,18 @@ void execute_parametric_test(CharacterProfile* profile) {
     printf(" crisis and test of leadership?\n\n" COLOR_RESET);
     print_permanent_choices();
     printf(COLOR_CYAN " Instinct Vector (1-0): " COLOR_RESET);
+    // ÖRNEK OLARAK TRIAL 1'İN PUANLAMA KISMI (Diğer 4 TRIAL'ı da buna göre değiştir)
     choice = get_parametric_input();
-    if(choice == 1)  profile->zk += 2; else if(choice == 2)  profile->gc += 2;
-    else if(choice == 3)  profile->on += 2; else if(choice == 4)  profile->eb += 2;
-    else if(choice == 5)  profile->rb += 2; else if(choice == 6)  { profile->zk += 2; profile->on -= 1; }
-    else if(choice == 7)  { profile->gc += 2; profile->zk -= 1; } else if(choice == 8)  { profile->eb += 2; profile->on -= 2; }
-    else if(choice == 9)  { profile->rb += 1; profile->gc -= 1; } else if(choice == 10) { profile->on += 1; profile->gc -= 2; }
+    if(choice == 1)  profile->intel += 2;
+    else if(choice == 2)  profile->might += 2;
+    else if(choice == 3)  profile->honor += 2;
+    else if(choice == 4)  profile->skill += 2;
+    else if(choice == 5)  profile->faith += 2;
+    else if(choice == 6)  { profile->intel += 2; profile->honor -= 1; }
+    else if(choice == 7)  { profile->might += 2; profile->intel -= 1; }
+    else if(choice == 8)  { profile->skill += 2; profile->honor -= 2; }
+    else if(choice == 9)  { profile->faith += 1; profile->might -= 1; }
+    else if(choice == 10) { profile->honor += 1; profile->might -= 2; }
 
     // TRIAL 2
     clear_screen();
@@ -416,8 +445,18 @@ void execute_parametric_test(CharacterProfile* profile) {
     printf(" your stance against this new authority that condemns you?\n\n" COLOR_RESET);
     print_permanent_choices();
     printf(COLOR_CYAN " Instinct Vector (1-0): " COLOR_RESET);
+    // ÖRNEK OLARAK TRIAL 1'İN PUANLAMA KISMI (Diğer 4 TRIAL'ı da buna göre değiştir)
     choice = get_parametric_input();
-    if(choice == 1)  profile->zk += 2; else if(choice == 2)  profile->gc += 2; else if(choice == 3)  profile->on += 2; else if(choice == 4)  profile->eb += 2; else if(choice == 5)  profile->rb += 2; else if(choice == 6)  { profile->zk += 2; profile->on -= 1; } else if(choice == 7)  { profile->gc += 2; profile->zk -= 1; } else if(choice == 8)  { profile->eb += 2; profile->on -= 2; } else if(choice == 9)  { profile->rb += 1; profile->gc -= 1; } else if(choice == 10) { profile->on += 1; profile->gc -= 2; }
+    if(choice == 1)  profile->intel += 2;
+    else if(choice == 2)  profile->might += 2;
+    else if(choice == 3)  profile->honor += 2;
+    else if(choice == 4)  profile->skill += 2;
+    else if(choice == 5)  profile->faith += 2;
+    else if(choice == 6)  { profile->intel += 2; profile->honor -= 1; }
+    else if(choice == 7)  { profile->might += 2; profile->intel -= 1; }
+    else if(choice == 8)  { profile->skill += 2; profile->honor -= 2; }
+    else if(choice == 9)  { profile->faith += 1; profile->might -= 1; }
+    else if(choice == 10) { profile->honor += 1; profile->might -= 2; }
 
     // TRIAL 3
     clear_screen();
@@ -428,9 +467,18 @@ void execute_parametric_test(CharacterProfile* profile) {
     printf(" How do you resolve this crisis of deception?\n\n" COLOR_RESET);
     print_permanent_choices();
     printf(COLOR_CYAN " Instinct Vector (1-0): " COLOR_RESET);
+    // ÖRNEK OLARAK TRIAL 1'İN PUANLAMA KISMI (Diğer 4 TRIAL'ı da buna göre değiştir)
     choice = get_parametric_input();
-    if(choice == 1)  profile->zk += 2; else if(choice == 2)  profile->gc += 2; else if(choice == 3)  profile->on += 2; else if(choice == 4)  profile->eb += 2; else if(choice == 5)  profile->rb += 2; else if(choice == 6)  { profile->zk += 2; profile->on -= 1; } else if(choice == 7)  { profile->gc += 2; profile->zk -= 1; } else if(choice == 8)  { profile->eb += 2; profile->on -= 2; } else if(choice == 9)  { profile->rb += 1; profile->gc -= 1; } else if(choice == 10) { profile->on += 1; profile->gc -= 2; }
-
+    if(choice == 1)  profile->intel += 2;
+    else if(choice == 2)  profile->might += 2;
+    else if(choice == 3)  profile->honor += 2;
+    else if(choice == 4)  profile->skill += 2;
+    else if(choice == 5)  profile->faith += 2;
+    else if(choice == 6)  { profile->intel += 2; profile->honor -= 1; }
+    else if(choice == 7)  { profile->might += 2; profile->intel -= 1; }
+    else if(choice == 8)  { profile->skill += 2; profile->honor -= 2; }
+    else if(choice == 9)  { profile->faith += 1; profile->might -= 1; }
+    else if(choice == 10) { profile->honor += 1; profile->might -= 2; }
     // TRIAL 4
     clear_screen();
     printf(COLOR_GOLD "\n [TRIAL 4] The Cursed Stranger (Theft of Destiny): An arrogant stranger\n");
@@ -440,9 +488,18 @@ void execute_parametric_test(CharacterProfile* profile) {
     printf(" turns all living things to cold stone. How do you confront this danger?\n\n" COLOR_RESET);
     print_permanent_choices();
     printf(COLOR_CYAN " Instinct Vector (1-0): " COLOR_RESET);
+    // ÖRNEK OLARAK TRIAL 1'İN PUANLAMA KISMI (Diğer 4 TRIAL'ı da buna göre değiştir)
     choice = get_parametric_input();
-    if(choice == 1)  profile->zk += 2; else if(choice == 2)  profile->gc += 2; else if(choice == 3)  profile->on += 2; else if(choice == 4)  profile->eb += 2; else if(choice == 5)  profile->rb += 2; else if(choice == 6)  { profile->zk += 2; profile->on -= 1; } else if(choice == 7)  { profile->gc += 2; profile->zk -= 1; } else if(choice == 8)  { profile->eb += 2; profile->on -= 2; } else if(choice == 9)  { profile->rb += 1; profile->gc -= 1; } else if(choice == 10) { profile->on += 1; profile->gc -= 2; }
-
+    if(choice == 1)  profile->intel += 2;
+    else if(choice == 2)  profile->might += 2;
+    else if(choice == 3)  profile->honor += 2;
+    else if(choice == 4)  profile->skill += 2;
+    else if(choice == 5)  profile->faith += 2;
+    else if(choice == 6)  { profile->intel += 2; profile->honor -= 1; }
+    else if(choice == 7)  { profile->might += 2; profile->intel -= 1; }
+    else if(choice == 8)  { profile->skill += 2; profile->honor -= 2; }
+    else if(choice == 9)  { profile->faith += 1; profile->might -= 1; }
+    else if(choice == 10) { profile->honor += 1; profile->might -= 2; }
     // TRIAL 5
     clear_screen();
     printf(COLOR_GOLD "\n [TRIAL 5] Siege of the Sacred Garden (Defense of the Legacy): Your lineage's\n");
@@ -451,9 +508,18 @@ void execute_parametric_test(CharacterProfile* profile) {
     printf(" you make your final move to protect your family and this deep-rooted legacy?\n\n" COLOR_RESET);
     print_permanent_choices();
     printf(COLOR_CYAN " Instinct Vector (1-0): " COLOR_RESET);
+    // ÖRNEK OLARAK TRIAL 1'İN PUANLAMA KISMI (Diğer 4 TRIAL'ı da buna göre değiştir)
     choice = get_parametric_input();
-    if(choice == 1)  profile->zk += 2; else if(choice == 2)  profile->gc += 2; else if(choice == 3)  profile->on += 2; else if(choice == 4)  profile->eb += 2; else if(choice == 5)  profile->rb += 2; else if(choice == 6)  { profile->zk += 2; profile->on -= 1; } else if(choice == 7)  { profile->gc += 2; profile->zk -= 1; } else if(choice == 8)  { profile->eb += 2; profile->on -= 2; } else if(choice == 9)  { profile->rb += 1; profile->gc -= 1; } else if(choice == 10) { profile->on += 1; profile->gc -= 2; }
-
+    if(choice == 1)  profile->intel += 2;
+    else if(choice == 2)  profile->might += 2;
+    else if(choice == 3)  profile->honor += 2;
+    else if(choice == 4)  profile->skill += 2;
+    else if(choice == 5)  profile->faith += 2;
+    else if(choice == 6)  { profile->intel += 2; profile->honor -= 1; }
+    else if(choice == 7)  { profile->might += 2; profile->intel -= 1; }
+    else if(choice == 8)  { profile->skill += 2; profile->honor -= 2; }
+    else if(choice == 9)  { profile->faith += 1; profile->might -= 1; }
+    else if(choice == 10) { profile->honor += 1; profile->might -= 2; }
     evaluate_cosmic_alignment(profile);
 
     // YENI MEKANİK BURADA DEVREYE GİRİYOR
@@ -467,12 +533,13 @@ void evaluate_cosmic_alignment(CharacterProfile* profile) {
     int match_count = 0;
     int tied_indices[48];
 
+    // evaluate_cosmic_alignment içindeki for döngüsü:
     for (int i = 0; i < 48; i++) {
-        int d = abs(profile->zk - database[i].zk) +
-                abs(profile->gc - database[i].gc) +
-                abs(profile->on - database[i].on) +
-                abs(profile->eb - database[i].eb) +
-                abs(profile->rb - database[i].rb);
+        int d = abs(profile->intel - database[i].intel) +
+                abs(profile->might - database[i].might) +
+                abs(profile->honor - database[i].honor) +
+                abs(profile->skill - database[i].skill) +
+                abs(profile->faith - database[i].faith);
         distances[i] = d;
         if (d < min_distance) {
             min_distance = d;
@@ -649,7 +716,9 @@ void calculate_final_title(CharacterProfile* profile) {
 
     printf(COLOR_DARK " [Press ANY KEY to finalize your destiny] " COLOR_RESET);
     _getch();
-    clear_screen();
+
+    // YENİ: Unvanı aldıktan sonra ismini sor ve karakter kağıdını bas!
+    display_character_sheet(profile);
 }
 
 void scene_continue_journey(void) {
@@ -692,13 +761,175 @@ void scene_system_status(CharacterProfile* profile) {
     printf("  * Ultimate Title     : " COLOR_GOLD "%s\n" COLOR_RESET, profile->final_title);
 
     printf("\n  --- ACTIVE 5-PARAMETRIC ATTRIBUTES ---\n");
-    printf("  * [ZK] Intelligence (Logic) : %d points\n", profile->zk);
-    printf("  * [GC] Might (Power)        : %d points\n", profile->gc);
-    printf("  * [ON] Honor (Sacrifice)    : %d points\n", profile->on);
-    printf("  * [EB] Personal Skills      : %d points\n", profile->eb);
-    printf("  * [RB] Celestial Faith      : %d points\n", profile->rb);
+    printf("  * [INT] Intelligence (Logic) : %d points\n", profile->intel);
+    printf("  * [MGT] Might (Power)        : %d points\n", profile->might);
+    printf("  * [HNR] Honor (Sacrifice)    : %d points\n", profile->honor);
+    printf("  * [SKL] Personal Skills      : %d points\n", profile->skill);
+    printf("  * [FTH] Celestial Faith      : %d points\n", profile->faith);
+    printf("  -------------------------------------------------------------\n\n");
     printf("  -------------------------------------------------------------\n\n");
     printf(COLOR_WHITE " [Press ANY KEY to return safely to the Storm Menu] " COLOR_RESET);
+    _getch();
+    clear_screen();
+}
+
+// ============================================================================
+// 7. AETHERIAL DOSSIER (CHARACTER SHEET)
+// ============================================================================
+
+void print_stat_bar(int value, int max_val, const char* color) {
+    printf("%s", color);
+    for(int i = 0; i < max_val; i++) {
+        if(i < value) printf("█"); // Dolu blok (UTF-8)
+        else printf(COLOR_DARK "░"); // Boş blok (UTF-8)
+        printf("%s", color); // Rengi sıfırla/koru
+    }
+    printf(COLOR_RESET);
+}
+
+void display_character_sheet(CharacterProfile* profile) {
+    clear_screen();
+
+    char buffer[256];
+    char buf1[10], buf2[10];
+    int vis_len;
+    int bar1, bar2;
+
+    // Dinamik Tag Sistemi (Array ve Uzunluk Takibi ile)
+    const char* active_tags[20];
+    int active_tags_len[20];
+    int tag_count = 0;
+
+    if (profile->affinity >= 80) { active_tags[tag_count] = COLOR_CYAN "< DIVINE_RESONANCE >" COLOR_RESET; active_tags_len[tag_count++] = 20; }
+    else if (profile->affinity <= 30) { active_tags[tag_count] = COLOR_RED "< SEVERE_ANOMALY >" COLOR_RESET; active_tags_len[tag_count++] = 18; }
+
+    if (profile->is_pure) { active_tags[tag_count] = COLOR_GOLD "< HARMONIC_SOUL >" COLOR_RESET; active_tags_len[tag_count++] = 17; }
+    else { active_tags[tag_count] = COLOR_RED "< FRACTURED_MIND >" COLOR_RESET; active_tags_len[tag_count++] = 18; }
+
+    if (profile->intel >= 6) { active_tags[tag_count] = COLOR_WHITE "< TACTICAL_GENIUS >" COLOR_RESET; active_tags_len[tag_count++] = 19; }
+    if (profile->might >= 6) { active_tags[tag_count] = COLOR_WHITE "< OVERWHELMING_FORCE >" COLOR_RESET; active_tags_len[tag_count++] = 22; }
+    if (profile->skill >= 6) { active_tags[tag_count] = COLOR_WHITE "< MASTER_OF_CRAFTS >" COLOR_RESET; active_tags_len[tag_count++] = 20; }
+    if (profile->honor >= 6) { active_tags[tag_count] = COLOR_WHITE "< UNBREAKABLE_WILL >" COLOR_RESET; active_tags_len[tag_count++] = 20; }
+    if (profile->faith == 0) { active_tags[tag_count] = COLOR_DARK "< GODLESS_ENTITY >" COLOR_RESET; active_tags_len[tag_count++] = 18; }
+
+    printf(COLOR_DARK "\n   ╒════════════════════════════════════════════════════════════════════════╕\n");
+
+    // Header Satırı
+    sprintf(buffer, " SYS-INIT :: AETHERIAL DOSSIER");
+    vis_len = strlen(buffer) + 13; // 12 karakter [ v. 1.0.4 ] için
+    printf(COLOR_DARK "   │" COLOR_WHITE "%s", buffer);
+    for(int i = 0; i < 72 - vis_len; i++) printf(" ");
+    printf(COLOR_DARK "[ v. 1.0.4 ] │\n");
+
+    printf("   ╞════════════════════════════════════════════════════════════════════════╡\n");
+    printf("   │                                                                        │\n" COLOR_RESET);
+
+    // ID Satırı
+    sprintf(buffer, "%s (The %s)", profile->player_name, profile->final_title);
+    vis_len = 23 + strlen(buffer);
+    printf(COLOR_DARK "   │  " COLOR_CYAN "[ID]" COLOR_RESET " DESIGNATION   : " COLOR_WHITE "%s" COLOR_DARK, buffer);
+    for(int i = 0; i < 72 - vis_len; i++) printf(" ");
+    printf("│\n");
+
+    // Bloodline Satırı
+    sprintf(buffer, "%s - %s", profile->god_alignment, profile->archetype_alignment);
+    vis_len = 23 + strlen(buffer);
+    printf(COLOR_DARK "   │  " COLOR_CYAN "[BL]" COLOR_RESET " BLOODLINE     : " COLOR_GOLD "%s" COLOR_DARK, buffer);
+    for(int i = 0; i < 72 - vis_len; i++) printf(" ");
+    printf("│\n");
+
+    // Caste Satırı
+    vis_len = 23 + strlen(profile->class_name);
+    printf(COLOR_DARK "   │  " COLOR_CYAN "[CL]" COLOR_RESET " CASTE         : " COLOR_WHITE "%s" COLOR_DARK, profile->class_name);
+    for(int i = 0; i < 72 - vis_len; i++) printf(" ");
+    printf("│\n");
+
+    printf("   │                                                                        │\n");
+    printf("   │  ====================== [ " COLOR_CYAN "SYNCHRONIZATION" COLOR_DARK " ] =========================  │\n");
+
+    // Affinity Satırı
+    sprintf(buffer, "%d%%", profile->affinity);
+    vis_len = 20 + strlen(buffer);
+    printf("   │  " COLOR_RESET "AFFINITY LEVEL :  %s" COLOR_DARK, buffer);
+    for(int i = 0; i < 72 - vis_len; i++) printf(" ");
+    printf("│\n");
+
+    // Mindset Satırı
+    const char* m_str = profile->is_pure ? "PURE (Harmonious)" : "CROSS (Anomalous)";
+    const char* m_col = profile->is_pure ? COLOR_GOLD : COLOR_RED;
+    vis_len = 20 + strlen(m_str);
+    printf("   │  " COLOR_RESET "MINDSET STATE  :  %s%s" COLOR_DARK, m_col, m_str);
+    for(int i = 0; i < 72 - vis_len; i++) printf(" ");
+    printf("│\n");
+
+    printf("   │                                                                        │\n");
+    printf("   │  ====================== [ " COLOR_CYAN "PARAMETRIC VECTORS" COLOR_DARK " ] ======================  │\n");
+
+    // Stat Satırı 1: INTEL & HONOR
+    sprintf(buf1, "%2d", profile->intel);
+    sprintf(buf2, "%2d", profile->honor);
+    bar1 = profile->intel < 0 ? 0 : (profile->intel > 10 ? 10 : profile->intel);
+    bar2 = profile->honor < 0 ? 0 : (profile->honor > 10 ? 10 : profile->honor);
+    printf("   │  " COLOR_RESET "[INT] INTEL : %s  ", buf1);
+    print_stat_bar(bar1, 10, COLOR_CYAN);
+    printf(COLOR_DARK "  │   " COLOR_RESET "[HNR] HONOR : %s  ", buf2);
+    print_stat_bar(bar2, 10, COLOR_GOLD);
+    vis_len = 60 + strlen(buf1) + strlen(buf2);
+    for(int i = 0; i < 72 - vis_len; i++) printf(" ");
+    printf(COLOR_DARK "│\n");
+
+    // Stat Satırı 2: MIGHT & SKILL
+    sprintf(buf1, "%2d", profile->might);
+    sprintf(buf2, "%2d", profile->skill);
+    bar1 = profile->might < 0 ? 0 : (profile->might > 10 ? 10 : profile->might);
+    bar2 = profile->skill < 0 ? 0 : (profile->skill > 10 ? 10 : profile->skill);
+    printf(COLOR_DARK "   │  " COLOR_RESET "[MGT] MIGHT : %s  ", buf1);
+    print_stat_bar(bar1, 10, COLOR_RED);
+    printf(COLOR_DARK "  │   " COLOR_RESET "[SKL] SKILL : %s  ", buf2);
+    print_stat_bar(bar2, 10, COLOR_WHITE);
+    vis_len = 60 + strlen(buf1) + strlen(buf2);
+    for(int i = 0; i < 72 - vis_len; i++) printf(" ");
+    printf(COLOR_DARK "│\n");
+
+    // Stat Satırı 3: FAITH
+    sprintf(buf1, "%2d", profile->faith);
+    bar1 = profile->faith < 0 ? 0 : (profile->faith > 10 ? 10 : profile->faith);
+    printf(COLOR_DARK "   │  " COLOR_RESET "[FTH] FAITH : %s  ", buf1);
+    print_stat_bar(bar1, 10, COLOR_CYAN);
+    printf(COLOR_DARK "  │");
+    vis_len = 31 + strlen(buf1);
+    for(int i = 0; i < 72 - vis_len; i++) printf(" ");
+    printf("│\n");
+
+    printf("   │                                                                        │\n");
+    printf("   │  ====================== [ " COLOR_CYAN "ACTIVE ANOMALIES" COLOR_DARK " ] ========================  │\n");
+
+    // Tag Çizimi (Taşmaları önleyen otomatik alt satıra geçme algoritması)
+    int current_line_len = 0;
+    printf("   │  " COLOR_RESET);
+    current_line_len = 2;
+
+    if (tag_count == 0) {
+        printf(COLOR_DARK "NO ANOMALIES DETECTED");
+        current_line_len += 21;
+    } else {
+        for (int i = 0; i < tag_count; i++) {
+            if (current_line_len + active_tags_len[i] + 2 > 70 && current_line_len > 2) {
+                for (int p = 0; p < 72 - current_line_len; p++) printf(" ");
+                printf(COLOR_DARK "│\n   │  " COLOR_RESET);
+                current_line_len = 2;
+            }
+            printf("%s  ", active_tags[i]);
+            current_line_len += active_tags_len[i] + 2;
+        }
+    }
+    // Son satırı kapat
+    for (int p = 0; p < 72 - current_line_len; p++) printf(" ");
+    printf(COLOR_DARK "│\n");
+
+    printf("   ╘════════════════════════════════════════════════════════════════════════╛\n\n" COLOR_RESET);
+
+    printf(COLOR_DARK "   [System Sealed. Press ANY KEY to enter the Overworld Menu] " COLOR_RESET);
     _getch();
     clear_screen();
 }
