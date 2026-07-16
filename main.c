@@ -142,10 +142,14 @@ void calculate_final_title(CharacterProfile* profile);
 
 int get_parametric_input(void);
 void print_permanent_choices(void);
-void scene_continue_journey(void);
+void scene_continue_journey(CharacterProfile* profile);
 void scene_language_options(void);
 void scene_system_status(CharacterProfile* profile);
 void display_character_sheet(CharacterProfile* profile);
+void scene_continue_journey(CharacterProfile* profile); // Parametre eklendi
+void scene_map(CharacterProfile* profile);              // Yeni harita fonksiyonu eklendi
+void scene_inner_shrine(CharacterProfile* profile);
+
 
 // ============================================================================
 // 3. MAIN GAME LOOP
@@ -197,7 +201,11 @@ int main(void) {
                     if (!scene_start_journey(&player)) running = false;
                     set_cursor_visibility(false);
                     break;
-                case '2': scene_continue_journey(); break;
+                case '2':
+                    set_cursor_visibility(true);
+                    scene_continue_journey(&player);
+                    set_cursor_visibility(false);
+                    break;
                 case '3': scene_language_options(); break;
                 case '4':
                     clear_screen();
@@ -792,23 +800,43 @@ void calculate_final_title(CharacterProfile* profile) {
     display_character_sheet(profile);
 }
 
-void scene_continue_journey(void) {
-    clear_screen();
-    if (current_lang == 1) {
-        printf(COLOR_RED " =============================================================\n");
-        printf("                     SAHNE: YOLCULUĞA DEVAM ET                \n");
-        printf(" =============================================================\n\n" COLOR_RESET);
-        printf("  Yerel bellek hücrelerinde kayıtlı ilerleme matrisi bulunamadı.\n");
-        printf(COLOR_WHITE " [Fırtına Menüsüne güvenle dönmek için HERHANGİ BİR TUŞA bas] " COLOR_RESET);
-    } else {
-        printf(COLOR_RED " =============================================================\n");
-        printf("                     SCENE: CONTINUE JOURNEY                  \n");
-        printf(" =============================================================\n\n" COLOR_RESET);
-        printf("  No saved progression matrix found within local memory cells.\n");
-        printf(COLOR_WHITE " [Press ANY KEY to return safely to the Storm Menu] " COLOR_RESET);
-    }
-    _getch();
-    clear_screen();
+
+
+// ============================================================================
+// YOLCULUĞA DEVAM ET (OTOMATİK POSEIDON PROFİLİ)
+// ============================================================================
+void scene_continue_journey(CharacterProfile* profile) {
+    // 1. Hardcode Poseidon - The Earth-Shaker Profilini Doldur
+    strcpy(profile->player_name, "Gezgin");
+    strcpy(profile->god_alignment, "Poseidon");
+    strcpy(profile->archetype_alignment, "The Earth-Shaker");
+    strcpy(profile->archetype_alignment_tr, "Sarsılmaz Yeryüzü Titreten");
+
+    // Temel Sınıf ve Uyum Ayarları
+    profile->story = STORY_UNCROWNED;
+    profile->player_nature = NATURE_AGGRESSIVE;
+    profile->god_nature = NATURE_AGGRESSIVE;
+    profile->chosen_class = CLASS_SOLDIER;
+    strcpy(profile->class_name, "Soldier");
+    strcpy(profile->class_name_tr, "Asker");
+    strcpy(profile->final_title, "Sword of War");
+    strcpy(profile->final_title_tr, "Savaşın Kılıcı");
+
+    profile->affinity = 100;
+    profile->is_pure = true;
+
+    // 5-Parametreli Statlar (Sadece Might 10)
+    profile->intel = 0;
+    profile->might = 10;
+    profile->honor = 0;
+    profile->skill = 0;
+    profile->faith = 0;
+
+    // 2. Karakter Kağıdını Ekrana Bas (Sanki sistemden yüklenmiş gibi)
+    display_character_sheet(profile);
+
+    // 3. Karakter kağıdından sonra doğrudan haritaya geçiş yap
+    scene_map(profile);
 }
 
 void scene_language_options(void) {
@@ -1085,4 +1113,93 @@ void display_character_sheet(CharacterProfile* profile) {
     else printf(COLOR_DARK "   [System Sealed. Press ANY KEY to enter the Overworld Menu] " COLOR_RESET);
     _getch();
     clear_screen();
+}
+
+// ============================================================================
+// GİRİŞ YAPILAN ALT HARİTA (ŞİMDİLİK SADECE NOKTA)
+// ============================================================================
+void scene_inner_shrine(CharacterProfile* profile) {
+    clear_screen();
+
+    printf(COLOR_CYAN "\n\n\n\n\n\n\n\n\n                                  .\n\n\n\n\n\n\n\n\n" COLOR_RESET);
+
+    if (current_lang == 1) {
+        printf(COLOR_DARK " [Haritaya geri dönmek için HERHANGİ BİR TUŞA bas] " COLOR_RESET);
+    } else {
+        printf(COLOR_DARK " [Press ANY KEY to return to the Nexus] " COLOR_RESET);
+    }
+    _getch();
+}
+
+// ============================================================================
+// THE ETHEREAL CASTLE OF THE SUN (MATHEMATICALLY PERFECT ASCII)
+// ============================================================================
+void scene_map(CharacterProfile* profile) {
+    bool exploring = true;
+
+    while (exploring) {
+        clear_screen();
+
+        // --- 1. FLAWLESS SYMMETRIC FORTRESS ON A CLIFF ---
+        printf("\n");
+        printf(COLOR_DARK  "     * " COLOR_RED "|>>>\n" COLOR_RESET);
+        printf(COLOR_DARK  "            .               " COLOR_WHITE "|\n" COLOR_RESET);
+        printf(COLOR_DARK  "       .    " COLOR_RED "|>>>" COLOR_WHITE "        _  _|_  _           " COLOR_RED "|>>>\n" COLOR_RESET);
+        printf(COLOR_WHITE "            |          |;| |;| |;|          |\n" COLOR_RESET);
+        printf(COLOR_DARK  "    * " COLOR_WHITE "_  _|_  _     " COLOR_CYAN "\\\\\\\\.         /" COLOR_WHITE "     _  _|_  _   " COLOR_DARK "*\n" COLOR_RESET);
+        printf(COLOR_WHITE "       |;|_|;|_|;|    " COLOR_CYAN "\\\\\\\\:         /" COLOR_WHITE "    |;|_|;|_|;|\n" COLOR_RESET);
+        printf(COLOR_CYAN  "       \\\\\\\\..      /     " COLOR_WHITE "||:       |     " COLOR_CYAN "\\\\\\\\..      /\n" COLOR_RESET);
+        printf(COLOR_CYAN  "       \\\\\\\\.       /     " COLOR_WHITE "||:       |     " COLOR_CYAN "\\\\\\\\.       /\n" COLOR_RESET);
+        printf(COLOR_WHITE "       ||:       |_____||:       |_____||:       |\n" COLOR_RESET);
+        printf(COLOR_WHITE "       ||:       |     ||:       |     ||:       |\n" COLOR_RESET);
+        printf(COLOR_WHITE "       ||:       |     ||:       |     ||:       |\n" COLOR_RESET);
+        printf(COLOR_WHITE "       ||:       |     ||:_______|     ||:       |\n" COLOR_RESET);
+        printf(COLOR_WHITE "       ||:       |     |/ _ _ _ \\|     ||:       |\n" COLOR_RESET);
+        printf(COLOR_WHITE "       ||:       |     || | | | ||     ||:       |\n" COLOR_RESET);
+        printf(COLOR_WHITE "       ||:_______|_____||_|_|_|_||_____||:_______|\n" COLOR_RESET);
+
+        // --- 2. DEEP FLOATING ROCK FOUNDATION ---
+        printf(COLOR_DARK  "   /=================================================\\\n" COLOR_RESET);
+        printf(COLOR_DARK  "  /:::::::::::::::::::::::::::::::::::::::::::::::::::\\\n" COLOR_RESET);
+        printf(COLOR_DARK  " /=====================================================\\\n" COLOR_RESET);
+        printf(COLOR_DARK  " \\:::::::::::::::::::::::::::::::::::::::::::::::::::::/\n" COLOR_RESET);
+        printf(COLOR_DARK  "     \\=============================================/\n" COLOR_RESET);
+        printf(COLOR_DARK  "         \\:::::::::::::::::::::::::::::::::::::/\n" COLOR_RESET);
+        printf(COLOR_DARK  "             \\=============================/\n" COLOR_RESET);
+        printf(COLOR_DARK  "                 \\:::::::::::::::::::::/\n" COLOR_RESET);
+        printf(COLOR_DARK  "                     \\=============/\n" COLOR_RESET);
+        printf(COLOR_DARK  "                        \\:::::::/\n" COLOR_RESET);
+        printf(COLOR_DARK  "                          \\===/\n" COLOR_RESET);
+        printf(COLOR_DARK  "                            V\n" COLOR_RESET);
+        printf("\n");
+
+        // --- 3. Navigation Menu ---
+        if (current_lang == 1) {
+            printf(COLOR_GOLD "  === GÜNEŞ SARAYI MERKEZİ (THE GRAND SUN FORTRESS) ===\n\n" COLOR_RESET);
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] %s Kulübesine Doğru İlerle (Inner Shrine)\n", profile->god_alignment);
+            printf("  [" COLOR_CYAN "0" COLOR_RESET "] Sisteme Geri Dön (Çıkış)\n\n");
+            printf(COLOR_CYAN "  Yol Seçimi (0-1): " COLOR_RESET);
+        } else {
+            printf(COLOR_GOLD "  === THE GRAND SUN FORTRESS ===\n\n" COLOR_RESET);
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Walk towards the Shrine of %s\n", profile->god_alignment);
+            printf("  [" COLOR_CYAN "0" COLOR_RESET "] Return to System Menu (Exit)\n\n");
+            printf(COLOR_CYAN "  Select Path (0-1): " COLOR_RESET);
+        }
+
+        // --- 4. Input Handling ---
+        bool valid_input = false;
+        while (!valid_input) {
+            if (_kbhit()) {
+                char ch = _getch();
+                if (ch == '1') {
+                    scene_inner_shrine(profile);
+                    valid_input = true;
+                } else if (ch == '0') {
+                    exploring = false;
+                    valid_input = true;
+                }
+            }
+            Sleep(20);
+        }
+    }
 }
