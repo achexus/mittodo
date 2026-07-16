@@ -1142,14 +1142,14 @@ void scene_map(CharacterProfile* profile) {
 
         // --- 1. FLAWLESS SYMMETRIC FORTRESS ON A CLIFF ---
         printf("\n");
-        printf(COLOR_DARK  "     * " COLOR_RED "|>>>\n" COLOR_RESET);
-        printf(COLOR_DARK  "            .               " COLOR_WHITE "|\n" COLOR_RESET);
-        printf(COLOR_DARK  "       .    " COLOR_RED "|>>>" COLOR_WHITE "        _  _|_  _           " COLOR_RED "|>>>\n" COLOR_RESET);
-        printf(COLOR_WHITE "            |          |;| |;| |;|          |\n" COLOR_RESET);
-        printf(COLOR_DARK  "    * " COLOR_WHITE "_  _|_  _     " COLOR_CYAN "\\\\\\\\.         /" COLOR_WHITE "     _  _|_  _   " COLOR_DARK "*\n" COLOR_RESET);
-        printf(COLOR_WHITE "       |;|_|;|_|;|    " COLOR_CYAN "\\\\\\\\:         /" COLOR_WHITE "    |;|_|;|_|;|\n" COLOR_RESET);
-        printf(COLOR_CYAN  "       \\\\\\\\..      /     " COLOR_WHITE "||:       |     " COLOR_CYAN "\\\\\\\\..      /\n" COLOR_RESET);
-        printf(COLOR_CYAN  "       \\\\\\\\.       /     " COLOR_WHITE "||:       |     " COLOR_CYAN "\\\\\\\\.       /\n" COLOR_RESET);
+        printf(COLOR_DARK  "                              * " COLOR_RED "|>>>\n" COLOR_RESET);
+        printf(COLOR_DARK  "          .                     " COLOR_WHITE "|\n" COLOR_RESET);
+        printf(COLOR_DARK  "       .    " COLOR_RED "|>>>" COLOR_WHITE "     _  _  _|_  _ _         " COLOR_RED "|>>>\n" COLOR_RESET);
+        printf(COLOR_WHITE "             |       |;| |;| |;| |;|          |\n" COLOR_RESET);
+        printf(COLOR_DARK  "    * " COLOR_WHITE "_ _  _|_  _  " COLOR_CYAN "   \\\\\\.        /" COLOR_WHITE "    _ _  _|_  _   " COLOR_DARK "*\n" COLOR_RESET);
+        printf(COLOR_WHITE "     |;|_|;|_|;|_|;|  " COLOR_CYAN " \\\\\\:      /" COLOR_WHITE "   |;|_|;|_|;|_|;|\n" COLOR_RESET);
+        printf(COLOR_CYAN  "      \\\\\\\..       /    " COLOR_WHITE "||:       |    " COLOR_CYAN "\\\\\\\..       /\n" COLOR_RESET);
+        printf(COLOR_CYAN  "       \\\\\\\.      /     " COLOR_WHITE "||:       |    " COLOR_CYAN " \\\\\\\.      /\n" COLOR_RESET);
         printf(COLOR_WHITE "       ||:       |_____||:       |_____||:       |\n" COLOR_RESET);
         printf(COLOR_WHITE "       ||:       |     ||:       |     ||:       |\n" COLOR_RESET);
         printf(COLOR_WHITE "       ||:       |     ||:       |     ||:       |\n" COLOR_RESET);
