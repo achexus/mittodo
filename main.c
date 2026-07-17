@@ -129,7 +129,9 @@ ArchetypeMatrix database[48] = {
 // 2. FUNCTION PROTOTYPES
 // ============================================================================
 void set_cursor_visibility(bool visible);
-void clear_screen(void);
+void clear_screen(void) {
+    system("cls");
+}
 bool render_lightning_storm(int frame);
 void render_menu_options(bool is_flashing);
 
@@ -204,6 +206,7 @@ int main(void) {
                 case '2':
                     set_cursor_visibility(true);
                     scene_continue_journey(&player);
+                    clear_screen();
                     set_cursor_visibility(false);
                     break;
                 case '3': scene_language_options(); break;
@@ -237,9 +240,6 @@ void set_cursor_visibility(bool visible) {
 #endif
 }
 
-void clear_screen(void) {
-    printf("\033[H\033[J");
-}
 
 bool render_lightning_storm(int frame) {
     int storm_tick = frame % 60;
@@ -1116,19 +1116,93 @@ void display_character_sheet(CharacterProfile* profile) {
 }
 
 // ============================================================================
-// GİRİŞ YAPILAN ALT HARİTA (ŞİMDİLİK SADECE NOKTA)
+// THE INNER SHRINE: ÖZEL MİMARİLİ KÖY (KAYMAZ VE TEMATİK)
 // ============================================================================
 void scene_inner_shrine(CharacterProfile* profile) {
-    clear_screen();
+    bool in_village = true;
 
-    printf(COLOR_CYAN "\n\n\n\n\n\n\n\n\n                                  .\n\n\n\n\n\n\n\n\n" COLOR_RESET);
+    while (in_village) {
+        clear_screen();
 
-    if (current_lang == 1) {
-        printf(COLOR_DARK " [Haritaya geri dönmek için HERHANGİ BİR TUŞA bas] " COLOR_RESET);
-    } else {
-        printf(COLOR_DARK " [Press ANY KEY to return to the Nexus] " COLOR_RESET);
+        printf("\n");
+        printf(COLOR_DARK "  ============================================================================================================\n" COLOR_RESET);
+        printf(COLOR_DARK "  ||                                                                                                        ||\n" COLOR_RESET);
+
+        // ROW 1: Zeus (Şimşek) & Poseidon (Mızrak/Dalga)
+        printf(COLOR_DARK "  ||" COLOR_CYAN "                  _/Z_                          " COLOR_GOLD "/^\\==========/^\\                          " COLOR_CYAN " _W_                   " COLOR_DARK "||\n" COLOR_RESET);
+        printf(COLOR_DARK "  ||" COLOR_CYAN "                 //\\\\//\\\\                        " COLOR_GOLD "/    [ SUN ]     \\                        " COLOR_CYAN "//|\\\\                  " COLOR_DARK "||\n" COLOR_RESET);
+        printf(COLOR_DARK "  ||" COLOR_CYAN "                || \\\\/ ||                      " COLOR_GOLD "|==================|                      " COLOR_CYAN "||~|~||                 " COLOR_DARK "||\n" COLOR_RESET);
+        if (current_lang == 1) {
+            printf(COLOR_DARK "  ||" COLOR_CYAN "                ||____||                      " COLOR_WHITE "| İrade ve İhtişam |                      " COLOR_CYAN "||___||                 " COLOR_DARK "||\n" COLOR_RESET);
+        } else {
+            printf(COLOR_DARK "  ||" COLOR_CYAN "                ||____||                      " COLOR_WHITE "|  Will & Majesty  |                      " COLOR_CYAN "||___||                 " COLOR_DARK "||\n" COLOR_RESET);
+        }
+        printf(COLOR_DARK "  ||" COLOR_WHITE "                   [ZEUS]                                                     [POSEIDON]                 " COLOR_DARK "||\n" COLOR_RESET);
+        printf(COLOR_DARK "  ||                                           " COLOR_GOLD "|__________________|                                           " COLOR_DARK "||\n" COLOR_RESET);
+        printf(COLOR_DARK "  ||                                                                                                        ||\n" COLOR_RESET);
+
+        // ROW 2: Hades (Mezar/Sütun) & Demeter (Yapraklar)
+        printf(COLOR_DARK "  ||" COLOR_CYAN "                  ____                          " COLOR_GOLD "/^\\==========/^\\                          " COLOR_CYAN "_/\\\\_                  " COLOR_DARK "||\n" COLOR_RESET);
+        printf(COLOR_DARK "  ||" COLOR_CYAN "                 |    |                        " COLOR_GOLD "/   [ EARTH ]    \\                        " COLOR_CYAN "//**\\\\                 " COLOR_DARK "||\n" COLOR_RESET);
+        printf(COLOR_DARK "  ||" COLOR_CYAN "                ||_||_||                      " COLOR_GOLD "|==================|                      " COLOR_CYAN "||\\\\&/||                " COLOR_DARK "||\n" COLOR_RESET);
+        if (current_lang == 1) {
+            printf(COLOR_DARK "  ||" COLOR_CYAN "                ||____||                      " COLOR_WHITE "|  Sabır ve Direnç |                      " COLOR_CYAN "||____||                " COLOR_DARK "||\n" COLOR_RESET);
+        } else {
+            printf(COLOR_DARK "  ||" COLOR_CYAN "                ||____||                      " COLOR_WHITE "| Patience & Might |                      " COLOR_CYAN "||____||                " COLOR_DARK "||\n" COLOR_RESET);
+        }
+        printf(COLOR_DARK "  ||" COLOR_WHITE "                   [HADES]                                                     [DEMETER]                 " COLOR_DARK "||\n" COLOR_RESET);
+        printf(COLOR_DARK "  ||                                           " COLOR_GOLD "|__________________|                                           " COLOR_DARK "||\n" COLOR_RESET);
+        printf(COLOR_DARK "  ||                                                                                                        ||\n" COLOR_RESET);
+
+        // ROW 3: Ares (Silah/Keskin) & Athena (Tapınak)
+        printf(COLOR_DARK "  ||" COLOR_CYAN "                 | /\\\\ |                        " COLOR_GOLD "/^\\==========/^\\                          " COLOR_CYAN "______                 " COLOR_DARK "||\n" COLOR_RESET);
+        printf(COLOR_DARK "  ||" COLOR_CYAN "                 | XX |                        " COLOR_GOLD "/   [ OCEAN ]    \\                        " COLOR_CYAN "/____\\\\                " COLOR_DARK "||\n" COLOR_RESET);
+        printf(COLOR_DARK "  ||" COLOR_CYAN "                ||====||                      " COLOR_GOLD "|==================|                      " COLOR_CYAN "|| || ||                " COLOR_DARK "||\n" COLOR_RESET);
+        if (current_lang == 1) {
+            printf(COLOR_DARK "  ||" COLOR_CYAN "                ||____||                      " COLOR_WHITE "| Derinlik & Gizem |                      " COLOR_CYAN "||_||_||                " COLOR_DARK "||\n" COLOR_RESET);
+        } else {
+            printf(COLOR_DARK "  ||" COLOR_CYAN "                ||____||                      " COLOR_WHITE "| Depth & Mystery  |                      " COLOR_CYAN "||_||_||                " COLOR_DARK "||\n" COLOR_RESET);
+        }
+        printf(COLOR_DARK "  ||" COLOR_WHITE "                   [ARES]                                                      [ATHENA]                  " COLOR_DARK "||\n" COLOR_RESET);
+        printf(COLOR_DARK "  ||                                           " COLOR_GOLD "|__________________|                                           " COLOR_DARK "||\n" COLOR_RESET);
+        printf(COLOR_DARK "  ||                                                                                                        ||\n" COLOR_RESET);
+
+        // ROW 4: Apollo (Güneş), Aphrodite (Kıvrım), Hermes (Kanat), Hephaestus (Örs), Dionysus (Sarmaşık)
+        printf(COLOR_DARK "  ||" COLOR_CYAN "       \\\\ | /              _()_              >>/\\\\<<               ||                _\\\\/_              " COLOR_DARK "||\n" COLOR_RESET);
+        printf(COLOR_DARK "  ||" COLOR_CYAN "        - O -              //  \\\\             //  \\\\             /__\\\\             //~~\\\\              " COLOR_DARK "||\n" COLOR_RESET);
+        printf(COLOR_DARK "  ||" COLOR_CYAN "       ||===||            || \\\\/ ||           || == ||           ||_[]_||           || \\\\/ ||             " COLOR_DARK "||\n" COLOR_RESET);
+        printf(COLOR_DARK "  ||" COLOR_CYAN "       ||___||            ||____||           ||____||           ||____||           ||____||             " COLOR_DARK "||\n" COLOR_RESET);
+        printf(COLOR_DARK "  ||" COLOR_WHITE "      [APOLLO]          [APHRODITE]          [HERMES]         [HEPHAESTUS]        [DIONYSUS]            " COLOR_DARK "||\n" COLOR_RESET);
+        printf(COLOR_DARK "  ||                                                                                                        ||\n" COLOR_RESET);
+        printf(COLOR_DARK "  ============================================================================================================\n" COLOR_RESET);
+        printf("\n");
+
+        // --- 3. Navigation Menu ---
+        if (current_lang == 1) {
+            printf(COLOR_GOLD "  === TAPINAK KÖYÜ (INNER SHRINE) ===\n\n" COLOR_RESET);
+            printf("  [" COLOR_CYAN "0" COLOR_RESET "] Güneş Sarayı Merkezine (Haritaya) Dön\n\n");
+            printf(COLOR_CYAN "  Eylem Seçimi (0): " COLOR_RESET);
+        } else {
+            printf(COLOR_GOLD "  === THE VILLAGE OF SHRINES ===\n\n" COLOR_RESET);
+            printf("  [" COLOR_CYAN "0" COLOR_RESET "] Return to The Sun Nexus (Map)\n\n");
+            printf(COLOR_CYAN "  Select Action (0): " COLOR_RESET);
+        }
+
+        // --- 4. Input Handling ---
+        bool valid_input = false;
+        while (!valid_input) {
+            if (_kbhit()) {
+                char ch = _getch();
+                if (ch == '0') {
+                    in_village = false;
+                    valid_input = true;
+                }
+            }
+            Sleep(20);
+        }
     }
-    _getch();
+
+    clear_screen();
 }
 
 // ============================================================================
@@ -1142,11 +1216,11 @@ void scene_map(CharacterProfile* profile) {
 
         // --- 1. FLAWLESS SYMMETRIC FORTRESS ON A CLIFF ---
         printf("\n");
-        printf(COLOR_DARK  "                              * " COLOR_RED "|>>>\n" COLOR_RESET);
-        printf(COLOR_DARK  "          .                     " COLOR_WHITE "|\n" COLOR_RESET);
-        printf(COLOR_DARK  "       .    " COLOR_RED "|>>>" COLOR_WHITE "     _  _  _|_  _ _         " COLOR_RED "|>>>\n" COLOR_RESET);
-        printf(COLOR_WHITE "             |       |;| |;| |;| |;|          |\n" COLOR_RESET);
-        printf(COLOR_DARK  "    * " COLOR_WHITE "_ _  _|_  _  " COLOR_CYAN "   \\\\\\.        /" COLOR_WHITE "    _ _  _|_  _   " COLOR_DARK "*\n" COLOR_RESET);
+        printf(COLOR_DARK  "                          * " COLOR_RED "|>>>\n" COLOR_RESET);
+        printf(COLOR_DARK  "          .                 " COLOR_WHITE "|\n" COLOR_RESET);
+        printf(COLOR_DARK  "       .    " COLOR_RED "|>>>" COLOR_WHITE "      _ _  _|_  _ _         " COLOR_RED "|>>>\n" COLOR_RESET);
+        printf(COLOR_WHITE "            |        |;| |;| |;| |;|        |\n" COLOR_RESET);
+        printf(COLOR_DARK  "    * " COLOR_WHITE "_ _  _|_  _ _ " COLOR_CYAN "  \\\\\\.        /" COLOR_WHITE "   _ _  _|_  _ _   " COLOR_DARK "*\n" COLOR_RESET);
         printf(COLOR_WHITE "     |;|_|;|_|;|_|;|  " COLOR_CYAN " \\\\\\:      /" COLOR_WHITE "   |;|_|;|_|;|_|;|\n" COLOR_RESET);
         printf(COLOR_CYAN  "      \\\\\\\..       /    " COLOR_WHITE "||:       |    " COLOR_CYAN "\\\\\\\..       /\n" COLOR_RESET);
         printf(COLOR_CYAN  "       \\\\\\\.      /     " COLOR_WHITE "||:       |    " COLOR_CYAN " \\\\\\\.      /\n" COLOR_RESET);
@@ -1202,4 +1276,5 @@ void scene_map(CharacterProfile* profile) {
             Sleep(20);
         }
     }
+
 }
