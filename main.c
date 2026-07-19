@@ -1116,94 +1116,244 @@ void display_character_sheet(CharacterProfile* profile) {
 }
 
 // ============================================================================
-// THE INNER SHRINE: ÖZEL MİMARİLİ KÖY (KAYMAZ VE TEMATİK)
+// LOKASYON İÇİ (GEÇİCİ TASLAK EKRANI)
+// ============================================================================
+void scene_inside_location(const char* loc_name_tr, const char* loc_name_en) {
+    clear_screen();
+    printf("\n\n\n");
+    if (current_lang == 1) {
+        printf(COLOR_CYAN "  >>> %s <<<\n\n" COLOR_RESET, loc_name_tr);
+    } else {
+        printf(COLOR_CYAN "  >>> %s <<<\n\n" COLOR_RESET, loc_name_en);
+    }
+
+    // Şimdilik sadece bir nokta
+    printf(COLOR_WHITE "  .\n\n\n" COLOR_RESET);
+
+    if (current_lang == 1) {
+        printf(COLOR_DARK "  [Köy meydanına dönmek için HERHANGİ BİR TUŞA bas]\n" COLOR_RESET);
+    } else {
+        printf(COLOR_DARK "  [Press ANY KEY to return to the village]\n" COLOR_RESET);
+    }
+    _getch();
+}
+
+// ============================================================================
+// THE INNER SHRINE: ANA OKUL KALESİ (V9 SANATI + MİLİMETRİK BOŞLUK KALİBRASYONU)
 // ============================================================================
 void scene_inner_shrine(CharacterProfile* profile) {
+    // Renk Paleti
+    #define M_RED "\033[1;31m"
+    #define M_GRN "\033[1;32m"
+    #define M_YEL "\033[1;33m"
+    #define M_BLU "\033[1;34m"
+    #define M_MAG "\033[1;35m"
+    #define M_CYN "\033[1;36m"
+    #define M_WHT "\033[1;37m"
+    #define M_DRK "\033[1;90m"
+    #define M_RST "\033[0m"
+
     bool in_village = true;
 
     while (in_village) {
         clear_screen();
-
-        printf("\n");
-        printf(COLOR_DARK "  ============================================================================================================\n" COLOR_RESET);
-        printf(COLOR_DARK "  ||                                                                                                        ||\n" COLOR_RESET);
-
-        // ROW 1: Zeus (Şimşek) & Poseidon (Mızrak/Dalga)
-        printf(COLOR_DARK "  ||" COLOR_CYAN "                  _/Z_                          " COLOR_GOLD "/^\\==========/^\\                          " COLOR_CYAN " _W_                   " COLOR_DARK "||\n" COLOR_RESET);
-        printf(COLOR_DARK "  ||" COLOR_CYAN "                 //\\\\//\\\\                        " COLOR_GOLD "/    [ SUN ]     \\                        " COLOR_CYAN "//|\\\\                  " COLOR_DARK "||\n" COLOR_RESET);
-        printf(COLOR_DARK "  ||" COLOR_CYAN "                || \\\\/ ||                      " COLOR_GOLD "|==================|                      " COLOR_CYAN "||~|~||                 " COLOR_DARK "||\n" COLOR_RESET);
-        if (current_lang == 1) {
-            printf(COLOR_DARK "  ||" COLOR_CYAN "                ||____||                      " COLOR_WHITE "| İrade ve İhtişam |                      " COLOR_CYAN "||___||                 " COLOR_DARK "||\n" COLOR_RESET);
-        } else {
-            printf(COLOR_DARK "  ||" COLOR_CYAN "                ||____||                      " COLOR_WHITE "|  Will & Majesty  |                      " COLOR_CYAN "||___||                 " COLOR_DARK "||\n" COLOR_RESET);
-        }
-        printf(COLOR_DARK "  ||" COLOR_WHITE "                   [ZEUS]                                                     [POSEIDON]                 " COLOR_DARK "||\n" COLOR_RESET);
-        printf(COLOR_DARK "  ||                                           " COLOR_GOLD "|__________________|                                           " COLOR_DARK "||\n" COLOR_RESET);
-        printf(COLOR_DARK "  ||                                                                                                        ||\n" COLOR_RESET);
-
-        // ROW 2: Hades (Mezar/Sütun) & Demeter (Yapraklar)
-        printf(COLOR_DARK "  ||" COLOR_CYAN "                  ____                          " COLOR_GOLD "/^\\==========/^\\                          " COLOR_CYAN "_/\\\\_                  " COLOR_DARK "||\n" COLOR_RESET);
-        printf(COLOR_DARK "  ||" COLOR_CYAN "                 |    |                        " COLOR_GOLD "/   [ EARTH ]    \\                        " COLOR_CYAN "//**\\\\                 " COLOR_DARK "||\n" COLOR_RESET);
-        printf(COLOR_DARK "  ||" COLOR_CYAN "                ||_||_||                      " COLOR_GOLD "|==================|                      " COLOR_CYAN "||\\\\&/||                " COLOR_DARK "||\n" COLOR_RESET);
-        if (current_lang == 1) {
-            printf(COLOR_DARK "  ||" COLOR_CYAN "                ||____||                      " COLOR_WHITE "|  Sabır ve Direnç |                      " COLOR_CYAN "||____||                " COLOR_DARK "||\n" COLOR_RESET);
-        } else {
-            printf(COLOR_DARK "  ||" COLOR_CYAN "                ||____||                      " COLOR_WHITE "| Patience & Might |                      " COLOR_CYAN "||____||                " COLOR_DARK "||\n" COLOR_RESET);
-        }
-        printf(COLOR_DARK "  ||" COLOR_WHITE "                   [HADES]                                                     [DEMETER]                 " COLOR_DARK "||\n" COLOR_RESET);
-        printf(COLOR_DARK "  ||                                           " COLOR_GOLD "|__________________|                                           " COLOR_DARK "||\n" COLOR_RESET);
-        printf(COLOR_DARK "  ||                                                                                                        ||\n" COLOR_RESET);
-
-        // ROW 3: Ares (Silah/Keskin) & Athena (Tapınak)
-        printf(COLOR_DARK "  ||" COLOR_CYAN "                 | /\\\\ |                        " COLOR_GOLD "/^\\==========/^\\                          " COLOR_CYAN "______                 " COLOR_DARK "||\n" COLOR_RESET);
-        printf(COLOR_DARK "  ||" COLOR_CYAN "                 | XX |                        " COLOR_GOLD "/   [ OCEAN ]    \\                        " COLOR_CYAN "/____\\\\                " COLOR_DARK "||\n" COLOR_RESET);
-        printf(COLOR_DARK "  ||" COLOR_CYAN "                ||====||                      " COLOR_GOLD "|==================|                      " COLOR_CYAN "|| || ||                " COLOR_DARK "||\n" COLOR_RESET);
-        if (current_lang == 1) {
-            printf(COLOR_DARK "  ||" COLOR_CYAN "                ||____||                      " COLOR_WHITE "| Derinlik & Gizem |                      " COLOR_CYAN "||_||_||                " COLOR_DARK "||\n" COLOR_RESET);
-        } else {
-            printf(COLOR_DARK "  ||" COLOR_CYAN "                ||____||                      " COLOR_WHITE "| Depth & Mystery  |                      " COLOR_CYAN "||_||_||                " COLOR_DARK "||\n" COLOR_RESET);
-        }
-        printf(COLOR_DARK "  ||" COLOR_WHITE "                   [ARES]                                                      [ATHENA]                  " COLOR_DARK "||\n" COLOR_RESET);
-        printf(COLOR_DARK "  ||                                           " COLOR_GOLD "|__________________|                                           " COLOR_DARK "||\n" COLOR_RESET);
-        printf(COLOR_DARK "  ||                                                                                                        ||\n" COLOR_RESET);
-
-        // ROW 4: Apollo (Güneş), Aphrodite (Kıvrım), Hermes (Kanat), Hephaestus (Örs), Dionysus (Sarmaşık)
-        printf(COLOR_DARK "  ||" COLOR_CYAN "       \\\\ | /              _()_              >>/\\\\<<               ||                _\\\\/_              " COLOR_DARK "||\n" COLOR_RESET);
-        printf(COLOR_DARK "  ||" COLOR_CYAN "        - O -              //  \\\\             //  \\\\             /__\\\\             //~~\\\\              " COLOR_DARK "||\n" COLOR_RESET);
-        printf(COLOR_DARK "  ||" COLOR_CYAN "       ||===||            || \\\\/ ||           || == ||           ||_[]_||           || \\\\/ ||             " COLOR_DARK "||\n" COLOR_RESET);
-        printf(COLOR_DARK "  ||" COLOR_CYAN "       ||___||            ||____||           ||____||           ||____||           ||____||             " COLOR_DARK "||\n" COLOR_RESET);
-        printf(COLOR_DARK "  ||" COLOR_WHITE "      [APOLLO]          [APHRODITE]          [HERMES]         [HEPHAESTUS]        [DIONYSUS]            " COLOR_DARK "||\n" COLOR_RESET);
-        printf(COLOR_DARK "  ||                                                                                                        ||\n" COLOR_RESET);
-        printf(COLOR_DARK "  ============================================================================================================\n" COLOR_RESET);
         printf("\n");
 
-        // --- 3. Navigation Menu ---
+        // Dış Çerçeve Genişliği: İçerik tam 106 karakter. Toplam genişlik 112.
+        printf(M_DRK "  ==============================================================================================================\n" M_RST);
+
+        // --- SATIR 1: Zeus (30) | Ana Okul (46) | Poseidon (30) ---
+        printf(M_DRK "  ||"
+               M_YEL "             _/Z_             "
+               M_WHT "                      |>>>                    "
+               M_BLU "             _W_              "
+               M_DRK "||\n" M_RST);
+
+        printf(M_DRK "  ||"
+               M_YEL "           //\\\\//\\\\           "
+               M_WHT "                      |                       "
+               M_BLU "            //|\\\\             "
+               M_DRK "||\n" M_RST);
+
+        printf(M_DRK "  ||"
+               M_YEL "           || \\/ ||           "
+               M_WHT "                _ _  _|_  _ _                 "
+               M_BLU "           ||~|~||            "
+               M_DRK "||\n" M_RST);
+
+        printf(M_DRK "  ||"
+               M_YEL "           ||____||           "
+               M_WHT "               |;|_|;|_|;|_|;|                "
+               M_BLU "           ||___||            "
+               M_DRK "||\n" M_RST);
+
+        printf(M_DRK "  ||"
+               M_YEL "            [ZEUS]            "
+               M_WHT "               |             |                "
+               M_BLU "          [POSEIDON]          "
+               M_DRK "||\n" M_RST);
+
+        // --- SATIR 2: Hades (30) | Ana Okul (46) | Demeter (30) ---
+        printf(M_DRK "  ||"
+               M_MAG "             ____             "
+               M_WHT "            ___|             |___             "
+               M_GRN "             _/\\_             "
+               M_DRK "||\n" M_RST);
+
+        printf(M_DRK "  ||"
+               M_MAG "            |    |            "
+               M_WHT "           |;|_|;|_|;|_|;|_|;|_|;|            "
+               M_GRN "            //**\\\\            "
+               M_DRK "||\n" M_RST);
+
+        printf(M_DRK "  ||"
+               M_MAG "           ||_||_||           "
+               M_WHT "           |                     |            "
+               M_GRN "           ||\\&&/||           "
+               M_DRK "||\n" M_RST);
+
         if (current_lang == 1) {
-            printf(COLOR_GOLD "  === TAPINAK KÖYÜ (INNER SHRINE) ===\n\n" COLOR_RESET);
-            printf("  [" COLOR_CYAN "0" COLOR_RESET "] Güneş Sarayı Merkezine (Haritaya) Dön\n\n");
-            printf(COLOR_CYAN "  Eylem Seçimi (0): " COLOR_RESET);
+            printf(M_DRK "  ||"
+                   M_MAG "           ||____||           "
+                   M_WHT "           |    [ ANA OKUL ]     |            "
+                   M_GRN "           ||____||           "
+                   M_DRK "||\n" M_RST);
         } else {
-            printf(COLOR_GOLD "  === THE VILLAGE OF SHRINES ===\n\n" COLOR_RESET);
-            printf("  [" COLOR_CYAN "0" COLOR_RESET "] Return to The Sun Nexus (Map)\n\n");
-            printf(COLOR_CYAN "  Select Action (0): " COLOR_RESET);
+            printf(M_DRK "  ||"
+                   M_MAG "           ||____||           "
+                   M_WHT "           |   [ MAIN SCHOOL ]   |            "
+                   M_GRN "           ||____||           "
+                   M_DRK "||\n" M_RST);
         }
 
-        // --- 4. Input Handling ---
+        printf(M_DRK "  ||"
+               M_MAG "           [HADES]            "
+               M_WHT "           |                     |            "
+               M_GRN "          [DEMETER]           "
+               M_DRK "||\n" M_RST);
+
+        // --- SATIR 3: Ares (30) | Ana Okul (46) | Athena (30) ---
+        printf(M_DRK "  ||"
+               M_RED "            | /\\ |            "
+               M_WHT "           |=====================|            "
+               M_WHT "             ____             "
+               M_DRK "||\n" M_RST);
+
+        printf(M_DRK "  ||"
+               M_RED "            | XX |            "
+               M_WHT "           |   | | |     | | |   |            "
+               M_WHT "            /____\\            "
+               M_DRK "||\n" M_RST);
+
+        printf(M_DRK "  ||"
+               M_RED "           ||====||           "
+               M_WHT "           |   |_|_|     |_|_|   |            "
+               M_WHT "           || || ||           "
+               M_DRK "||\n" M_RST);
+
+        printf(M_DRK "  ||"
+               M_RED "           ||____||           "
+               M_WHT "           |_____________________|            "
+               M_WHT "           ||_||_||           "
+               M_DRK "||\n" M_RST);
+
+        printf(M_DRK "  ||"
+               M_RED "            [ARES]            "
+               M_WHT "                                              "
+               M_WHT "           [ATHENA]           "
+               M_DRK "||\n" M_RST);
+
+        // --- SATIR 4: 5 Tanrı (Sırasıyla 21 + 21 + 22 + 21 + 21 = 106) ---
+        printf(M_DRK "  ||"
+               M_YEL "        \\ | /        "
+               M_MAG "        _()_         "
+               M_CYN "        >>/\\<<        "
+               M_RED "         ||          "
+               M_GRN "        _\\/_         "
+               M_DRK "||\n" M_RST);
+
+        printf(M_DRK "  ||"
+               M_YEL "        - O -        "
+               M_MAG "       //  \\\\        "
+               M_CYN "        //  \\\\        "
+               M_RED "        _\\/_         "
+               M_GRN "       //~~\\\\        "
+               M_DRK "||\n" M_RST);
+
+        printf(M_DRK "  ||"
+               M_YEL "       ||===||       "
+               M_MAG "      || \\/ ||       "
+               M_CYN "       || == ||       "
+               M_RED "      ||_[]_||       "
+               M_GRN "      || \\/ ||       "
+               M_DRK "||\n" M_RST);
+
+        printf(M_DRK "  ||"
+               M_YEL "       ||___||       "
+               M_MAG "      ||____||       "
+               M_CYN "       ||____||       "
+               M_RED "      ||____||       "
+               M_GRN "      ||____||       "
+               M_DRK "||\n" M_RST);
+
+        printf(M_DRK "  ||"
+               M_YEL "      [APOLLO]       "
+               M_MAG "     [APHRODITE]     "
+               M_CYN "       [HERMES]       "
+               M_RED "    [HEPHAESTUS]     "
+               M_GRN "     [DIONYSUS]      "
+               M_DRK "||\n" M_RST);
+
+// Alt Çerçeve
+        printf(M_DRK "  ==============================================================================================================\n" M_RST);
+        printf("\n");
+
+        // --- Menü Arayüzünün Çizilmesi (Sadece Kendi Kulüben ve Okul Görünür) ---
+        if (current_lang == 1) {
+            printf(M_YEL "  === TAPINAK KÖYÜ (INNER SHRINE) ===\n\n" M_RST);
+            printf("  [" M_CYN "1" M_RST "] Ana Okul'a Gir (Çalışma Merkezi)\n");
+            printf("  [" M_CYN "2" M_RST "] %s Kulübesi (Açık)\n\n", profile->god_alignment);
+            printf("  [" M_CYN "0" M_RST "] Güneş Sarayı Merkezine (Haritaya) Dön\n\n");
+            printf(M_CYN "  Eylem Seçimi: " M_RST);
+        } else {
+            printf(M_YEL "  === THE VILLAGE OF SHRINES ===\n\n" M_RST);
+            printf("  [" M_CYN "1" M_RST "] Enter Main School (Study Center)\n");
+            printf("  [" M_CYN "2" M_RST "] Shrine of %s (Open)\n\n", profile->god_alignment);
+            printf("  [" M_CYN "0" M_RST "] Return to The Sun Nexus (Map)\n\n");
+            printf(M_CYN "  Select Action: " M_RST);
+        }
+
+        // --- Girdi Kontrolü ---
         bool valid_input = false;
         while (!valid_input) {
             if (_kbhit()) {
                 char ch = _getch();
+
                 if (ch == '0') {
-                    in_village = false;
+                    in_village = false; // Haritaya Dön
+                    valid_input = true;
+                }
+                else if (ch == '1') {
+                    // Herkese açık Ana Okul Merkezi (Ders çalışma alanımız)
+                    scene_inside_location("Ana Okul Merkezi", "Main School Central");
+                    valid_input = true;
+                }
+                else if (ch == '2') {
+                    // Sadece oyuncunun atandığı tanrının kulübesi
+                    char loc_tr[50], loc_en[50];
+                    sprintf(loc_tr, "%s Kulübesi", profile->god_alignment);
+                    sprintf(loc_en, "Shrine of %s", profile->god_alignment);
+                    scene_inside_location(loc_tr, loc_en);
                     valid_input = true;
                 }
             }
             Sleep(20);
         }
-    }
+    } // while (in_village) döngüsünün kapanışı
 
     clear_screen();
-}
+} // void scene_inner_shrine kapanışı
+
 
 // ============================================================================
 // THE ETHEREAL CASTLE OF THE SUN (MATHEMATICALLY PERFECT ASCII)
