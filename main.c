@@ -11,6 +11,8 @@
 #define COLOR_GOLD    "\033[1;33m"
 #define COLOR_CYAN    "\033[1;36m"
 #define COLOR_RED     "\033[1;31m"
+#define COLOR_GRN     "\033[1;32m"
+#define COLOR_MAG     "\033[1;35m"
 #define COLOR_RESET   "\033[0m"
 #define COLOR_WHITE   "\033[1;37m"
 #define COLOR_DARK    "\033[1;30m"
@@ -148,7 +150,6 @@ void scene_continue_journey(CharacterProfile* profile);
 void scene_language_options(void);
 void scene_system_status(CharacterProfile* profile);
 void display_character_sheet(CharacterProfile* profile);
-void scene_continue_journey(CharacterProfile* profile); // Parametre eklendi
 void scene_map(CharacterProfile* profile);              // Yeni harita fonksiyonu eklendi
 void scene_inner_shrine(CharacterProfile* profile);
 
@@ -825,12 +826,12 @@ void scene_continue_journey(CharacterProfile* profile) {
     profile->affinity = 100;
     profile->is_pure = true;
 
-    // 5-Parametreli Statlar (Sadece Might 10)
-    profile->intel = 0;
-    profile->might = 10;
-    profile->honor = 0;
-    profile->skill = 0;
-    profile->faith = 0;
+    // Hazır Profil: Tüm Statlar 15 (MAX)
+    profile->intel = 15; // STAT A
+    profile->might = 15; // STAT B
+    profile->honor = 15; // STAT C
+    profile->skill = 15; // STAT D
+    profile->faith = 15; // STAT E
 
     // 2. Karakter Kağıdını Ekrana Bas (Sanki sistemden yüklenmiş gibi)
     display_character_sheet(profile);
@@ -1039,48 +1040,34 @@ void display_character_sheet(CharacterProfile* profile) {
     printf("│\n");
 
     printf("   │                                                                        │\n");
-    if (current_lang == 1) printf("   │  ====================== [ " COLOR_CYAN "PARAMETRİK VEKTÖRLER" COLOR_DARK " ] ====================  │\n");
-    else printf("   │  ====================== [ " COLOR_CYAN "PARAMETRIC VECTORS" COLOR_DARK " ] ======================  │\n");
+    if (current_lang == 1) printf("   │  ======================== [ " COLOR_CYAN "DERS İSTATİSTİKLERİ" COLOR_DARK " ] =======================  │\n");
+    else printf("   │  ========================= [ " COLOR_CYAN "STUDY STATISTICS" COLOR_DARK " ] =========================  │\n");
 
-    sprintf(buf1, "%2d", profile->intel);
-    sprintf(buf2, "%2d", profile->honor);
-    bar1 = profile->intel < 0 ? 0 : (profile->intel > 10 ? 10 : profile->intel);
-    bar2 = profile->honor < 0 ? 0 : (profile->honor > 10 ? 10 : profile->honor);
-    if (current_lang == 1) printf("   │  " COLOR_RESET "[ZEK] ZEKA : %s  ", buf1);
-    else printf("   │  " COLOR_RESET "[INT] INTEL : %s  ", buf1);
-    print_stat_bar(bar1, 10, COLOR_CYAN);
-    if (current_lang == 1) printf(COLOR_DARK "  │   " COLOR_RESET "[ONR] ONUR : %s  ", buf2);
-    else printf(COLOR_DARK "  │   " COLOR_RESET "[HNR] HONOR : %s  ", buf2);
-    print_stat_bar(bar2, 10, COLOR_GOLD);
-    vis_len = 60 + strlen(buf1) + strlen(buf2);
-    for(int i = 0; i < 72 - vis_len; i++) printf(" ");
-    printf(COLOR_DARK "│\n");
+    int b1, b2;
 
-    sprintf(buf1, "%2d", profile->might);
-    sprintf(buf2, "%2d", profile->skill);
-    bar1 = profile->might < 0 ? 0 : (profile->might > 10 ? 10 : profile->might);
-    bar2 = profile->skill < 0 ? 0 : (profile->skill > 10 ? 10 : profile->skill);
-    if (current_lang == 1) printf(COLOR_DARK "   │  " COLOR_RESET "[GÜÇ] GÜÇ  : %s  ", buf1);
-    else printf(COLOR_DARK "   │  " COLOR_RESET "[MGT] MIGHT : %s  ", buf1);
-    print_stat_bar(bar1, 10, COLOR_RED);
-    if (current_lang == 1) printf(COLOR_DARK "  │   " COLOR_RESET "[YET] YETENEK : %s  ", buf2);
-    else printf(COLOR_DARK "  │   " COLOR_RESET "[SKL] SKILL : %s  ", buf2);
-    print_stat_bar(bar2, 10, COLOR_WHITE);
-    vis_len = 62 + strlen(buf1) + strlen(buf2); // Adjusted for longer TR text
-    if (current_lang == 0) vis_len = 60 + strlen(buf1) + strlen(buf2);
-    for(int i = 0; i < 72 - vis_len; i++) printf(" ");
-    printf(COLOR_DARK "│\n");
+    // --- SATIR 1: STAT A ve STAT B ---
+    b1 = profile->intel < 0 ? 0 : (profile->intel > 15 ? 15 : profile->intel);
+    b2 = profile->might < 0 ? 0 : (profile->might > 15 ? 15 : profile->might);
+    printf("   │  " COLOR_RESET "[A] STAT A : %02d ", b1);
+    print_stat_bar(b1, 15, COLOR_CYAN);
+    printf(COLOR_DARK " │ " COLOR_RESET "[B] STAT B : %02d ", b2);
+    print_stat_bar(b2, 15, COLOR_RED);
+    printf(COLOR_DARK "     │\n");
 
-    sprintf(buf1, "%2d", profile->faith);
-    bar1 = profile->faith < 0 ? 0 : (profile->faith > 10 ? 10 : profile->faith);
-    if (current_lang == 1) printf(COLOR_DARK "   │  " COLOR_RESET "[İNC] İNANÇ: %s  ", buf1);
-    else printf(COLOR_DARK "   │  " COLOR_RESET "[FTH] FAITH : %s  ", buf1);
-    print_stat_bar(bar1, 10, COLOR_CYAN);
-    printf(COLOR_DARK "  │");
-    vis_len = 31 + strlen(buf1);
-    if (current_lang == 1) vis_len = 32 + strlen(buf1);
-    for(int i = 0; i < 72 - vis_len; i++) printf(" ");
-    printf("│\n");
+    // --- SATIR 2: STAT C ve STAT D ---
+    b1 = profile->honor < 0 ? 0 : (profile->honor > 15 ? 15 : profile->honor);
+    b2 = profile->skill < 0 ? 0 : (profile->skill > 15 ? 15 : profile->skill);
+    printf(COLOR_DARK "   │  " COLOR_RESET "[C] STAT C : %02d ", b1);
+    print_stat_bar(b1, 15, COLOR_GOLD);
+    printf(COLOR_DARK " │ " COLOR_RESET "[D] STAT D : %02d ", b2);
+    print_stat_bar(b2, 15, COLOR_WHITE);
+    printf(COLOR_DARK "     │\n");
+
+    // --- SATIR 3: STAT E ---
+    b1 = profile->faith < 0 ? 0 : (profile->faith > 15 ? 15 : profile->faith);
+    printf(COLOR_DARK "   │  " COLOR_RESET "[E] STAT E : %02d ", b1);
+    print_stat_bar(b1, 15, COLOR_MAG);
+    printf(COLOR_DARK " │                                     │\n");
 
     printf("   │                                                                        │\n");
     if (current_lang == 1) printf("   │  ======================== [ " COLOR_CYAN "AKTİF ANOMALİLER" COLOR_DARK " ] ========================  │\n");
@@ -1139,19 +1126,169 @@ void scene_inside_location(const char* loc_name_tr, const char* loc_name_en) {
 }
 
 // ============================================================================
+// KÜTÜPHANE SAYACI (POMODORO / ODAK ZAMANLAYICI)
+// ============================================================================
+void scene_library_timer(CharacterProfile* profile) {
+    clear_screen();
+    int minutes = 0;
+
+    if (current_lang == 1) {
+        printf(COLOR_CYAN "\n  >>> KÜTÜPHANE: BÜYÜK ARŞİV ODAK SAYACI <<<\n\n" COLOR_RESET);
+        printf(COLOR_WHITE "  Kaç dakika odaklanacaksın? (1-120): " COLOR_RESET);
+    } else {
+        printf(COLOR_CYAN "\n  >>> THE LIBRARY: FOCUS TIMER <<<\n\n" COLOR_RESET);
+        printf(COLOR_WHITE "  How many minutes will you focus? (1-120): " COLOR_RESET);
+    }
+
+    set_cursor_visibility(true);
+    scanf("%d", &minutes);
+    // Klavyedeki 'Enter' tuşu bellekte kalmasın diye temizliyoruz:
+    int c; while ((c = getchar()) != '\n' && c != EOF);
+    set_cursor_visibility(false);
+
+    if (minutes < 1) minutes = 1;
+    if (minutes > 120) minutes = 120;
+
+    int total_seconds = minutes * 60;
+    bool completed = true;
+
+    while (total_seconds > 0) {
+        clear_screen();
+        printf("\n\n\n");
+        printf(COLOR_GOLD "       ==========================================\n" COLOR_RESET);
+        printf(COLOR_WHITE "             KÜTÜPHANE ODAK SÜRESİ: %02d:%02d\n" COLOR_RESET, total_seconds / 60, total_seconds % 60);
+        printf(COLOR_GOLD "       ==========================================\n\n" COLOR_RESET);
+        if (current_lang == 1) {
+            printf(COLOR_DARK "       (Derse odaklan... Çıkmak ve bozmak için 'Q' tuşuna bas)\n" COLOR_RESET);
+        } else {
+            printf(COLOR_DARK "       (Focus on study... Press 'Q' to abort and exit)\n" COLOR_RESET);
+        }
+
+        Sleep(1000);
+        total_seconds--;
+
+        // Eğer Q tuşuna basılırsa sayacı iptal et
+        if (_kbhit()) {
+            char ch = _getch();
+            if (ch == 'q' || ch == 'Q') {
+                completed = false;
+                break;
+            }
+        }
+    }
+
+    clear_screen();
+    printf("\n\n\n");
+    if (completed) {
+        // Her başarılı odaklanmada STAT A'yı 1 artırıyoruz (Maksimum 15)
+        profile->intel += 1;
+        if (profile->intel > 15) profile->intel = 15;
+
+        if (current_lang == 1) printf(COLOR_GRN "  Odaklanma başarıyla tamamlandı! [ STAT A ] +1 arttı.\n\n" COLOR_RESET);
+        else printf(COLOR_GRN "  Focus completed successfully! [ STAT A ] increased by +1.\n\n" COLOR_RESET);
+    } else {
+        if (current_lang == 1) printf(COLOR_RED "  Odaklanma bozuldu! İrade zayıfladı, tecrübe kazanılamadı.\n\n" COLOR_RESET);
+        else printf(COLOR_RED "  Focus broken! Willpower weakened, no experience gained.\n\n" COLOR_RESET);
+    }
+
+    if (current_lang == 1) printf(COLOR_DARK "  [Koridora dönmek için HERHANGİ BİR TUŞA bas]\n" COLOR_RESET);
+    else printf(COLOR_DARK "  [Press ANY KEY to return to the hallway]\n" COLOR_RESET);
+    _getch();
+}
+
+// Renk Paleti
+#define M_RED "\033[1;31m"
+#define M_GRN "\033[1;32m"
+#define M_YEL "\033[1;33m"
+#define M_BLU "\033[1;34m"
+#define M_MAG "\033[1;35m"
+#define M_CYN "\033[1;36m"
+#define M_WHT "\033[1;37m"
+#define M_DRK "\033[1;90m"
+#define M_RST "\033[0m"
+
+// ============================================================================
+// THE MAIN SCHOOL INTERIOR: ANA OKUL İÇ PLANI (KÜTÜPHANE VE SINIFLAR)
+// ============================================================================
+void scene_main_school(CharacterProfile* profile) {
+    bool in_school = true;
+
+    while (in_school) {
+        clear_screen();
+        printf("\n");
+
+        printf(M_DRK "  ==============================================================================================================\n" M_RST);
+
+        // ASCII Nokta Map (Evrensel İkonlar)
+        printf("\n");
+        printf(M_CYN "                                              /\\ \n" M_RST);
+        printf(M_CYN "                                             |  | \n" M_RST);
+        printf(M_CYN "                                           [ L I B ] \n" M_RST);
+        printf(M_DRK "                                               .  \n" M_RST);
+        printf(M_DRK "                                               .  \n" M_RST);
+        printf(M_DRK "                                 . . . . . . . . . . . . . . . \n" M_RST);
+        printf(M_DRK "                                 .                           . \n" M_RST);
+        printf(M_WHT "                             [ CLS I ]                   [ CLS II ] \n" M_RST);
+        printf(M_DRK "                                 .                           . \n" M_RST);
+        printf(M_DRK "                                 . . . . . . . . . . . . . . . \n" M_RST);
+        printf(M_DRK "                                               .  \n" M_RST);
+        printf(M_DRK "                                               .  \n" M_RST);
+        printf(M_WHT "                                           [ CLS III ] \n" M_RST);
+        printf("\n");
+
+        printf(M_DRK "  ==============================================================================================================\n" M_RST);
+        printf("\n");
+
+        // Menü İsimlendirmeleri ve Kontroller
+        if (current_lang == 1) {
+            printf(M_YEL "  === ANA OKUL MERKEZİ ===\n\n" M_RST);
+            printf("  [" M_CYN "1" M_RST "] Kütüphane (Okuma, Araştırma ve Uzun Vadeli Hedefler)\n");
+            printf("  [" M_CYN "2" M_RST "] 1. Sınıf  \n");
+            printf("  [" M_CYN "3" M_RST "] 2. Sınıf  (Sözel & Dil Çalışmaları)\n");
+            printf("  [" M_CYN "4" M_RST "] 3. Sınıf  (Serbest Odak & Tasarım)\n\n");
+            printf("  [" M_CYN "0" M_RST "] Tapınak Köyüne (Dışarı) Çık\n\n");
+            printf(M_CYN "  Nereye gitmek istiyorsun? (0-4): " M_RST);
+        } else {
+            printf(M_YEL "  === MAIN SCHOOL CENTRAL ===\n\n" M_RST);
+            printf("  [" M_CYN "1" M_RST "] The Library (Reading, Research & Long-term Goals)\n");
+            printf("  [" M_CYN "2" M_RST "] Class I     \n");
+            printf("  [" M_CYN "3" M_RST "] Class II    \n");
+            printf("  [" M_CYN "4" M_RST "] Class III   \n\n");
+            printf("  [" M_CYN "0" M_RST "] Exit to the Village Shrine\n\n");
+            printf(M_CYN "  Where do you want to go? (0-4): " M_RST);
+        }
+
+        bool valid_input = false;
+        while (!valid_input) {
+            if (_kbhit()) {
+                char ch = _getch();
+                if (ch == '0') {
+                    in_school = false;
+                    valid_input = true;
+                } else if (ch == '1') {
+                    scene_library_timer(profile);
+                    valid_input = true;
+                } else if (ch == '2') {
+                    scene_inside_location("1. Sınıf Masası", "Class I Desk");
+                    valid_input = true;
+                } else if (ch == '3') {
+                    scene_inside_location("2. Sınıf Masası", "Class II Desk");
+                    valid_input = true;
+                } else if (ch == '4') {
+                    scene_inside_location("3. Sınıf Masası", "Class III Desk");
+                    valid_input = true;
+                }
+            }
+            Sleep(20);
+        }
+    }
+}
+
+// ============================================================================
 // THE INNER SHRINE: ANA OKUL KALESİ (V9 SANATI + MİLİMETRİK BOŞLUK KALİBRASYONU)
 // ============================================================================
 void scene_inner_shrine(CharacterProfile* profile) {
-    // Renk Paleti
-    #define M_RED "\033[1;31m"
-    #define M_GRN "\033[1;32m"
-    #define M_YEL "\033[1;33m"
-    #define M_BLU "\033[1;34m"
-    #define M_MAG "\033[1;35m"
-    #define M_CYN "\033[1;36m"
-    #define M_WHT "\033[1;37m"
-    #define M_DRK "\033[1;90m"
-    #define M_RST "\033[0m"
+
 
     bool in_village = true;
 
@@ -1334,8 +1471,7 @@ void scene_inner_shrine(CharacterProfile* profile) {
                     valid_input = true;
                 }
                 else if (ch == '1') {
-                    // Herkese açık Ana Okul Merkezi (Ders çalışma alanımız)
-                    scene_inside_location("Ana Okul Merkezi", "Main School Central");
+                    scene_main_school(profile);
                     valid_input = true;
                 }
                 else if (ch == '2') {
