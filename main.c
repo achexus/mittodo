@@ -4,6 +4,7 @@
 #include <string.h>
 #include <windows.h>
 #include <conio.h>
+#include <time.h>
 
 // ============================================================================
 // 1. SYSTEM DEFINITIONS & METRIC FLAGS
@@ -42,34 +43,71 @@ typedef enum {
     CLASS_MERCHANT
 } ClassType;
 
+
+
+// ============================================================================
+// GÜNCELLENMİŞ KARAKTER VERİTABANI (ESKİ VE YENİ SİSTEM BİRLEŞTİRİLDİ)
+// ============================================================================
 typedef struct {
+    // --- 1. KİMLİK & HİKAYE (Eski) ---
     char player_name[50];
     char god_alignment[30];
     char archetype_alignment[50];
-    char archetype_alignment_tr[50]; // Turkish archetype
+    char archetype_alignment_tr[50];
     StoryState story;
 
-    // Mindset & Anomaly System
+    // --- 2. SINIF & UYUM (Eski) ---
     Nature player_nature;
     Nature god_nature;
     ClassType chosen_class;
     char class_name[30];
-    char class_name_tr[30]; // Turkish class name
+    char class_name_tr[30];
     int affinity;
     bool is_pure;
     char final_title[100];
-    char final_title_tr[100]; // Turkish title
+    char final_title_tr[100];
 
-    // The 5-Parametric Vector System
-    int intel; // Intelligence / Logic
-    int might; // Might / Power
-    int honor; // Honor / Sacrifice
-    int skill; // Dexterity / Personal Skills
-    int faith; // Faith / Celestial Connection
+    // --- 3. RPG TEST STATLARI (Eski - Kozmik Sınav İçin) ---
+    int intel;
+    int might;
+    int honor;
+    int skill;
+    int faith;
 
-    int study_stats[15];
+    // --- 4. DERS & BOSS SİSTEMİ (Yeni) ---
+    char subject_names[15][50];   // Derslerin/Epiklerin Özel İsimleri
+    int study_stats[15];          // Dersin seviyesi (Kazanılan EXP)
+    int subject_exams[15];        // O derse ait Sınav (Boss) Sayısı
+    int subject_projects[15];     // O derse ait Proje (Mini-Boss) Sayısı
     int total_exp;
+
+    // --- 5. ZAMAN & LOG SİSTEMİ (Yeni) ---
+    int last_login_day;
+    int last_login_month;
+    int last_login_year;
+
 } CharacterProfile;
+
+// Basit ve Saf C Veritabanı (I/O) İşlemleri
+void save_game(CharacterProfile* profile) {
+    FILE *outfile = fopen("mythic_save.dat", "wb");
+    if (outfile != NULL) {
+        fwrite(profile, sizeof(CharacterProfile), 1, outfile);
+        fclose(outfile);
+    }
+}
+
+bool load_game(CharacterProfile* profile) {
+    FILE *infile = fopen("mythic_save.dat", "rb");
+    if (infile != NULL) {
+        fread(profile, sizeof(CharacterProfile), 1, infile);
+        fclose(infile);
+        return true;
+    }
+    return false; // Kayıt yoksa false döner (Yeni Oyun başlar)
+}
+
+
 
 typedef struct {
     char god[30];
@@ -146,7 +184,6 @@ void evaluate_cosmic_alignment(CharacterProfile* profile);
 void scene_class_selection(CharacterProfile* profile);
 void get_god_affinity_data(const char* god_name, Nature* nature, int* r, int* s, int* a, int* d, int* m);
 void calculate_final_title(CharacterProfile* profile);
-
 int get_parametric_input(void);
 void print_permanent_choices(void);
 void scene_continue_journey(CharacterProfile* profile);
@@ -155,7 +192,14 @@ void scene_system_status(CharacterProfile* profile);
 void display_character_sheet(CharacterProfile* profile);
 void scene_map(CharacterProfile* profile);              // Yeni harita fonksiyonu eklendi
 void scene_inner_shrine(CharacterProfile* profile);
-
+void scene_inner_shrine(CharacterProfile* profile);
+void scene_main_school(CharacterProfile* profile);
+void scene_own_shrine(CharacterProfile* profile);
+void scene_init_subjects(CharacterProfile* profile);
+void scene_library_stopwatch(CharacterProfile* profile);
+void scene_inside_location(const char* loc_name_tr, const char* loc_name_en);
+void print_mythic_date(void);
+void append_study_log(const char* subject, int earned_exp, int minutes);
 
 // ============================================================================
 // 3. MAIN GAME LOOP
@@ -737,6 +781,9 @@ void scene_class_selection(CharacterProfile* profile) {
     }
 
     calculate_final_title(profile);
+
+    scene_init_subjects(profile); // Dersleri/Sınavları tanımla ve kaydet
+    scene_own_shrine(profile);
 }
 
 void set_titles(CharacterProfile* p, const char* en_title, const char* tr_title) {
@@ -809,36 +856,37 @@ void calculate_final_title(CharacterProfile* profile) {
 
 
 // ============================================================================
-// YOLCULUĞA DEVAM ET (OTOMATİK POSEIDON PROFİLİ)
+// YOLCULUĞA DEVAM ET (KAYIT DOSYASINI YÜKLEME)
 // ============================================================================
 void scene_continue_journey(CharacterProfile* profile) {
-    // 1. Hardcode Poseidon - The Earth-Shaker Profilini Doldur
-    strcpy(profile->player_name, "Gezgin");
-    strcpy(profile->god_alignment, "Poseidon");
-    strcpy(profile->archetype_alignment, "The Earth-Shaker");
-    strcpy(profile->archetype_alignment_tr, "Sarsılmaz Yeryüzü Titreten");
+    clear_screen();
 
-    // Temel Sınıf ve Uyum Ayarları
-    profile->story = STORY_UNCROWNED;
-    profile->player_nature = NATURE_AGGRESSIVE;
-    profile->god_nature = NATURE_AGGRESSIVE;
-    profile->chosen_class = CLASS_SOLDIER;
-    strcpy(profile->class_name, "Soldier");
-    strcpy(profile->class_name_tr, "Asker");
-    strcpy(profile->final_title, "Sword of War");
-    strcpy(profile->final_title_tr, "Savaşın Kılıcı");
+    if (current_lang == 1) printf(COLOR_CYAN "\n  SİSTEM: Kozmik hafıza taranıyor...\n" COLOR_RESET);
+    else printf(COLOR_CYAN "\n  SYSTEM: Scanning cosmic memory...\n" COLOR_RESET);
 
-    profile->affinity = 100;
-    profile->is_pure = true;
+    Sleep(800); // Gerçekçi bir yükleme hissiyatı için
 
-    for(int i = 0; i < 15; i++) profile->study_stats[i] = 0;
-    profile->total_exp = 0;
+    if (load_game(profile)) {
+        if (current_lang == 1) {
+            printf(COLOR_GRN "  Kayıt bulundu! Ebedi döngüye geri dönülüyor...\n" COLOR_RESET);
+        } else {
+            printf(COLOR_GRN "  Save found! Returning to the eternal cycle...\n" COLOR_RESET);
+        }
+        Sleep(1000);
 
-    // 2. Karakter Kağıdını Ekrana Bas (Sanki sistemden yüklenmiş gibi)
-    display_character_sheet(profile);
-
-    // 3. Karakter kağıdından sonra doğrudan haritaya geçiş yap
-    scene_map(profile);
+        // Karakter yüklendikten sonra doğrudan kendi kulübesinde uyanır
+        scene_own_shrine(profile);
+    }
+    else {
+        if (current_lang == 1) {
+            printf(COLOR_RED "\n  HATA: Hiçbir kader izi bulunamadı. Önce bir yolculuğa başlamalısın.\n" COLOR_RESET);
+            printf(COLOR_DARK "  [Menüye dönmek için HERHANGİ BİR TUŞA bas]\n" COLOR_RESET);
+        } else {
+            printf(COLOR_RED "\n  ERROR: No trace of destiny found. You must start a journey first.\n" COLOR_RESET);
+            printf(COLOR_DARK "  [Press ANY KEY to return to the menu]\n" COLOR_RESET);
+        }
+        _getch();
+    }
 }
 
 void scene_language_options(void) {
@@ -1611,4 +1659,106 @@ void scene_map(CharacterProfile* profile) {
         }
     }
 
+}
+
+// ============================================================================
+// CHRONOS ZAMAN MODÜLÜ
+// ============================================================================
+void print_mythic_date() {
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+
+    int real_year = tm.tm_year + 1900;
+    int mythic_year = real_year - 1600;
+
+    printf(COLOR_CYAN "  Tarih: %02d.%02d.%d (Karanlık Çağ)\n" COLOR_RESET, tm.tm_mday, tm.tm_mon + 1, mythic_year);
+}
+
+void append_study_log(const char* subject, int earned_exp, int minutes) {
+    // Çalışma bitince kulübedeki günlüğe (log) yazdırır
+    FILE *logfile = fopen("shrine_chronicles.txt", "a");
+    if (logfile != NULL) {
+        time_t t = time(NULL);
+        struct tm tm = *localtime(&t);
+        int mythic_year = (tm.tm_year + 1900) - 1600;
+
+        fprintf(logfile, "[%02d.%02d.%d] %s Parşömeni üzerinde %d dakika odaklanıldı. (+%d EXP)\n",
+                tm.tm_mday, tm.tm_mon + 1, mythic_year, subject, minutes, earned_exp);
+        fclose(logfile);
+    }
+}
+
+void scene_init_subjects(CharacterProfile* profile) {
+    clear_screen();
+    printf(COLOR_GOLD " =============================================================\n");
+    printf("                  KADERİNİN YAZILDIĞI PARŞÖMENLER               \n");
+    printf(" =============================================================\n\n" COLOR_RESET);
+
+    printf(COLOR_WHITE "  Önünde fethedilmeyi bekleyen yollar (Dersler) var.\n");
+    printf("  Hangi savaşlara gireceğini ve karşına kaç Tiran (Sınav) çıkacağını belirle.\n\n" COLOR_RESET);
+
+    // Şimdilik test için 3 ana ders (İsteğe bağlı 15'e kadar döngüye alınabilir)
+    for(int i = 0; i < 3; i++) {
+        set_cursor_visibility(true);
+        printf(COLOR_CYAN "  [%d. Epik Hedef / Ders Adı]: " COLOR_RESET, i+1);
+        scanf(" %[^\n]s", profile->subject_names[i]);
+
+        printf(COLOR_RED "  Kaç Büyük Boss (Sınav) var?: " COLOR_RESET);
+        scanf("%d", &profile->subject_exams[i]);
+
+        printf(COLOR_GOLD "  Kaç Kuşatma (Proje) var?: " COLOR_RESET);
+        scanf("%d", &profile->subject_projects[i]);
+
+        profile->study_stats[i] = 0; // Seviye sıfırlanır
+        printf("\n");
+    }
+    set_cursor_visibility(false);
+
+    // Dersler tanımlandıktan sonra oyunu otomatik kaydet
+    save_game(profile);
+}
+
+void scene_own_shrine(CharacterProfile* profile) {
+    bool in_shrine = true;
+
+    while(in_shrine) {
+        clear_screen();
+        printf("\n");
+        printf(COLOR_GOLD "  === %s KULÜBESİ (KİŞİSEL MABEDİN) ===\n\n" COLOR_RESET, profile->god_alignment);
+
+        print_mythic_date(); // Mitolojik tarihi yazdırır
+
+        printf(COLOR_WHITE "\n  Yatağından kalktın. Raflarda kadim parşömenler ve savaş planları duruyor.\n\n" COLOR_RESET);
+
+        printf("  [" COLOR_CYAN "1" COLOR_RESET "] Tapınak Köyüne Çık (Ana Okul'a gitmek için)\n");
+        printf("  [" COLOR_CYAN "2" COLOR_RESET "] Savaş Günlüğünü Oku (Çalışma Logları)\n");
+        printf("  [" COLOR_CYAN "3" COLOR_RESET "] Kehanet Takvimini İncele (Boss Savaşları ve Projeler)\n");
+        printf("  [" COLOR_CYAN "0" COLOR_RESET "] Sisteme Geri Dön (Çıkış)\n\n");
+
+        printf(COLOR_CYAN "  Eylem Seçimi: " COLOR_RESET);
+
+        bool valid_input = false;
+        while (!valid_input) {
+            if (_kbhit()) {
+                char ch = _getch();
+                if (ch == '1') {
+                    // Tapınak Köyüne çıkış (Buradan Okula gidilebilir)
+                    scene_inner_shrine(profile);
+                    valid_input = true;
+                } else if (ch == '2') {
+                    // shrine_chronicles.txt dosyasını okuyan bir fonksiyon çağrılacak
+                    // scene_read_logs();
+                    valid_input = true;
+                } else if (ch == '3') {
+                    // Boss listesini (subject_exams sayılarını) gösteren fonksiyon
+                    // scene_view_calendar(profile);
+                    valid_input = true;
+                } else if (ch == '0') {
+                    in_shrine = false;
+                    valid_input = true;
+                }
+            }
+            Sleep(20);
+        }
+    }
 }
