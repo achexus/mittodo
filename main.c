@@ -66,6 +66,9 @@ typedef struct {
     int honor; // Honor / Sacrifice
     int skill; // Dexterity / Personal Skills
     int faith; // Faith / Celestial Connection
+
+    int study_stats[15];
+    int total_exp;
 } CharacterProfile;
 
 typedef struct {
@@ -197,6 +200,8 @@ int main(void) {
                 case '1':
                     set_cursor_visibility(true);
                     player.intel = 0; player.might = 0; player.honor = 0; player.skill = 0; player.faith = 0; player.affinity = 0;
+                    for(int i=0; i<15; i++) player.study_stats[i] = 0; // Yeni eklenti
+                    player.total_exp = 0; // Yeni eklenti
                     strcpy(player.god_alignment, "UNASSIGNED");
                     strcpy(player.class_name, "UNASSIGNED");
                     strcpy(player.class_name_tr, "ATANMADI");
@@ -826,12 +831,8 @@ void scene_continue_journey(CharacterProfile* profile) {
     profile->affinity = 100;
     profile->is_pure = true;
 
-    // Hazır Profil: Tüm Statlar 15 (MAX)
-    profile->intel = 15; // STAT A
-    profile->might = 15; // STAT B
-    profile->honor = 15; // STAT C
-    profile->skill = 15; // STAT D
-    profile->faith = 15; // STAT E
+    for(int i = 0; i < 15; i++) profile->study_stats[i] = 0;
+    profile->total_exp = 0;
 
     // 2. Karakter Kağıdını Ekrana Bas (Sanki sistemden yüklenmiş gibi)
     display_character_sheet(profile);
@@ -943,41 +944,8 @@ void print_stat_bar(int value, int max_val, const char* color) {
 
 void display_character_sheet(CharacterProfile* profile) {
     clear_screen();
-
     char buffer[256];
-    char buf1[10], buf2[10];
     int vis_len;
-    int bar1, bar2;
-
-    const char* active_tags[20];
-    int active_tags_len[20];
-    int tag_count = 0;
-
-    if (current_lang == 1) { // Turkish Tags
-        if (profile->affinity >= 80) { active_tags[tag_count] = COLOR_CYAN "< İLAHİ_REZONANS >" COLOR_RESET; active_tags_len[tag_count++] = 18; }
-        else if (profile->affinity <= 30) { active_tags[tag_count] = COLOR_RED "< AĞIR_ANOMALİ >" COLOR_RESET; active_tags_len[tag_count++] = 16; }
-
-        if (profile->is_pure) { active_tags[tag_count] = COLOR_GOLD "< UYUMLU_RUH >" COLOR_RESET; active_tags_len[tag_count++] = 14; }
-        else { active_tags[tag_count] = COLOR_RED "< PARÇALANMIŞ_ZİHİN >" COLOR_RESET; active_tags_len[tag_count++] = 21; }
-
-        if (profile->intel >= 6) { active_tags[tag_count] = COLOR_WHITE "< TAKTİKSEL_DAHİ >" COLOR_RESET; active_tags_len[tag_count++] = 18; }
-        if (profile->might >= 6) { active_tags[tag_count] = COLOR_WHITE "< EZİCİ_GÜÇ >" COLOR_RESET; active_tags_len[tag_count++] = 13; }
-        if (profile->skill >= 6) { active_tags[tag_count] = COLOR_WHITE "< ZANAAT_USTASI >" COLOR_RESET; active_tags_len[tag_count++] = 17; }
-        if (profile->honor >= 6) { active_tags[tag_count] = COLOR_WHITE "< KIRILMAZ_İRADE >" COLOR_RESET; active_tags_len[tag_count++] = 18; }
-        if (profile->faith == 0) { active_tags[tag_count] = COLOR_DARK "< TANRISIZ_VARLIK >" COLOR_RESET; active_tags_len[tag_count++] = 19; }
-    } else { // English Tags
-        if (profile->affinity >= 80) { active_tags[tag_count] = COLOR_CYAN "< DIVINE_RESONANCE >" COLOR_RESET; active_tags_len[tag_count++] = 20; }
-        else if (profile->affinity <= 30) { active_tags[tag_count] = COLOR_RED "< SEVERE_ANOMALY >" COLOR_RESET; active_tags_len[tag_count++] = 18; }
-
-        if (profile->is_pure) { active_tags[tag_count] = COLOR_GOLD "< HARMONIC_SOUL >" COLOR_RESET; active_tags_len[tag_count++] = 17; }
-        else { active_tags[tag_count] = COLOR_RED "< FRACTURED_MIND >" COLOR_RESET; active_tags_len[tag_count++] = 18; }
-
-        if (profile->intel >= 6) { active_tags[tag_count] = COLOR_WHITE "< TACTICAL_GENIUS >" COLOR_RESET; active_tags_len[tag_count++] = 19; }
-        if (profile->might >= 6) { active_tags[tag_count] = COLOR_WHITE "< OVERWHELMING_FORCE >" COLOR_RESET; active_tags_len[tag_count++] = 22; }
-        if (profile->skill >= 6) { active_tags[tag_count] = COLOR_WHITE "< MASTER_OF_CRAFTS >" COLOR_RESET; active_tags_len[tag_count++] = 20; }
-        if (profile->honor >= 6) { active_tags[tag_count] = COLOR_WHITE "< UNBREAKABLE_WILL >" COLOR_RESET; active_tags_len[tag_count++] = 20; }
-        if (profile->faith == 0) { active_tags[tag_count] = COLOR_DARK "< GODLESS_ENTITY >" COLOR_RESET; active_tags_len[tag_count++] = 18; }
-    }
 
     printf(COLOR_DARK "\n   ╒════════════════════════════════════════════════════════════════════════╕\n");
 
@@ -1043,56 +1011,29 @@ void display_character_sheet(CharacterProfile* profile) {
     if (current_lang == 1) printf("   │  ======================== [ " COLOR_CYAN "DERS İSTATİSTİKLERİ" COLOR_DARK " ] =======================  │\n");
     else printf("   │  ========================= [ " COLOR_CYAN "STUDY STATISTICS" COLOR_DARK " ] =========================  │\n");
 
-    int b1, b2;
-
-    // --- SATIR 1: STAT A ve STAT B ---
-    b1 = profile->intel < 0 ? 0 : (profile->intel > 15 ? 15 : profile->intel);
-    b2 = profile->might < 0 ? 0 : (profile->might > 15 ? 15 : profile->might);
-    printf("   │  " COLOR_RESET "[A] STAT A : %02d ", b1);
-    print_stat_bar(b1, 15, COLOR_CYAN);
-    printf(COLOR_DARK " │ " COLOR_RESET "[B] STAT B : %02d ", b2);
-    print_stat_bar(b2, 15, COLOR_RED);
-    printf(COLOR_DARK "     │\n");
-
-    // --- SATIR 2: STAT C ve STAT D ---
-    b1 = profile->honor < 0 ? 0 : (profile->honor > 15 ? 15 : profile->honor);
-    b2 = profile->skill < 0 ? 0 : (profile->skill > 15 ? 15 : profile->skill);
-    printf(COLOR_DARK "   │  " COLOR_RESET "[C] STAT C : %02d ", b1);
-    print_stat_bar(b1, 15, COLOR_GOLD);
-    printf(COLOR_DARK " │ " COLOR_RESET "[D] STAT D : %02d ", b2);
-    print_stat_bar(b2, 15, COLOR_WHITE);
-    printf(COLOR_DARK "     │\n");
-
-    // --- SATIR 3: STAT E ---
-    b1 = profile->faith < 0 ? 0 : (profile->faith > 15 ? 15 : profile->faith);
-    printf(COLOR_DARK "   │  " COLOR_RESET "[E] STAT E : %02d ", b1);
-    print_stat_bar(b1, 15, COLOR_MAG);
-    printf(COLOR_DARK " │                                     │\n");
+    char stat_chars[] = "ABCDEFGHIJKLMNO";
+    for (int i = 0; i < 5; i++) {
+        printf(COLOR_DARK "   │  " COLOR_RESET);
+        for (int j = 0; j < 3; j++) {
+            int idx = i * 3 + j;
+            printf("[%c] STAT %c: " COLOR_CYAN "%04d" COLOR_RESET, stat_chars[idx], stat_chars[idx], profile->study_stats[idx]);
+            if (j < 2) printf(COLOR_DARK "  │  " COLOR_RESET);
+        }
+        printf(COLOR_DARK "            │\n");
+    }
 
     printf("   │                                                                        │\n");
-    if (current_lang == 1) printf("   │  ======================== [ " COLOR_CYAN "AKTİF ANOMALİLER" COLOR_DARK " ] ========================  │\n");
-    else printf("   │  ====================== [ " COLOR_CYAN "ACTIVE ANOMALIES" COLOR_DARK " ] ========================  │\n");
+    if (current_lang == 1) printf("   │  ====================== [ " COLOR_GOLD "TOPLAM TECRÜBE (EXP)" COLOR_DARK " ] =======================  │\n");
+    else printf("   │  ====================== [ " COLOR_GOLD "TOTAL EXPERIENCE (EXP)" COLOR_DARK " ] =====================  │\n");
 
-    int current_line_len = 0;
-    printf("   │  " COLOR_RESET);
-    current_line_len = 2;
+    char exp_line[100];
+    if (current_lang == 1) sprintf(exp_line, "KAZANILAN DENEYİM (EXP) : %d Puan", profile->total_exp);
+    else sprintf(exp_line, "ACQUIRED EXPERIENCE (EXP) : %d Pts", profile->total_exp);
 
-    if (tag_count == 0) {
-        if (current_lang == 1) { printf(COLOR_DARK "ANOMALİ TESPİT EDİLMEDİ"); current_line_len += 23; }
-        else { printf(COLOR_DARK "NO ANOMALIES DETECTED"); current_line_len += 21; }
-    } else {
-        for (int i = 0; i < tag_count; i++) {
-            if (current_line_len + active_tags_len[i] + 2 > 70 && current_line_len > 2) {
-                for (int p = 0; p < 72 - current_line_len; p++) printf(" ");
-                printf(COLOR_DARK "│\n   │  " COLOR_RESET);
-                current_line_len = 2;
-            }
-            printf("%s  ", active_tags[i]);
-            current_line_len += active_tags_len[i] + 2;
-        }
-    }
-    for (int p = 0; p < 72 - current_line_len; p++) printf(" ");
-    printf(COLOR_DARK "│\n");
+    int pad = 72 - 2 - strlen(exp_line);
+    printf("   │  " COLOR_GOLD "%s" COLOR_DARK, exp_line);
+    for(int p = 0; p < pad; p++) printf(" ");
+    printf("│\n");
 
     printf("   ╘════════════════════════════════════════════════════════════════════════╛\n\n" COLOR_RESET);
 
@@ -1196,6 +1137,113 @@ void scene_library_timer(CharacterProfile* profile) {
     _getch();
 }
 
+// ============================================================================
+// KÜTÜPHANE KRONOMETRESİ (MOLA VE DEVAM ETTİRİLEBİLİR ODAK SAYACI)
+// ============================================================================
+void scene_library_stopwatch(CharacterProfile* profile) {
+    clear_screen();
+    int choice = -1;
+    char letters[] = "ABCDEFGHIJKLMNO";
+
+    if (current_lang == 1) {
+        printf(COLOR_CYAN "\n  >>> KÜTÜPHANE: ODAK KRONOMETRESİ <<<\n\n" COLOR_RESET);
+        printf(COLOR_WHITE "  Hangi ders/stat üzerine çalışacaksın?\n\n" COLOR_RESET);
+    } else {
+        printf(COLOR_CYAN "\n  >>> THE LIBRARY: FOCUS STOPWATCH <<<\n\n" COLOR_RESET);
+        printf(COLOR_WHITE "  Which subject/stat will you study?\n\n" COLOR_RESET);
+    }
+
+    for(int i = 0; i < 5; i++) {
+        printf("  ");
+        for(int j=0; j<3; j++) {
+            int idx = i*3+j;
+            printf("[" COLOR_CYAN "%c" COLOR_RESET "] STAT %c\t", letters[idx], letters[idx]);
+        }
+        printf("\n");
+    }
+
+    if (current_lang == 1) printf(COLOR_CYAN "\n  Seçiminiz (A-O): " COLOR_RESET);
+    else printf(COLOR_CYAN "\n  Your choice (A-O): " COLOR_RESET);
+
+    while(choice == -1) {
+        if (_kbhit()) {
+            char ch = _getch();
+            if (ch >= 'a' && ch <= 'o') choice = ch - 'a';
+            else if (ch >= 'A' && ch <= 'O') choice = ch - 'A';
+        }
+        Sleep(20);
+    }
+
+    int seconds = 0;
+    bool running = true;
+    bool is_paused = false;
+
+    while(running) {
+        clear_screen();
+        printf("\n\n\n");
+        printf(COLOR_GOLD "       ==========================================\n" COLOR_RESET);
+        if (current_lang == 1) {
+            printf(COLOR_WHITE "         ÇALIŞILAN DERS : STAT %c\n" COLOR_RESET, letters[choice]);
+            printf(COLOR_WHITE "         GEÇEN SÜRE     : %02d:%02d:%02d\n" COLOR_RESET, seconds / 3600, (seconds % 3600) / 60, seconds % 60);
+            if (is_paused) printf(COLOR_RED "         [ DURAKLATILDI ]\n" COLOR_RESET);
+            else printf(COLOR_GRN "         [ ÇALIŞILIYOR... ]\n" COLOR_RESET);
+        } else {
+            printf(COLOR_WHITE "         STUDYING       : STAT %c\n" COLOR_RESET, letters[choice]);
+            printf(COLOR_WHITE "         ELAPSED TIME   : %02d:%02d:%02d\n" COLOR_RESET, seconds / 3600, (seconds % 3600) / 60, seconds % 60);
+            if (is_paused) printf(COLOR_RED "         [ PAUSED ]\n" COLOR_RESET);
+            else printf(COLOR_GRN "         [ FOCUSING... ]\n" COLOR_RESET);
+        }
+        printf(COLOR_GOLD "       ==========================================\n\n" COLOR_RESET);
+
+        if (current_lang == 1) printf(COLOR_DARK "       [P] Başlat / Duraklat    [Q] Bitir ve Kaydet\n" COLOR_RESET);
+        else printf(COLOR_DARK "       [P] Play / Pause         [Q] Stop & Save\n" COLOR_RESET);
+
+        // 1 saniyeyi daha akıcı klavye tepkisi almak için 10 parçaya böldük
+        for(int i=0; i<10; i++) {
+            if (_kbhit()) {
+                char ch = _getch();
+                if (ch == 'p' || ch == 'P') { is_paused = !is_paused; break; }
+                else if (ch == 'q' || ch == 'Q') { running = false; break; }
+            }
+            Sleep(100);
+        }
+        if (!is_paused && running) seconds++;
+    }
+
+    int earned_exp = seconds / 60; // 1 Dakika = 1 EXP
+
+    clear_screen();
+    printf("\n\n\n");
+    if (current_lang == 1) {
+        printf(COLOR_GOLD "  Çalışma tamamlandı!\n" COLOR_RESET);
+        printf(COLOR_WHITE "  Geçen Toplam Süre: %d dakika, %d saniye\n\n", seconds / 60, seconds % 60);
+
+        if (earned_exp > 0) {
+            profile->study_stats[choice] += earned_exp;
+            profile->total_exp += earned_exp;
+            printf(COLOR_GRN "  Tebrikler! +%d EXP kazandın.\n" COLOR_RESET, earned_exp);
+            printf(COLOR_CYAN "  [ STAT %c ] seviyen %d oldu.\n\n" COLOR_RESET, letters[choice], profile->study_stats[choice]);
+        } else {
+            printf(COLOR_RED "  1 dakikadan az çalıştığın için EXP kazanamadın.\n\n" COLOR_RESET);
+        }
+        printf(COLOR_DARK "  [Koridora dönmek için HERHANGİ BİR TUŞA bas]\n" COLOR_RESET);
+    } else {
+        printf(COLOR_GOLD "  Study session completed!\n" COLOR_RESET);
+        printf(COLOR_WHITE "  Total Elapsed Time: %d minutes, %d seconds\n\n", seconds / 60, seconds % 60);
+
+        if (earned_exp > 0) {
+            profile->study_stats[choice] += earned_exp;
+            profile->total_exp += earned_exp;
+            printf(COLOR_GRN "  Congratulations! You gained +%d EXP.\n" COLOR_RESET, earned_exp);
+            printf(COLOR_CYAN "  [ STAT %c ] level is now %d.\n\n" COLOR_RESET, letters[choice], profile->study_stats[choice]);
+        } else {
+            printf(COLOR_RED "  You studied for less than 1 minute, no EXP gained.\n\n" COLOR_RESET);
+        }
+        printf(COLOR_DARK "  [Press ANY KEY to return to the hallway]\n" COLOR_RESET);
+    }
+    _getch();
+}
+
 // Renk Paleti
 #define M_RED "\033[1;31m"
 #define M_GRN "\033[1;32m"
@@ -1266,7 +1314,7 @@ void scene_main_school(CharacterProfile* profile) {
                     in_school = false;
                     valid_input = true;
                 } else if (ch == '1') {
-                    scene_library_timer(profile);
+                    scene_library_stopwatch(profile);
                     valid_input = true;
                 } else if (ch == '2') {
                     scene_inside_location("1. Sınıf Masası", "Class I Desk");
