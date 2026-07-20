@@ -54,6 +54,11 @@ typedef struct {
     char god_alignment[30];
     char archetype_alignment[50];
     char archetype_alignment_tr[50];
+
+    // YENİ: FRAKSİYON (SINIF) BİLGİSİ
+    char faction_class[20];    // SUN, OCEAN, EARTH
+    char faction_class_tr[20]; // GÜNEŞ, OKYANUS, TOPRAK
+
     StoryState story;
 
     // --- 2. SINIF & UYUM (Eski) ---
@@ -113,59 +118,57 @@ typedef struct {
     char god[30];
     char archetype[50];
     char archetype_tr[50]; // Turkish Translation added
+    char faction[20];      // YENİ: İngilizce Sınıf
+    char faction_tr[20];   // YENİ: Türkçe Sınıf
     int intel, might, honor, skill, faith;
 } ArchetypeMatrix;
 
-// Global matrix of 48 calibrated unique historical profiles (Now with Turkish Translations)
-ArchetypeMatrix database[48] = {
-    {"Zeus", "The Absolute Sky Sovereign", "Mutlak Gökyüzü Hükümdarı", 0, 5, 5, 0, 0},
-    {"Zeus", "The Cloud Arbiter", "Bulutların Hakemi", 4, 1, 5, 0, 0},
-    {"Zeus", "The Thunder Wrath", "Yıldırım Öfkesi", 0, 7, 0, 0, 3},
-    {"Zeus", "The Hospitality Oathkeeper", "Misafirperverlik Yeminlisi", 2, 0, 6, 0, 2},
-    {"Poseidon", "The Earth-Shaker", "Sarsılmaz Yeryüzü Titreten", 0, 10, 0, 0, 0},
-    {"Poseidon", "The Abyssal Master", "Uçurumun Efendisi", 1, 3, 0, 0, 6},
-    {"Poseidon", "The Wild Equine Tamer", "Vahşi At Terbiyecisi", 0, 5, 0, 5, 0},
-    {"Poseidon", "The Tidal Ravager", "Gelgit Yıkıcısı", 2, 6, 0, 0, 1},
-    {"Athena", "The Supreme Tactician", "Yüce Taktisyen", 8, 0, 2, 0, 0},
-    {"Athena", "The Citadel Protector", "Hisar Koruyucusu", 3, 2, 5, 0, 0},
-    {"Athena", "The Divine Weaver", "İlahi Dokumacı", 5, 0, 0, 5, 0},
-    {"Athena", "The Counselor of Heroes", "Kahramanların Danışmanı", 6, 0, 3, 1, 0},
-    {"Athena", "The Just Judgment", "Adil Yargı", 5, 0, 4, 0, 1},
-    {"Hades", "The Underworld Autocrat", "Yeraltı Otokratı", 3, 2, 5, 0, 0},
-    {"Hades", "The Lord of Wealth", "Zenginlik Lordu", 4, 0, 2, 4, 0},
-    {"Hades", "The Soul Collector", "Ruh Toplayıcı", 0, 3, 0, 0, 7},
-    {"Hades", "The Inexorable Judge", "Tavizsiz Yargıç", 4, 1, 4, 0, 1},
-    {"Ares", "The Blind Berserker", "Kör Gözü Dönmüş Savaşçı", 0, 9, 0, 1, 0},
-    {"Ares", "The Bloodlust Vanguard", "Kana Susamış Öncü", 0, 6, 0, 4, 0},
-    {"Ares", "The Rebel Warlord", "İsyankar Savaş Lordu", 0, 7, 0, 0, 0},
-    {"Ares", "The Dread Champion", "Dehşet Şampiyonu", 0, 5, 1, 0, 4},
-    {"Apollo", "The Radiant Prophet", "Parlak Kahin", 0, 0, 0, 0, 10},
-    {"Apollo", "The Sun Bowman", "Güneş Okçusu", 1, 0, 0, 8, 1},
-    {"Apollo", "The Golden Maestro", "Altın Maestro", 3, 0, 5, 2, 0},
-    {"Apollo", "The Plague Bringer", "Veba Getiren", 4, 0, 0, 3, 3},
-    {"Artemis", "The Midnight Stalker", "Gece Yarısı Avcısı", 0, 0, 0, 9, 1},
-    {"Artemis", "The Forest Matriarch", "Orman Anaerkili", 1, 0, 0, 2, 7},
-    {"Artemis", "The Silver Arrow", "Gümüş Ok", 0, 2, 0, 6, 0},
-    {"Hephaestus", "The Forgemaster Architect", "Usta Demirci Mimar", 2, 0, 0, 8, 0},
-    {"Hephaestus", "The Volcanic Juggernaut", "Volkanik Dev", 0, 6, 0, 4, 0},
-    {"Hephaestus", "The Outcast Innovator", "Dışlanmış Yenilikçi", 4, 0, 0, 2, 0},
-    {"Hephaestus", "The Iron Trapmaster", "Demir Tuzak Ustası", 3, 1, 0, 6, 0},
-    {"Hermes", "The Phantom Thief", "Hayalet Hırsız", 0, 0, 0, 10, 0},
-    {"Hermes", "The Golden Herald", "Altın Haberci", 5, 0, 3, 2, 0},
-    {"Hermes", "The Crossroads Guide", "Kavşak Rehberi", 2, 0, 0, 3, 5},
-    {"Hermes", "The Divine Trickster", "İlahi Düzenbaz", 6, 0, 0, 4, 0},
-    {"Dionysus", "The Madness Bringer", "Delilik Getiren", 0, 0, 0, 0, 9},
-    {"Dionysus", "The Hedonist Vagabond", "Hedonist Serseri", 3, 0, 0, 2, 3},
-    {"Dionysus", "The Cult Liberator", "Kült Kurtarıcısı", 0, 0, 0, 0, 5},
-    {"Hera", "The Zenith Matriarch", "Zirve Kraliçesi", 0, 0, 10, 0, 0},
-    {"Hera", "The Palace Intriguer", "Saray Entrikacısı", 6, 0, 4, 0, 0},
-    {"Hera", "The Royal Avenger", "Kraliyet İntikamcısı", 2, 2, 5, 1, 0},
-    {"Demeter", "The Eternal Harvester", "Ebedi Hasatçı", 0, 0, 0, 5, 5},
-    {"Demeter", "The Winter Famine", "Kış Kıtlığı", 0, 5, 0, 0, 5},
-    {"Demeter", "The Earth Mother", "Toprak Ana", 0, 0, 2, 0, 6},
-    {"Aphrodite", "The Siren Puppetmaster", "Siren Kukla Ustası", 1, 0, 0, 1, 8},
-    {"Aphrodite", "The Golden Presence", "Altın Varlık", 0, 0, 8, 0, 2},
-    {"Aphrodite", "The Loom of Desire", "Arzunun Dokuma Tezgahı", 4, 0, 0, 4, 1}
+// Global matrix of 33 calibrated unique historical profiles (Now with Turkish Translations)
+ArchetypeMatrix database[33] = {
+    // ZEUS
+    {"Zeus", "The Thunder Wrath", "Yıldırım Öfkesi", "SUN", "GÜNEŞ", 5, 8, 4, 4, 4},
+    {"Zeus", "The Cloud Arbiter", "Bulutların Hakemi", "OCEAN", "OKYANUS", 8, 4, 5, 5, 3},
+    {"Zeus", "The Absolute Sovereign", "Mutlak Hükümdar", "EARTH", "TOPRAK", 5, 5, 8, 3, 4},
+    // POSEIDON
+    {"Poseidon", "The Tidal Ravager", "Gelgit Yıkıcısı", "SUN", "GÜNEŞ", 3, 8, 4, 5, 5},
+    {"Poseidon", "The Abyssal Master", "Uçurumun Efendisi", "OCEAN", "OKYANUS", 6, 4, 4, 7, 4},
+    {"Poseidon", "The Earth-Shaker", "Yeryüzü Titreten", "EARTH", "TOPRAK", 4, 7, 7, 4, 3},
+    // HADES
+    {"Hades", "The Relentless Executioner", "Amansız İnfazcı", "SUN", "GÜNEŞ", 5, 7, 5, 4, 4},
+    {"Hades", "The Soul Collector", "Ruh Toplayıcı", "OCEAN", "OKYANUS", 7, 3, 4, 7, 4},
+    {"Hades", "The Underworld Autocrat", "Yeraltı Otokratı", "EARTH", "TOPRAK", 6, 4, 8, 3, 4},
+    // DEMETER
+    {"Demeter", "The Winter Famine", "Kış Kıtlığı", "SUN", "GÜNEŞ", 4, 7, 4, 4, 6},
+    {"Demeter", "The Harvest Cycle", "Hasat Döngüsü", "OCEAN", "OKYANUS", 6, 3, 5, 6, 5},
+    {"Demeter", "The Earth Mother", "Toprak Ana", "EARTH", "TOPRAK", 5, 5, 8, 3, 4},
+    // ATHENA
+    {"Athena", "The War Vanguard", "Savaş Öncüsü", "SUN", "GÜNEŞ", 7, 6, 5, 4, 3},
+    {"Athena", "The Supreme Tactician", "Yüce Taktisyen", "OCEAN", "OKYANUS", 9, 3, 4, 6, 3},
+    {"Athena", "The Citadel Protector", "Hisar Koruyucusu", "EARTH", "TOPRAK", 6, 5, 8, 4, 2},
+    // APOLLO
+    {"Apollo", "The Radiant Bowman", "Parlak Okçu", "SUN", "GÜNEŞ", 4, 6, 4, 7, 4},
+    {"Apollo", "The Golden Maestro", "Altın Maestro", "OCEAN", "OKYANUS", 6, 3, 4, 6, 6},
+    {"Apollo", "The Oracle of Truth", "Hakikat Kahini", "EARTH", "TOPRAK", 6, 4, 6, 3, 6},
+    // APHRODITE
+    {"Aphrodite", "The Flame of Passion", "İhtiras Alevi", "SUN", "GÜNEŞ", 4, 6, 3, 7, 5},
+    {"Aphrodite", "The Siren Puppetmaster", "Siren Kukla Ustası", "OCEAN", "OKYANUS", 7, 2, 3, 8, 5},
+    {"Aphrodite", "The Flawless Form", "Kusursuz Form", "EARTH", "TOPRAK", 5, 4, 6, 6, 4},
+    // ARES
+    {"Ares", "The Blind Berserker", "Kör Savaşçı", "SUN", "GÜNEŞ", 2, 9, 4, 5, 5},
+    {"Ares", "The Blood Tactician", "Kanlı Taktisyen", "OCEAN", "OKYANUS", 5, 7, 3, 6, 4},
+    {"Ares", "The Dread Champion", "Dehşet Şampiyonu", "EARTH", "TOPRAK", 3, 8, 7, 4, 3},
+    // HERMES
+    {"Hermes", "The Hurricane Herald", "Kasırga Haberci", "SUN", "GÜNEŞ", 4, 5, 3, 9, 4},
+    {"Hermes", "The Phantom Thief", "Hayalet Hırsız", "OCEAN", "OKYANUS", 7, 2, 3, 9, 4},
+    {"Hermes", "The Crossroads Guide", "Kavşak Rehberi", "EARTH", "TOPRAK", 6, 4, 6, 6, 3},
+    // HEPHAESTUS
+    {"Hephaestus", "The Volcanic Juggernaut", "Volkanik Dev", "SUN", "GÜNEŞ", 4, 8, 4, 6, 3},
+    {"Hephaestus", "The Outcast Innovator", "Dışlanmış Yenilikçi", "OCEAN", "OKYANUS", 8, 3, 4, 8, 2},
+    {"Hephaestus", "The Forgemaster", "Usta Demirci", "EARTH", "TOPRAK", 6, 6, 7, 5, 1},
+    // DIONYSUS
+    {"Dionysus", "The Madness Bringer", "Delilik Getiren", "SUN", "GÜNEŞ", 3, 6, 2, 6, 8},
+    {"Dionysus", "The Illusionist Vagabond", "İllüzyonist Serseri", "OCEAN", "OKYANUS", 6, 3, 2, 7, 7},
+    {"Dionysus", "The Cult Leader", "Kült Lideri", "EARTH", "TOPRAK", 5, 4, 6, 4, 6}
 };
 
 // ============================================================================
@@ -595,11 +598,11 @@ void execute_parametric_test(CharacterProfile* profile) {
 void evaluate_cosmic_alignment(CharacterProfile* profile) {
     clear_screen();
     int min_distance = 999;
-    int distances[48];
+    int distances[33];
     int match_count = 0;
-    int tied_indices[48];
+    int tied_indices[33];
 
-    for (int i = 0; i < 48; i++) {
+    for (int i = 0; i < 33; i++) {
         int d = abs(profile->intel - database[i].intel) +
                 abs(profile->might - database[i].might) +
                 abs(profile->honor - database[i].honor) +
@@ -609,7 +612,7 @@ void evaluate_cosmic_alignment(CharacterProfile* profile) {
         if (d < min_distance) min_distance = d;
     }
 
-    for (int i = 0; i < 48; i++) {
+    for (int i = 0; i < 33; i++) {
         if (distances[i] == min_distance) {
             tied_indices[match_count] = i;
             match_count++;
@@ -631,6 +634,8 @@ void evaluate_cosmic_alignment(CharacterProfile* profile) {
         strcpy(profile->god_alignment, database[idx].god);
         strcpy(profile->archetype_alignment, database[idx].archetype);
         strcpy(profile->archetype_alignment_tr, database[idx].archetype_tr);
+        strcpy(profile->faction_class, database[idx].faction);
+        strcpy(profile->faction_class_tr, database[idx].faction_tr);
 
         if (current_lang == 1) {
             printf(COLOR_WHITE "  Kozmik Varlık devasa gözlerini kısıyor, alaycı bir şekilde gülüyor:\n\n" COLOR_RESET);
@@ -647,6 +652,8 @@ void evaluate_cosmic_alignment(CharacterProfile* profile) {
         strcpy(profile->god_alignment, database[primary_idx].god);
         strcpy(profile->archetype_alignment, database[primary_idx].archetype);
         strcpy(profile->archetype_alignment_tr, database[primary_idx].archetype_tr);
+        strcpy(profile->faction_class, database[primary_idx].faction);
+        strcpy(profile->faction_class_tr, database[primary_idx].faction_tr);
 
         if (current_lang == 1) {
             printf(COLOR_WHITE "  Kozmik Varlık boyut matrisi üzerinden inceliyor:\n\n" COLOR_RESET);
@@ -693,6 +700,8 @@ void evaluate_cosmic_alignment(CharacterProfile* profile) {
                         strcpy(profile->god_alignment, database[final_idx].god);
                         strcpy(profile->archetype_alignment, database[final_idx].archetype);
                         strcpy(profile->archetype_alignment_tr, database[final_idx].archetype_tr);
+                        strcpy(profile->faction_class, database[final_idx].faction);
+                        strcpy(profile->faction_class_tr, database[final_idx].faction_tr);
                         break;
                     }
                 }
@@ -1046,6 +1055,17 @@ void display_character_sheet(CharacterProfile* profile) {
     else printf("   │  " COLOR_RESET "AFFINITY LEVEL :  %s" COLOR_DARK, buffer);
     for(int i = 0; i < 72 - vis_len; i++) printf(" ");
     printf("│\n");
+
+    // --- YENİ EKLENEN: FRAKSİYON (SINIF) GÖRÜNTÜLEME ---
+    if (current_lang == 1) sprintf(buffer, "%s Sınıfı", profile->faction_class_tr);
+    else sprintf(buffer, "%s Faction", profile->faction_class);
+
+    vis_len = 23 + strlen(buffer);
+    if (current_lang == 1) printf(COLOR_DARK "   │  " COLOR_CYAN "[FR]" COLOR_RESET " FRAKSİYON     : " COLOR_WHITE "%s" COLOR_DARK, buffer);
+    else printf(COLOR_DARK "   │  " COLOR_CYAN "[FC]" COLOR_RESET " FACTION       : " COLOR_WHITE "%s" COLOR_DARK, buffer);
+    for(int i = 0; i < 72 - vis_len; i++) printf(" ");
+    printf("│\n");
+    // ---------------------------------------------------
 
     const char* m_str = profile->is_pure ? (current_lang == 1 ? "SAFKAN (Uyumlu)" : "PURE (Harmonious)") : (current_lang == 1 ? "ÇAPRAZ (Anormal)" : "CROSS (Anomalous)");
     const char* m_col = profile->is_pure ? COLOR_GOLD : COLOR_RED;
