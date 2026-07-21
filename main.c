@@ -35,14 +35,6 @@ typedef enum {
     NATURE_AGGRESSIVE
 } Nature;
 
-typedef enum {
-    CLASS_UNASSIGNED = 0,
-    CLASS_RULER,
-    CLASS_SOLDIER,
-    CLASS_ARTIST,
-    CLASS_DIPLOMAT,
-    CLASS_MERCHANT
-} ClassType;
 
 
 
@@ -62,13 +54,7 @@ typedef struct {
 
     StoryState story;
 
-    // --- 2. SINIF & UYUM (Eski) ---
-    ClassType chosen_class;
-    char class_name[30];
-    char class_name_tr[30];
     int affinity;
-    char final_title[100];
-    char final_title_tr[100];
 
     // --- 3. RPG TEST STATLARI (Eski - Kozmik Sınav İçin) ---
     int intel;
@@ -78,6 +64,7 @@ typedef struct {
     int faith;
 
     // --- 4. DERS & BOSS SİSTEMİ (Yeni) ---
+    int active_subject_count;
     char subject_names[15][50];   // Derslerin/Epiklerin Özel İsimleri
     int study_stats[15];          // Dersin seviyesi (Kazanılan EXP)
     int subject_exams[15];        // O derse ait Sınav (Boss) Sayısı
@@ -182,9 +169,7 @@ void render_menu_options(bool is_flashing);
 bool scene_start_journey(CharacterProfile* profile);
 void execute_parametric_test(CharacterProfile* profile);
 void evaluate_cosmic_alignment(CharacterProfile* profile);
-void scene_class_selection(CharacterProfile* profile);
 void get_god_affinity_data(const char* god_name, Nature* nature, int* r, int* s, int* a, int* d, int* m);
-void calculate_final_title(CharacterProfile* profile);
 int get_parametric_input(void);
 void print_permanent_choices(void);
 void scene_continue_journey(CharacterProfile* profile);
@@ -201,10 +186,9 @@ void scene_library_stopwatch(CharacterProfile* profile);
 void scene_inside_location(const char* loc_name_tr, const char* loc_name_en);
 void print_mythic_date(void);
 void append_study_log(const char* subject, int earned_exp, int minutes);
+void scene_awaken_destiny(CharacterProfile* profile);
 
-// ============================================================================
-// 3. MAIN GAME LOOP
-// ============================================================================
+
 // ============================================================================
 // 3. MAIN GAME LOOP
 // ============================================================================
@@ -216,7 +200,7 @@ int main(void) {
     bool running = true;
     int frame_counter = 0;
 
-    // Initialize the player profile without the removed Nature and Pure variables
+
     CharacterProfile player = {
         .player_name = "Wastrel",
         .god_alignment = "UNASSIGNED",
@@ -225,16 +209,10 @@ int main(void) {
         .faction_class = "UNASSIGNED",
         .faction_class_tr = "ATANMADI",
         .story = STORY_UNASSIGNED,
-        .chosen_class = CLASS_UNASSIGNED,
-        .class_name = "UNASSIGNED",
-        .class_name_tr = "ATANMADI",
         .affinity = 0,
-        .final_title = "UNASSIGNED",
-        .final_title_tr = "ATANMADI",
         // Initialize base stats to perfectly balanced 5
         .intel = 5, .might = 5, .honor = 5, .skill = 5, .faith = 5
     };
-
     clear_screen();
     set_cursor_visibility(false);
 
@@ -249,20 +227,16 @@ int main(void) {
                 case '1':
                     set_cursor_visibility(true);
 
-                    // Reset stats to 5 for a new test session
+                    // Reset stats for a new session
                     player.intel = 5; player.might = 5; player.honor = 5; player.skill = 5; player.faith = 5;
                     player.affinity = 0;
 
-                    // Reset all study and exp stats
                     for(int i=0; i<15; i++) player.study_stats[i] = 0;
                     player.total_exp = 0;
 
-                    // Reset alignments
                     strcpy(player.god_alignment, "UNASSIGNED");
-                    strcpy(player.class_name, "UNASSIGNED");
-                    strcpy(player.class_name_tr, "ATANMADI");
 
-                    // Start the journey, break loop if user exits
+                    // Start journey
                     if (!scene_start_journey(&player)) running = false;
                     set_cursor_visibility(false);
                     break;
@@ -366,6 +340,36 @@ bool render_lightning_storm(int frame) {
     else {
         printf("\033[K\n"); printf("\033[K\n"); printf("\033[K\n");
         return false;
+    }
+}
+
+// --- GÜVENLİ VERİ GİRİŞİ YARDIMCILARI ---
+
+// Güvenli String Okuyucu (Enter ' \n ' kalıntılarını yutmadan temiz okur)
+void read_string_safe(char* buffer, int max_len) {
+    if (fgets(buffer, max_len, stdin) != NULL) {
+        if (buffer[0] == '\n') fgets(buffer, max_len, stdin);
+        buffer[strcspn(buffer, "\n")] = 0; // Sondaki Enter'ı temizle
+    }
+}
+
+// Güvenli Doğal Sayı Okuyucu (Harf girilmesini çökmeden engeller)
+int get_safe_natural_number(int min_val, int max_val) {
+    int val;
+    char buffer[128];
+    while (1) {
+        if (fgets(buffer, sizeof(buffer), stdin)) {
+            if (sscanf(buffer, "%d", &val) == 1) {
+                if (val >= min_val && val <= max_val) {
+                    return val;
+                }
+            }
+        }
+        if (current_lang == 1) {
+            printf(COLOR_RED "  [!] Geçersiz. Lütfen %d ile %d arasında bir DOĞAL SAYI girin: " COLOR_RESET, min_val, max_val);
+        } else {
+            printf(COLOR_RED "  [!] Invalid. Please enter a NATURAL NUMBER between %d and %d: " COLOR_RESET, min_val, max_val);
+        }
     }
 }
 
@@ -622,7 +626,7 @@ void execute_parametric_test(CharacterProfile* profile) {
     else if(choice == 5) { profile->faith += 1; profile->might -= 1; }
 
     evaluate_cosmic_alignment(profile);
-    scene_class_selection(profile);
+    scene_awaken_destiny(profile);
 }
 
 
@@ -670,6 +674,9 @@ void evaluate_cosmic_alignment(CharacterProfile* profile) {
         }
     }
 
+    // YENİ EKLENEN: Gerçek eşleşme yüzdesini profile->affinity'e tam sayı olarak kaydediyoruz
+    profile->affinity = (int)(max_cosine * 100.0);
+
     // UI Rendering
     if (current_lang == 1) {
         printf(COLOR_GOLD " =============================================================\n");
@@ -691,12 +698,12 @@ void evaluate_cosmic_alignment(CharacterProfile* profile) {
         strcpy(profile->faction_class_tr, database[idx].faction_tr);
 
         if (current_lang == 1) {
-            printf(COLOR_WHITE "  Kozmik Vektör Eşleşmesi: " COLOR_CYAN "%%%.1f\n" COLOR_RESET, (max_cosine * 100.0));
+            printf(COLOR_WHITE "  Kozmik Vektör Eşleşmesi: " COLOR_CYAN "%%%d\n" COLOR_RESET, profile->affinity);
             printf(COLOR_WHITE "  Kozmik Varlık devasa gözlerini kısıyor, alaycı bir şekilde gülüyor:\n\n" COLOR_RESET);
             printf(COLOR_CYAN "  \"Aaaa, %s'un bir çocuğu [ %s ]... Ne kadar şok edici derecede tahmin edilebilir.\"\n\n" COLOR_RESET,
                    profile->god_alignment, profile->archetype_alignment_tr);
         } else {
-            printf(COLOR_WHITE "  Cosmic Vector Match: " COLOR_CYAN "%%%.1f\n" COLOR_RESET, (max_cosine * 100.0));
+            printf(COLOR_WHITE "  Cosmic Vector Match: " COLOR_CYAN "%%%d\n" COLOR_RESET, profile->affinity);
             printf(COLOR_WHITE "  The Cosmic Entity narrows its massive eyes, laughing sarcastically:\n\n" COLOR_RESET);
             printf(COLOR_CYAN "  \"Aaaa, a child of %s [ %s ]... How shockingly predictable.\"\n\n" COLOR_RESET,
                    profile->god_alignment, profile->archetype_alignment);
@@ -712,7 +719,7 @@ void evaluate_cosmic_alignment(CharacterProfile* profile) {
         strcpy(profile->faction_class_tr, database[primary_idx].faction_tr);
 
         if (current_lang == 1) {
-            printf(COLOR_WHITE "  Kozmik Vektör Eşleşmesi: " COLOR_CYAN "%%%.1f\n" COLOR_RESET, (max_cosine * 100.0));
+            printf(COLOR_WHITE "  Kozmik Vektör Eşleşmesi: " COLOR_CYAN "%%%d\n" COLOR_RESET, profile->affinity);
             printf(COLOR_WHITE "  Kozmik Varlık boyut matrisi üzerinden inceliyor:\n\n" COLOR_RESET);
             printf("  \"Bana daha çok " COLOR_CYAN "%s [ %s ]" COLOR_RESET " çocuğuna benziyorsun.\"\n\n",
                    profile->god_alignment, profile->archetype_alignment_tr);
@@ -727,7 +734,7 @@ void evaluate_cosmic_alignment(CharacterProfile* profile) {
             printf("\n" COLOR_CYAN " Gerçek soy rezonansını seç (1-%d): " COLOR_RESET, match_count);
 
         } else {
-            printf(COLOR_WHITE "  Cosmic Vector Match: " COLOR_CYAN "%%%.1f\n" COLOR_RESET, (max_cosine * 100.0));
+            printf(COLOR_WHITE "  Cosmic Vector Match: " COLOR_CYAN "%%%d\n" COLOR_RESET, profile->affinity);
             printf(COLOR_WHITE "  The Cosmic Entity shifts through the dimension matrix:\n\n" COLOR_RESET);
             printf("  \"You look a lot like a child of " COLOR_CYAN "%s [ %s ]" COLOR_RESET " to me.\"\n\n",
                    profile->god_alignment, profile->archetype_alignment);
@@ -769,107 +776,44 @@ void evaluate_cosmic_alignment(CharacterProfile* profile) {
 }
 
 // ============================================================================
-// 6. CLASS SELECTION & ANOMALY SYSTEM
+// DESTINY AWAKENING SCENE (REPLACES CLASS SELECTION)
 // ============================================================================
-
-
-void scene_class_selection(CharacterProfile* profile) {
+void scene_awaken_destiny(CharacterProfile* profile) {
     clear_screen();
 
-    // Default affinity logic (can be expanded later)
-    profile->affinity = 95;
+    // profile->affinity = 95; satırı TAMAMEN SİLİNDİ.
+    // Artık değer evaluate_cosmic_alignment testinden matematiksel olarak geliyor.
 
-    if (current_lang == 1) {
-        printf(COLOR_GOLD " =============================================================\n");
-        printf("                       KADERİN YOLU                       \n");
-        printf(" =============================================================\n\n" COLOR_RESET);
-        printf(COLOR_WHITE "  %s kanını taşıyorsun. Şimdi, bu dünyadaki rolünü iddia et.\n\n" COLOR_RESET, profile->god_alignment);
-
-        printf("  [" COLOR_CYAN "1" COLOR_RESET "] HÜKÜMDAR (Otorite & Liderlik)\n");
-        printf("  [" COLOR_CYAN "2" COLOR_RESET "] ASKER    (Savaş & Disiplin)\n");
-        printf("  [" COLOR_CYAN "3" COLOR_RESET "] SANATÇI  (İlham & Zanaat)\n");
-        printf("  [" COLOR_CYAN "4" COLOR_RESET "] DİPLOMAT (İletişim & Müzakere)\n");
-        printf("  [" COLOR_CYAN "5" COLOR_RESET "] TÜCCAR   (Ekonomi & Kaynaklar)\n\n");
-        printf(COLOR_CYAN " Toplumsal sınıfını seç (1-5): " COLOR_RESET);
-    } else {
-        printf(COLOR_GOLD " =============================================================\n");
-        printf("                    THE PATH OF DESTINY                       \n");
-        printf(" =============================================================\n\n" COLOR_RESET);
-        printf(COLOR_WHITE "  You bear the blood of %s. Now, claim your role in this world.\n\n" COLOR_RESET, profile->god_alignment);
-
-        printf("  [" COLOR_CYAN "1" COLOR_RESET "] RULER    (Authority & Leadership)\n");
-        printf("  [" COLOR_CYAN "2" COLOR_RESET "] SOLDIER  (War & Discipline)\n");
-        printf("  [" COLOR_CYAN "3" COLOR_RESET "] ARTIST   (Inspiration & Craft)\n");
-        printf("  [" COLOR_CYAN "4" COLOR_RESET "] DIPLOMAT (Communication & Negotiation)\n");
-        printf("  [" COLOR_CYAN "5" COLOR_RESET "] MERCHANT (Economy & Resources)\n\n");
-        printf(COLOR_CYAN " Select your societal class (1-5): " COLOR_RESET);
-    }
-
-    char choice;
-    bool valid = false;
-    while (!valid) {
-        if (_kbhit()) {
-            choice = _getch();
-            if (choice >= '1' && choice <= '5') {
-                valid = true;
-                switch(choice) {
-                    case '1': profile->chosen_class = CLASS_RULER; strcpy(profile->class_name, "Ruler"); strcpy(profile->class_name_tr, "Hükümdar"); break;
-                    case '2': profile->chosen_class = CLASS_SOLDIER; strcpy(profile->class_name, "Soldier"); strcpy(profile->class_name_tr, "Asker"); break;
-                    case '3': profile->chosen_class = CLASS_ARTIST; strcpy(profile->class_name, "Artist"); strcpy(profile->class_name_tr, "Sanatçı"); break;
-                    case '4': profile->chosen_class = CLASS_DIPLOMAT; strcpy(profile->class_name, "Diplomat"); strcpy(profile->class_name_tr, "Diplomat"); break;
-                    case '5': profile->chosen_class = CLASS_MERCHANT; strcpy(profile->class_name, "Merchant"); strcpy(profile->class_name_tr, "Tüccar"); break;
-                }
-            }
-        }
-        Sleep(20);
-    }
-
-    calculate_final_title(profile);
-}
-
-void set_titles(CharacterProfile* p, const char* en_title, const char* tr_title) {
-    strcpy(p->final_title, en_title);
-    strcpy(p->final_title_tr, tr_title);
-}
-
-void calculate_final_title(CharacterProfile* profile) {
-    // Simplified title assignment without Cross/Pure logic
-    if (profile->chosen_class == CLASS_RULER) {
-        set_titles(profile, "Divine Sovereign", "İlahi Hükümdar");
-    }
-    else if (profile->chosen_class == CLASS_SOLDIER) {
-        set_titles(profile, "Sword of War", "Savaşın Kılıcı");
-    }
-    else if (profile->chosen_class == CLASS_ARTIST) {
-        set_titles(profile, "Cosmic Creator", "Kozmik Yaratıcı");
-    }
-    else if (profile->chosen_class == CLASS_DIPLOMAT) {
-        set_titles(profile, "Divine Mediator", "İlahi Arabulucu");
-    }
-    else if (profile->chosen_class == CLASS_MERCHANT) {
-        set_titles(profile, "Golden Sovereign", "Altın Hükümdar");
-    }
-
-    clear_screen();
     if (current_lang == 1) {
         printf(COLOR_RED " =============================================================\n");
         printf("                      GERÇEK FORMUN UYANIYOR                  \n");
         printf(" =============================================================\n\n" COLOR_RESET);
+
         printf(COLOR_WHITE "  Kan Bağı Rezonansı : " COLOR_CYAN "%d%%\n" COLOR_RESET, profile->affinity);
-        printf(COLOR_WHITE "  Kader Unvanı       : " COLOR_GOLD "[ %s ]\n\n" COLOR_RESET, profile->final_title_tr);
+        printf(COLOR_WHITE "  Kozmik Arketip     : " COLOR_GOLD "[ %s ]\n\n" COLOR_RESET, profile->archetype_alignment_tr);
+
         printf(COLOR_DARK " [Kaderini onaylamak için HERHANGİ BİR TUŞA bas] " COLOR_RESET);
     } else {
         printf(COLOR_RED " =============================================================\n");
         printf("                      YOUR TRUE FORM AWAKENS                  \n");
         printf(" =============================================================\n\n" COLOR_RESET);
+
         printf(COLOR_WHITE "  Bloodline Affinity : " COLOR_CYAN "%d%%\n" COLOR_RESET, profile->affinity);
-        printf(COLOR_WHITE "  Destined Title     : " COLOR_GOLD "[ %s ]\n\n" COLOR_RESET, profile->final_title);
+        printf(COLOR_WHITE "  Cosmic Archetype   : " COLOR_GOLD "[ %s ]\n\n" COLOR_RESET, profile->archetype_alignment);
+
         printf(COLOR_DARK " [Press ANY KEY to finalize your destiny] " COLOR_RESET);
     }
     _getch();
 
+    // Render character sheet, then proceed to initialization
     display_character_sheet(profile);
+    scene_init_subjects(profile);
+    scene_own_shrine(profile);
 }
+
+
+
+
 
 
 
@@ -942,8 +886,6 @@ void scene_language_options(void) {
 
 void scene_system_status(CharacterProfile* profile) {
     clear_screen();
-    char* story_map[] = { "TRADITIONAL", "UNCROWNED", "EXILED" };
-    char* story_map_tr[] = { "GELENEKSEL", "TAÇSIZ", "SÜRGÜN" };
 
     if (current_lang == 1) {
         printf(COLOR_GOLD " =============================================================\n");
@@ -951,13 +893,12 @@ void scene_system_status(CharacterProfile* profile) {
         printf(" =============================================================\n" COLOR_RESET);
         printf("  --- KAHRAMAN HAFIZA KAYDI DURUMU ---\n");
         printf("  * Karakter Adı       : %s\n", profile->player_name);
-        printf("  * Hikaye Geçmişi     : %s\n", (profile->story == STORY_UNASSIGNED) ? "ATANMADI" : story_map_tr[profile->story]);
 
         printf("\n  --- ATANAN TANRI & KADER MATRİSİ ---\n");
         printf("  * Tanrı Hizalaması   : " COLOR_GOLD "%s\n" COLOR_RESET, profile->god_alignment);
-        printf("  * Nihai Sınıf        : " COLOR_CYAN "%s\n" COLOR_RESET, profile->class_name_tr);
+        printf("  * Kozmik Arketip     : " COLOR_CYAN "%s\n" COLOR_RESET, profile->archetype_alignment_tr);
+        printf("  * Fraksiyon Sınıfı   : " COLOR_GOLD "%s\n" COLOR_RESET, profile->faction_class_tr);
         printf("  * Kan Rezonansı      : %d%%\n", profile->affinity);
-        printf("  * Nihai Unvan        : " COLOR_GOLD "%s\n" COLOR_RESET, profile->final_title_tr);
 
         printf("\n  --- AKTİF 5-PARAMETRELİ NİTELİKLER ---\n");
         printf("  * [ZEK] Zeka (Mantık)        : %d puan\n", profile->intel);
@@ -973,15 +914,14 @@ void scene_system_status(CharacterProfile* profile) {
         printf(" =============================================================\n" COLOR_RESET);
         printf("  --- HERO MEMORY REGISTER STATUS ---\n");
         printf("  * Character State    : %s\n", profile->player_name);
-        printf("  * Story Background   : %s\n", (profile->story == STORY_UNASSIGNED) ? "UNASSIGNED" : story_map[profile->story]);
 
         printf("\n  --- ASSIGNED GOD & DESTINY MATRICES ---\n");
         printf("  * God Alignment      : " COLOR_GOLD "%s\n" COLOR_RESET, profile->god_alignment);
-        printf("  * Final Class        : " COLOR_CYAN "%s\n" COLOR_RESET, profile->class_name);
+        printf("  * Cosmic Archetype   : " COLOR_CYAN "%s\n" COLOR_RESET, profile->archetype_alignment);
+        printf("  * Faction Class      : " COLOR_GOLD "%s\n" COLOR_RESET, profile->faction_class);
         printf("  * Blood Affinity     : %d%%\n", profile->affinity);
-        printf("  * Ultimate Title     : " COLOR_GOLD "%s\n" COLOR_RESET, profile->final_title);
 
-        printf("\n  --- ACTIVE 5-PARAMETRIC ATTRIBUTES ---\n");
+        printf("\n  --- ACTIVE 5-PARAMETRELİ ATTRIBUTES ---\n");
         printf("  * [INT] Intelligence (Logic) : %d points\n", profile->intel);
         printf("  * [MGT] Might (Power)        : %d points\n", profile->might);
         printf("  * [HNR] Honor (Sacrifice)    : %d points\n", profile->honor);
@@ -1015,19 +955,9 @@ void display_character_sheet(CharacterProfile* profile) {
 
     printf(COLOR_DARK "\n   ╒════════════════════════════════════════════════════════════════════════╕\n");
 
-    if (current_lang == 1) sprintf(buffer, " SİS-BAŞLAT :: ETERNAL DOSYA");
-    else sprintf(buffer, " SYS-INIT :: AETHERIAL DOSSIER");
-
-    vis_len = strlen(buffer) + 13;
-    printf(COLOR_DARK "   │" COLOR_WHITE "%s", buffer);
-    for(int i = 0; i < 72 - vis_len; i++) printf(" ");
-    printf(COLOR_DARK "[ v. 1.0.4 ] │\n");
-
-    printf("   ╞════════════════════════════════════════════════════════════════════════╡\n");
-    printf("   │                                                                        │\n" COLOR_RESET);
-
-    if (current_lang == 1) sprintf(buffer, "%s (%s)", profile->player_name, profile->final_title_tr);
-    else sprintf(buffer, "%s (The %s)", profile->player_name, profile->final_title);
+    // Replace the top section of display_character_sheet with this:
+    if (current_lang == 1) sprintf(buffer, "%s", profile->player_name);
+    else sprintf(buffer, "%s", profile->player_name);
 
     vis_len = 23 + strlen(buffer);
     if (current_lang == 1) printf(COLOR_DARK "   │  " COLOR_CYAN "[ID]" COLOR_RESET " TANIMLAMA     : " COLOR_WHITE "%s" COLOR_DARK, buffer);
@@ -1044,28 +974,6 @@ void display_character_sheet(CharacterProfile* profile) {
     for(int i = 0; i < 72 - vis_len; i++) printf(" ");
     printf("│\n");
 
-    if (current_lang == 1) {
-        vis_len = 23 + strlen(profile->class_name_tr);
-        printf(COLOR_DARK "   │  " COLOR_CYAN "[SN]" COLOR_RESET " SINIF         : " COLOR_WHITE "%s" COLOR_DARK, profile->class_name_tr);
-    } else {
-        vis_len = 23 + strlen(profile->class_name);
-        printf(COLOR_DARK "   │  " COLOR_CYAN "[CL]" COLOR_RESET " CASTE         : " COLOR_WHITE "%s" COLOR_DARK, profile->class_name);
-    }
-    for(int i = 0; i < 72 - vis_len; i++) printf(" ");
-    printf("│\n");
-
-    printf("   │                                                                        │\n");
-    if (current_lang == 1) printf("   │  ======================== [ " COLOR_CYAN "SENKRONİZASYON" COLOR_DARK " ] ========================  │\n");
-    else printf("   │  ====================== [ " COLOR_CYAN "SYNCHRONIZATION" COLOR_DARK " ] =========================  │\n");
-
-    sprintf(buffer, "%d%%", profile->affinity);
-    vis_len = 20 + strlen(buffer);
-    if (current_lang == 1) printf("   │  " COLOR_RESET "YATKINLIK SEVİYESİ :  %s" COLOR_DARK, buffer);
-    else printf("   │  " COLOR_RESET "AFFINITY LEVEL :  %s" COLOR_DARK, buffer);
-    for(int i = 0; i < 72 - vis_len; i++) printf(" ");
-    printf("│\n");
-
-    // --- YENİ EKLENEN: FRAKSİYON (SINIF) GÖRÜNTÜLEME ---
     if (current_lang == 1) sprintf(buffer, "%s Sınıfı", profile->faction_class_tr);
     else sprintf(buffer, "%s Faction", profile->faction_class);
 
@@ -1074,19 +982,28 @@ void display_character_sheet(CharacterProfile* profile) {
     else printf(COLOR_DARK "   │  " COLOR_CYAN "[FC]" COLOR_RESET " FACTION       : " COLOR_WHITE "%s" COLOR_DARK, buffer);
     for(int i = 0; i < 72 - vis_len; i++) printf(" ");
     printf("│\n");
-    // ---------------------------------------------------
 
 
     printf("   │                                                                        │\n");
     if (current_lang == 1) printf("   │  ======================== [ " COLOR_CYAN "DERS İSTATİSTİKLERİ" COLOR_DARK " ] =======================  │\n");
     else printf("   │  ========================= [ " COLOR_CYAN "STUDY STATISTICS" COLOR_DARK " ] =========================  │\n");
 
+    // Karakter kağıdında sadece aktif statları yazdır
     char stat_chars[] = "ABCDEFGHIJKLMNO";
-    for (int i = 0; i < 5; i++) {
+    int active = profile->active_subject_count;
+    int rows = (active + 2) / 3; // Gereken satır sayısını matematiksel olarak hesapla
+
+    for (int i = 0; i < rows; i++) {
         printf(COLOR_DARK "   │  " COLOR_RESET);
         for (int j = 0; j < 3; j++) {
             int idx = i * 3 + j;
-            printf("[%c] STAT %c: " COLOR_CYAN "%04d" COLOR_RESET, stat_chars[idx], stat_chars[idx], profile->study_stats[idx]);
+            if (idx < active) {
+                // Aktif olan statları yazdır
+                printf("[%c] STAT %c: " COLOR_CYAN "%04d" COLOR_RESET, stat_chars[idx], stat_chars[idx], profile->study_stats[idx]);
+            } else {
+                // Kutu tasarımını bozmamak için boşluk (padding) at
+                printf("                ");
+            }
             if (j < 2) printf(COLOR_DARK "  │  " COLOR_RESET);
         }
         printf(COLOR_DARK "            │\n");
@@ -1223,23 +1140,23 @@ void scene_library_stopwatch(CharacterProfile* profile) {
         printf(COLOR_WHITE "  Which subject/stat will you study?\n\n" COLOR_RESET);
     }
 
-    for(int i = 0; i < 5; i++) {
-        printf("  ");
-        for(int j=0; j<3; j++) {
-            int idx = i*3+j;
-            printf("[" COLOR_CYAN "%c" COLOR_RESET "] STAT %c\t", letters[idx], letters[idx]);
-        }
-        printf("\n");
+    // Sadece aktif dersleri listele
+    int active = profile->active_subject_count;
+    for(int i = 0; i < active; i++) {
+        if (i % 3 == 0) printf("  "); // Satır başı boşluğu
+        printf("[" COLOR_CYAN "%c" COLOR_RESET "] %s\t", letters[i], profile->subject_names[i]);
+        if (i % 3 == 2 || i == active - 1) printf("\n");
     }
 
-    if (current_lang == 1) printf(COLOR_CYAN "\n  Seçiminiz (A-O): " COLOR_RESET);
-    else printf(COLOR_CYAN "\n  Your choice (A-O): " COLOR_RESET);
+    if (current_lang == 1) printf(COLOR_CYAN "\n  Seçiminiz (A-%c): " COLOR_RESET, letters[active-1]);
+    else printf(COLOR_CYAN "\n  Your choice (A-%c): " COLOR_RESET, letters[active-1]);
 
+    // Klavyeden sadece aktif harflerin seçimine izin ver
     while(choice == -1) {
         if (_kbhit()) {
             char ch = _getch();
-            if (ch >= 'a' && ch <= 'o') choice = ch - 'a';
-            else if (ch >= 'A' && ch <= 'O') choice = ch - 'A';
+            if (ch >= 'a' && ch < 'a' + active) choice = ch - 'a';
+            else if (ch >= 'A' && ch < 'A' + active) choice = ch - 'A';
         }
         Sleep(20);
     }
@@ -1713,31 +1630,51 @@ void append_study_log(const char* subject, int earned_exp, int minutes) {
 void scene_init_subjects(CharacterProfile* profile) {
     clear_screen();
     printf(COLOR_GOLD " =============================================================\n");
-    printf("                  KADERİNİN YAZILDIĞI PARŞÖMENLER               \n");
-    printf(" =============================================================\n\n" COLOR_RESET);
-
-    printf(COLOR_WHITE "  Önünde fethedilmeyi bekleyen yollar (Dersler) var.\n");
-    printf("  Hangi savaşlara gireceğini ve karşına kaç Tiran (Sınav) çıkacağını belirle.\n\n" COLOR_RESET);
-
-    // Şimdilik test için 3 ana ders (İsteğe bağlı 15'e kadar döngüye alınabilir)
-    for(int i = 0; i < 3; i++) {
-        set_cursor_visibility(true);
-        printf(COLOR_CYAN "  [%d. Epik Hedef / Ders Adı]: " COLOR_RESET, i+1);
-        scanf(" %[^\n]s", profile->subject_names[i]);
-
-        printf(COLOR_RED "  Kaç Büyük Boss (Sınav) var?: " COLOR_RESET);
-        scanf("%d", &profile->subject_exams[i]);
-
-        printf(COLOR_GOLD "  Kaç Kuşatma (Proje) var?: " COLOR_RESET);
-        scanf("%d", &profile->subject_projects[i]);
-
-        profile->study_stats[i] = 0; // Seviye sıfırlanır
-        printf("\n");
+    if (current_lang == 1) {
+        printf("                  KADERİNİN YAZILDIĞI PARŞÖMENLER               \n");
+        printf(" =============================================================\n\n" COLOR_RESET);
+        printf(COLOR_WHITE "  Önünde fethedilmeyi bekleyen yollar (Dersler) var.\n");
+        printf("  Sisteme toplamda kaç Epik Hedef tanımlayacaksın? (1-15): " COLOR_RESET);
+    } else {
+        printf("                  THE SCROLLS OF YOUR DESTINY               \n");
+        printf(" =============================================================\n\n" COLOR_RESET);
+        printf(COLOR_WHITE "  There are paths (Subjects) waiting to be conquered.\n");
+        printf("  How many Epic Targets will you define? (1-15): " COLOR_RESET);
     }
-    set_cursor_visibility(false);
 
-    // Dersler tanımlandıktan sonra oyunu otomatik kaydet
-    save_game(profile);
+    set_cursor_visibility(true);
+
+    // Klavyedeki gereksiz Enter kalıntılarını temizleyip güvenli sayıyı al
+    profile->active_subject_count = get_safe_natural_number(1, 15);
+
+    for(int i = 0; i < profile->active_subject_count; i++) {
+        printf("\n");
+        if (current_lang == 1) printf(COLOR_CYAN "  [%d. Epik Hedef / Ders Adı]: " COLOR_RESET, i+1);
+        else printf(COLOR_CYAN "  [%d. Epic Target / Subject Name]: " COLOR_RESET, i+1);
+
+        read_string_safe(profile->subject_names[i], 50);
+
+        if (current_lang == 1) printf(COLOR_RED "  Kaç Büyük Boss (Sınav) var? (0 ve üstü): " COLOR_RESET);
+        else printf(COLOR_RED "  How many Great Bosses (Exams)? (0+): " COLOR_RESET);
+        profile->subject_exams[i] = get_safe_natural_number(0, 100);
+
+        if (current_lang == 1) printf(COLOR_GOLD "  Kaç Kuşatma (Proje) var? (0 ve üstü): " COLOR_RESET);
+        else printf(COLOR_GOLD "  How many Sieges (Projects)? (0+): " COLOR_RESET);
+        profile->subject_projects[i] = get_safe_natural_number(0, 100);
+
+        profile->study_stats[i] = 0; // EXP seviyesi sıfırlanır
+    }
+
+    // Kullanılmayan (arka planda kalan) statları güvene al
+    for(int i = profile->active_subject_count; i < 15; i++) {
+        strcpy(profile->subject_names[i], "BOS");
+        profile->subject_exams[i] = 0;
+        profile->subject_projects[i] = 0;
+        profile->study_stats[i] = 0;
+    }
+
+    set_cursor_visibility(false);
+    save_game(profile); // Dosyaya kaydet
 }
 
 void scene_own_shrine(CharacterProfile* profile) {
