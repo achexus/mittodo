@@ -781,15 +781,12 @@ void evaluate_cosmic_alignment(CharacterProfile* profile) {
 void scene_awaken_destiny(CharacterProfile* profile) {
     clear_screen();
 
-    // profile->affinity = 95; satırı TAMAMEN SİLİNDİ.
-    // Artık değer evaluate_cosmic_alignment testinden matematiksel olarak geliyor.
-
     if (current_lang == 1) {
         printf(COLOR_RED " =============================================================\n");
         printf("                      GERÇEK FORMUN UYANIYOR                  \n");
         printf(" =============================================================\n\n" COLOR_RESET);
 
-        printf(COLOR_WHITE "  Kan Bağı Rezonansı : " COLOR_CYAN "%d%%\n" COLOR_RESET, profile->affinity);
+        printf(COLOR_WHITE "  Kan Bağı Rezonansı : " COLOR_CYAN "%%%d\n" COLOR_RESET, profile->affinity);
         printf(COLOR_WHITE "  Kozmik Arketip     : " COLOR_GOLD "[ %s ]\n\n" COLOR_RESET, profile->archetype_alignment_tr);
 
         printf(COLOR_DARK " [Kaderini onaylamak için HERHANGİ BİR TUŞA bas] " COLOR_RESET);
@@ -798,16 +795,22 @@ void scene_awaken_destiny(CharacterProfile* profile) {
         printf("                      YOUR TRUE FORM AWAKENS                  \n");
         printf(" =============================================================\n\n" COLOR_RESET);
 
-        printf(COLOR_WHITE "  Bloodline Affinity : " COLOR_CYAN "%d%%\n" COLOR_RESET, profile->affinity);
+        printf(COLOR_WHITE "  Bloodline Affinity : " COLOR_CYAN "%%%d\n" COLOR_RESET, profile->affinity);
         printf(COLOR_WHITE "  Cosmic Archetype   : " COLOR_GOLD "[ %s ]\n\n" COLOR_RESET, profile->archetype_alignment);
 
         printf(COLOR_DARK " [Press ANY KEY to finalize your destiny] " COLOR_RESET);
     }
     _getch();
 
-    // Render character sheet, then proceed to initialization
-    display_character_sheet(profile);
+    // --- DEĞİŞEN KISIM: AKIŞ SIRALAMASI ---
+
+    // 1. Önce dersler (statlar) ve hedefler belirlenir
     scene_init_subjects(profile);
+
+    // 2. Ardından tüm ayarları bitmiş "Karakter Kağıdı" gösterilir (Görkemli final)
+    display_character_sheet(profile);
+
+    // 3. Karakter kağıdı kapatılınca oyuncu doğrudan Kulübesinde uyanır
     scene_own_shrine(profile);
 }
 
