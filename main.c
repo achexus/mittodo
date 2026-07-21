@@ -5,6 +5,7 @@
 #include <windows.h>
 #include <conio.h>
 #include <time.h>
+#include <math.h>
 
 // ============================================================================
 // 1. SYSTEM DEFINITIONS & METRIC FLAGS
@@ -62,13 +63,10 @@ typedef struct {
     StoryState story;
 
     // --- 2. SINIF & UYUM (Eski) ---
-    Nature player_nature;
-    Nature god_nature;
     ClassType chosen_class;
     char class_name[30];
     char class_name_tr[30];
     int affinity;
-    bool is_pure;
     char final_title[100];
     char final_title_tr[100];
 
@@ -207,6 +205,9 @@ void append_study_log(const char* subject, int earned_exp, int minutes);
 // ============================================================================
 // 3. MAIN GAME LOOP
 // ============================================================================
+// ============================================================================
+// 3. MAIN GAME LOOP
+// ============================================================================
 int main(void) {
 #ifdef _WIN32
     SetConsoleOutputCP(65001); // Enable UTF-8 Output for Turkish Characters
@@ -215,22 +216,23 @@ int main(void) {
     bool running = true;
     int frame_counter = 0;
 
+    // Initialize the player profile without the removed Nature and Pure variables
     CharacterProfile player = {
         .player_name = "Wastrel",
         .god_alignment = "UNASSIGNED",
         .archetype_alignment = "UNASSIGNED",
         .archetype_alignment_tr = "ATANMADI",
+        .faction_class = "UNASSIGNED",
+        .faction_class_tr = "ATANMADI",
         .story = STORY_UNASSIGNED,
-        .player_nature = NATURE_UNASSIGNED,
-        .god_nature = NATURE_UNASSIGNED,
         .chosen_class = CLASS_UNASSIGNED,
-        .affinity = 0,
-        .is_pure = false,
         .class_name = "UNASSIGNED",
         .class_name_tr = "ATANMADI",
+        .affinity = 0,
         .final_title = "UNASSIGNED",
         .final_title_tr = "ATANMADI",
-        .intel = 0, .might = 0, .honor = 0, .skill = 0, .faith = 0
+        // Initialize base stats to perfectly balanced 5
+        .intel = 5, .might = 5, .honor = 5, .skill = 5, .faith = 5
     };
 
     clear_screen();
@@ -246,13 +248,21 @@ int main(void) {
             switch (input_char) {
                 case '1':
                     set_cursor_visibility(true);
-                    player.intel = 0; player.might = 0; player.honor = 0; player.skill = 0; player.faith = 0; player.affinity = 0;
-                    for(int i=0; i<15; i++) player.study_stats[i] = 0; // Yeni eklenti
-                    player.total_exp = 0; // Yeni eklenti
+
+                    // Reset stats to 5 for a new test session
+                    player.intel = 5; player.might = 5; player.honor = 5; player.skill = 5; player.faith = 5;
+                    player.affinity = 0;
+
+                    // Reset all study and exp stats
+                    for(int i=0; i<15; i++) player.study_stats[i] = 0;
+                    player.total_exp = 0;
+
+                    // Reset alignments
                     strcpy(player.god_alignment, "UNASSIGNED");
                     strcpy(player.class_name, "UNASSIGNED");
                     strcpy(player.class_name_tr, "ATANMADI");
 
+                    // Start the journey, break loop if user exits
                     if (!scene_start_journey(&player)) running = false;
                     set_cursor_visibility(false);
                     break;
@@ -262,20 +272,26 @@ int main(void) {
                     clear_screen();
                     set_cursor_visibility(false);
                     break;
-                case '3': scene_language_options(); break;
+                case '3':
+                    scene_language_options();
+                    break;
                 case '4':
                     clear_screen();
                     if (current_lang == 1) printf(COLOR_WHITE "\n \"Kaderinden kaçamazsın; sadece onu geciktirebilirsin.\"\n" COLOR_RESET);
                     else printf(COLOR_WHITE "\n \"You cannot escape your destiny; you can only delay it.\"\n" COLOR_RESET);
                     running = false;
                     break;
-                case '0': scene_system_status(&player); break;
-                default: break;
+                case '0':
+                    scene_system_status(&player);
+                    break;
+                default:
+                    break;
             }
         }
         frame_counter++;
         Sleep(80);
     }
+
     set_cursor_visibility(true);
     return 0;
 }
@@ -382,93 +398,21 @@ void render_menu_options(bool is_flashing) {
     }
 }
 
-// ============================================================================
-// 5. NARRATIVE TRIAL ENGINE
-// ============================================================================
 bool scene_start_journey(CharacterProfile* profile) {
     clear_screen();
-    char choice = '0';
-    bool valid_input = false;
 
-    printf(COLOR_RED "\n\n\n");
-    printf("                 _____   _____    _        ______  _____   _  _  _ \n");
-    printf("                |_   _| |  __ \\  | |      |  ____||  __ \\ | || || |\n");
-    printf("                  | |   | |  | | | |      | |__   | |__) || || || |\n");
-    printf("                  | |   | |  | | | |      |  __|  |  _  / | || || |\n");
-    printf("                 _| |_  | |__| | | |____  | |____ | | \\ \\ |_||_||_|\n");
-    printf("                |_____| |_____/  |______| |______||_|  \\_\\(_)(_)(_)\n");
-    printf("\n\n\n\n" COLOR_RESET);
-
-    if (current_lang == 1) printf(COLOR_DARK "                     [Gözlerini açmak için HERHANGİ BİR TUŞA bas] " COLOR_RESET);
-    else printf(COLOR_DARK "                     [Press ANY KEY to open your eyes] " COLOR_RESET);
-    _getch(); clear_screen();
-
+    // Direct entry into the system
     if (current_lang == 1) {
-        printf(COLOR_WHITE "\n\n  UYAN... " COLOR_RESET); printf(COLOR_RED "Yarının yok.\n\n" COLOR_RESET);
-        printf(COLOR_CYAN "  Düşüşten önceki adın neydi? : " COLOR_RESET);
+        printf(COLOR_CYAN "\n\n  Düşüşten önceki adın neydi? : " COLOR_RESET);
     } else {
-        printf(COLOR_WHITE "\n\n  AWAKE... " COLOR_RESET); printf(COLOR_RED "You have no tomorrow.\n\n" COLOR_RESET);
-        printf(COLOR_CYAN "  What was your name before the fall? : " COLOR_RESET);
+        printf(COLOR_CYAN "\n\n  What was your name before the fall? : " COLOR_RESET);
     }
 
     set_cursor_visibility(true);
     scanf(" %[^\n]", profile->player_name);
     set_cursor_visibility(false);
-    clear_screen();
 
-    if (current_lang == 1) {
-        printf(COLOR_GOLD "\n\n  Şimdi ayağa kalk, %s. Ya da çağrıma kulaklarını tıka ve bu yola hiç adım atma.\n\n\n" COLOR_RESET, profile->player_name);
-        printf(COLOR_DARK " [Ültimatomla yüzleşmek için HERHANGİ BİR TUŞA bas] " COLOR_RESET);
-    } else {
-        printf(COLOR_GOLD "\n\n  Rise now, %s. Or blind your ears to my call and never set foot upon this path.\n\n\n" COLOR_RESET, profile->player_name);
-        printf(COLOR_DARK " [Press ANY KEY to confront the ultimatum] " COLOR_RESET);
-    }
-    _getch(); clear_screen();
-
-    printf(COLOR_RED "\n  #############################################################################\n");
-    if (current_lang == 1) printf("  #                               K  A  Ç  ! ! !                              #\n");
-    else printf("  #                               F  L  E  E  ! ! !                           #\n");
-    printf("  #############################################################################\n\n\n" COLOR_RESET);
-
-    if (current_lang == 1) {
-        printf("  [" COLOR_CYAN "1" COLOR_RESET "] Sessizce gölgelere kaç.\n");
-        printf("  [" COLOR_CYAN "2" COLOR_RESET "] Donakal ve fırtınaya sessizce dayan (Sakin gözlem).\n");
-        printf("  [" COLOR_CYAN "3" COLOR_RESET "] Gökklere kükre ve yere vur (Şiddetli meydan okuma).\n\n");
-        printf(COLOR_CYAN " İçgüdünü Uygula (1-3): " COLOR_RESET);
-    } else {
-        printf("  [" COLOR_CYAN "1" COLOR_RESET "] Escape silently into the shadows (Run away).\n");
-        printf("  [" COLOR_CYAN "2" COLOR_RESET "] Stand frozen and endure the tempest silently (Calm observation).\n");
-        printf("  [" COLOR_CYAN "3" COLOR_RESET "] Roar back at the heavens and strike the ground (Fierce defiance).\n\n");
-        printf(COLOR_CYAN " Execute Instinct (1-3): " COLOR_RESET);
-    }
-
-    while (!valid_input) {
-        if (_kbhit()) {
-            choice = _getch();
-            if (choice >= '1' && choice <= '3') valid_input = true;
-        }
-        Sleep(20);
-    }
-
-    if (choice == '1') {
-        clear_screen();
-        if (current_lang == 1) {
-            printf(COLOR_RED "\n\n  Bilinmezliği seçtin. Kozmik boşluk anlamsız bağını geri alıyor.\n\n" COLOR_RESET);
-            printf(COLOR_DARK " [Çıkmak için HERHANGİ BİR TUŞA bas] " COLOR_RESET);
-        } else {
-            printf(COLOR_RED "\n\n  You chose obscurity. The cosmic void reclaims your meaningless thread.\n\n" COLOR_RESET);
-            printf(COLOR_DARK " [Press ANY KEY to exit game] " COLOR_RESET);
-        }
-        _getch();
-        return false;
-    }
-    else if (choice == '2') {
-        profile->story = STORY_UNCROWNED; profile->player_nature = NATURE_CALM;
-    }
-    else if (choice == '3') {
-        profile->story = STORY_TRADITIONAL; profile->player_nature = NATURE_AGGRESSIVE;
-    }
-
+    // Immediately jump to the trial
     execute_parametric_test(profile);
     return true;
 }
@@ -522,103 +466,211 @@ void print_trial_header(int trial_num, const char* title_en, const char* title_t
     else printf(COLOR_CYAN " Instinct Vector (1-0): " COLOR_RESET);
 }
 
-void apply_trial_points(CharacterProfile* profile, int choice) {
-    if(choice == 1)  profile->intel += 2;
-    else if(choice == 2)  profile->might += 2;
-    else if(choice == 3)  profile->honor += 2;
-    else if(choice == 4)  profile->skill += 2;
-    else if(choice == 5)  profile->faith += 2;
-    else if(choice == 6)  { profile->intel += 2; profile->honor -= 1; }
-    else if(choice == 7)  { profile->might += 2; profile->intel -= 1; }
-    else if(choice == 8)  { profile->skill += 2; profile->honor -= 2; }
-    else if(choice == 9)  { profile->faith += 1; profile->might -= 1; }
-    else if(choice == 10) { profile->honor += 1; profile->might -= 2; }
+// Helper function to safely get input between 1 and 5
+int get_trial_input(void) {
+    while (1) {
+        if (_kbhit()) {
+            char ch = _getch();
+            if (ch >= '1' && ch <= '5') return ch - '0';
+        }
+        Sleep(20);
+    }
+}
+
+// Function to print the dynamic trial questions
+void print_dynamic_trial(int trial_num, const char* title_en, const char* title_tr, const char* desc_en, const char* desc_tr, const char* opts_en[], const char* opts_tr[]) {
+    clear_screen();
+    if (current_lang == 1) {
+        printf(COLOR_GOLD "\n [SINAV %d] %s\n" COLOR_RESET, trial_num, title_tr);
+        printf(COLOR_WHITE " %s\n\n" COLOR_RESET, desc_tr);
+        for (int i = 0; i < 5; i++) printf("  [" COLOR_CYAN "%d" COLOR_RESET "] %s\n", i + 1, opts_tr[i]);
+        printf(COLOR_CYAN "\n  Karar Vektörü (1-5): " COLOR_RESET);
+    } else {
+        printf(COLOR_GOLD "\n [TRIAL %d] %s\n" COLOR_RESET, trial_num, title_en);
+        printf(COLOR_WHITE " %s\n\n" COLOR_RESET, desc_en);
+        for (int i = 0; i < 5; i++) printf("  [" COLOR_CYAN "%d" COLOR_RESET "] %s\n", i + 1, opts_en[i]);
+        printf(COLOR_CYAN "\n  Decision Vector (1-5): " COLOR_RESET);
+    }
 }
 
 void execute_parametric_test(CharacterProfile* profile) {
-    clear_screen();
     int choice;
 
-    if (current_lang == 1) {
-        printf(COLOR_GOLD " =============================================================\n");
-        printf("                    KOZMİK VARLIĞIN SINAVI                    \n");
-        printf(" =============================================================\n\n" COLOR_RESET);
-        printf(COLOR_WHITE "  Büyük bir gölge bulutların arasından ayrılıp sana bakıyor.\n");
-        printf("  'Özünü kanıtla, sefil. Paradokslarımı çöz.'\n\n" COLOR_RESET);
-        printf(COLOR_DARK " [Sınava başlamak için HERHANGİ BİR TUŞA bas] " COLOR_RESET);
-    } else {
-        printf(COLOR_GOLD " =============================================================\n");
-        printf("                THE TRIAL OF THE COSMIC ENTITY                \n");
-        printf(" =============================================================\n\n" COLOR_RESET);
-        printf(COLOR_WHITE "  A massive shadow splits the cloud lining. It looks down at you.\n");
-        printf("  'Prove your essence, wastrel. Resolve my paradoxes.'\n\n" COLOR_RESET);
-        printf(COLOR_DARK " [Press ANY KEY to begin the trial] " COLOR_RESET);
-    }
-    _getch();
+    // --- TRIAL 1: THE AMBUSH ---
+    const char* q1_en[] = {
+        "Analyze the enemy formation to find a weak point.",
+        "Charge directly at their leader to break their morale.",
+        "Form a defensive shield wall to protect the vulnerable.",
+        "Use the terrain to flank them stealthily.",
+        "Pray to the gods for a shift in the wind to aid you."
+    };
+    const char* q1_tr[] = {
+        "Zayıf bir nokta bulmak için düşman dizilişini analiz et.",
+        "Morallerini bozmak için doğrudan liderlerine saldır.",
+        "Savunmasızları korumak için savunma duvarı oluştur.",
+        "Araziyi kullanarak gizlice arkalarından dolaş.",
+        "Rüzgarın yön değiştirmesi için tanrılara dua et."
+    };
+    print_dynamic_trial(1, "The Ambush", "Pusu",
+                        "Your camp is suddenly surrounded by heavily armed mercenaries. You are outnumbered. What is your immediate reaction?",
+                        "Kampın aniden ağır silahlı paralı askerler tarafından kuşatıldı. Sayıca azsınız. İlk tepkin ne olur?", q1_en, q1_tr);
+    choice = get_trial_input();
+    if(choice == 1) { profile->intel += 1; profile->might -= 1; }
+    else if(choice == 2) { profile->might += 1; profile->intel -= 1; }
+    else if(choice == 3) { profile->honor += 1; profile->skill -= 1; }
+    else if(choice == 4) { profile->skill += 1; profile->honor -= 1; }
+    else if(choice == 5) { profile->faith += 1; profile->skill -= 1; }
 
-    // TRIAL 1
-    print_trial_header(1,
-        "The First Uprising", "İlk Ayaklanma",
-        "You are in a great war against a new, arrogant, and ruthless council seeking to seize the heavens. You have been chosen as the military leader and supreme general of your lineage. The enemy's celestial wrath is about to shatter your frontlines, and your army wants to retreat. How do you handle this military crisis and test of leadership?",
-        "Gökyüzünü ele geçirmek isteyen yeni, kibirli ve acımasız bir konseye karşı büyük bir savaştasınız. Soyunun askeri lideri ve başkomutanı seçildin. Düşmanın ilahi gazabı cepheni dağıtmak üzere ve ordun geri çekilmek istiyor. Bu askeri krizi ve liderlik sınavını nasıl yönetirsin?");
-    choice = get_parametric_input(); apply_trial_points(profile, choice);
+    // --- TRIAL 2: THE FORBIDDEN RELIC ---
+    const char* q2_en[] = {
+        "Study its mechanisms from a safe distance.",
+        "Grasp it forcefully to absorb its raw power.",
+        "Lock it away immediately as the ancient laws dictate.",
+        "Dismantle it to build a hidden weapon of your own.",
+        "Bow before it, accepting its cosmic will."
+    };
+    const char* q2_tr[] = {
+        "Mekanizmalarını güvenli bir mesafeden incele.",
+        "Ham gücünü emmek için onu zorla ele geçir.",
+        "Kadim yasaların emrettiği gibi onu hemen kilit altına al.",
+        "Kendi gizli silahını yapmak için onu parçalarına ayır.",
+        "Kozmik iradesini kabul ederek önünde eğil."
+    };
+    print_dynamic_trial(2, "The Forbidden Relic", "Yasak Emanet",
+                        "You discover a glowing, forbidden relic humming with dark energy. It promises greatness but threatens corruption.",
+                        "Karanlık bir enerjiyle titreşen, yasak ve parlayan bir emanet buldun. Yücelik vaat ediyor ama yozlaşma tehdidi taşıyor.", q2_en, q2_tr);
+    choice = get_trial_input();
+    if(choice == 1) { profile->intel += 1; profile->faith -= 1; }
+    else if(choice == 2) { profile->might += 1; profile->honor -= 1; }
+    else if(choice == 3) { profile->honor += 1; profile->might -= 1; }
+    else if(choice == 4) { profile->skill += 1; profile->faith -= 1; }
+    else if(choice == 5) { profile->faith += 1; profile->intel -= 1; }
 
-    // TRIAL 2
-    print_trial_header(2,
-        "The Condemnation Session", "Kınama Celsesi",
-        "The war is lost. The new tyrant of the apex has chained you and your entire lineage. Before the eyes of all, he sentences you to a severe, eternal, and exemplary exile. As you are banished to the darkest edge of the world, what will be your stance against this new authority that condemns you?",
-        "Savaş kaybedildi. Zirvenin yeni tiranı seni ve tüm soyunu zincirledi. Herkesin gözü önünde seni ağır, sonsuz ve ibretlik bir sürgüne mahkum ediyor. Dünyanın en karanlık köşesine sürülürken, seni mahkum eden bu yeni otoriteye karşı duruşun ne olacak?");
-    choice = get_parametric_input(); apply_trial_points(profile, choice);
+    // --- TRIAL 3: THE BROKEN ALLIANCE ---
+    const char* q3_en[] = {
+        "Calculate the exact diplomatic cost of their treachery.",
+        "Crush their stronghold immediately as a brutal warning.",
+        "Demand a formal, public duel to settle the dispute.",
+        "Bribe their inner guards and assassinate their leader.",
+        "Forgive them, trusting that cosmic karma will balance the scales."
+    };
+    const char* q3_tr[] = {
+        "İhanetlerinin kesin diplomatik maliyetini hesapla.",
+        "Acımasız bir uyarı olarak kalelerini derhal yerle bir et.",
+        "Anlaşmazlığı çözmek için resmi ve halka açık bir düello talep et.",
+        "İç muhafızlarına rüşvet ver ve liderlerine suikast düzenle.",
+        "Kozmik karmanın teraziyi dengeleyeceğine güvenerek onları affet."
+    };
+    print_dynamic_trial(3, "The Broken Alliance", "Bozulan İttifak",
+                        "Your closest allies have signed a secret pact with your enemy, leaving your borders completely exposed.",
+                        "En yakın müttefiklerin düşmanınla gizli bir antlaşma imzalayarak sınırlarını tamamen savunmasız bıraktı.", q3_en, q3_tr);
+    choice = get_trial_input();
+    if(choice == 1) { profile->intel += 1; profile->honor -= 1; }
+    else if(choice == 2) { profile->might += 1; profile->skill -= 1; }
+    else if(choice == 3) { profile->honor += 1; profile->intel -= 1; }
+    else if(choice == 4) { profile->skill += 1; profile->might -= 1; }
+    else if(choice == 5) { profile->faith += 1; profile->honor -= 1; }
 
-    // TRIAL 3
-    print_trial_header(3,
-        "The Borrowed Burden", "Ödünç Alınan Yük",
-        "A cunning mortal stands before you, offering to briefly take over the eternal burden on your shoulders. However, your instincts whisper that the moment you turn your back, he will break his promise and flee, locking you in this dungeon forever. How do you resolve this crisis of deception?",
-        "Kurnaz bir ölümlü karşında duruyor ve omuzlarındaki ebedi yükü kısa bir süreliğine devralmayı teklif ediyor. Ancak içgüdülerin sana, arkanı döndüğün an sözünden döneceğini ve kaçarak seni bu zindana sonsuza dek kilitleyeceğini fısıldıyor. Bu aldatmaca krizini nasıl çözersin?");
-    choice = get_parametric_input(); apply_trial_points(profile, choice);
+    // --- TRIAL 4: THE UNWINNABLE BATTLE ---
+    const char* q4_en[] = {
+        "Devise a complex retreat plan to minimize casualties.",
+        "Fight fiercely until your very last breath.",
+        "Stand alone at the frontline so the weak can escape.",
+        "Fake a surrender to get close enough to strike their commander.",
+        "Chant a death song, embracing your glorious destiny."
+    };
+    const char* q4_tr[] = {
+        "Kayıpları en aza indirmek için karmaşık bir geri çekilme planı tasarla.",
+        "Son nefesine kadar şiddetle savaş.",
+        "Zayıfların kaçabilmesi için ön cephede tek başına dur.",
+        "Komutanlarını vuracak kadar yaklaşmak için sahte bir teslimiyet sergile.",
+        "Görkemli kaderini kucaklayarak bir ölüm şarkısı söyle."
+    };
+    print_dynamic_trial(4, "The Unwinnable Battle", "Kazanılmaz Savaş",
+                        "A titan of unparalleled strength blocks your path. You cannot defeat it conventionally, and death is certain.",
+                        "Eşsiz bir güce sahip bir titan yolunu kapatıyor. Onu geleneksel yollarla yenemezsin ve ölüm kesin.", q4_en, q4_tr);
+    choice = get_trial_input();
+    if(choice == 1) { profile->intel += 1; profile->might -= 1; }
+    else if(choice == 2) { profile->might += 1; profile->intel -= 1; }
+    else if(choice == 3) { profile->honor += 1; profile->skill -= 1; }
+    else if(choice == 4) { profile->skill += 1; profile->faith -= 1; }
+    else if(choice == 5) { profile->faith += 1; profile->honor -= 1; }
 
-    // TRIAL 4
-    print_trial_header(4,
-        "The Cursed Stranger", "Lanetli Yabancı",
-        "An arrogant stranger arrives at your door, demanding sanctuary. However, ancient prophecies have whispered that this man will steal a priceless legacy from your bloodline. Moreover, in his satchel, he carries the head of a cursed entity whose gaze turns all living things to cold stone. How do you confront this danger?",
-        "Kibirli bir yabancı kapına geliyor ve sığınma talep ediyor. Ancak kadim kehanetler, bu adamın soyundan paha biçilmez bir mirası çalacağını fısıldadı. Dahası, çantasında bakışlarıyla tüm canlıları soğuk taşa çeviren lanetli bir varlığın başını taşıyor. Bu tehlikeyle nasıl yüzleşirsin?");
-    choice = get_parametric_input(); apply_trial_points(profile, choice);
-
-    // TRIAL 5
-    print_trial_header(5,
-        "Siege of the Sacred Garden", "Kutsal Bahçe Kuşatması",
-        "Your lineage's greatest sanctuary, your most heavily guarded divine garden and the ancient relics within, have been besieged by ambitious, foreign raiders. How do you make your final move to protect your family and this deep-rooted legacy?",
-        "Soyunun en büyük sığınağı, en sıkı korunan ilahi bahçen ve içindeki kadim emanetler hırslı, yabancı akıncılar tarafından kuşatıldı. Aileni ve bu köklü mirası korumak için son hamleni nasıl yaparsın?");
-    choice = get_parametric_input(); apply_trial_points(profile, choice);
+    // --- TRIAL 5: THE ULTIMATE GOAL ---
+    const char* q5_en[] = {
+        "Infinite knowledge and the secrets of the universe.",
+        "Absolute dominion and power over all your enemies.",
+        "A lasting legacy of purity, order, and justice.",
+        "Ultimate freedom from all rules and restrictions.",
+        "Transcendence and ascension to the ethereal planes."
+    };
+    const char* q5_tr[] = {
+        "Sonsuz bilgi ve evrenin sırları.",
+        "Tüm düşmanların üzerinde mutlak hakimiyet ve güç.",
+        "Kalıcı bir saflık, düzen ve adalet mirası.",
+        "Tüm kurallardan ve kısıtlamalardan mutlak özgürlük.",
+        "Aşkınlık ve ruhani düzlemlere yükseliş."
+    };
+    print_dynamic_trial(5, "The Ultimate Goal", "Nihai Hedef",
+                        "If you survive this crucible, what is the single ultimate reward you seek from existence?",
+                        "Eğer bu zorlu sınavdan sağ çıkarsan, varoluştan aradığın tek nihai ödül nedir?", q5_en, q5_tr);
+    choice = get_trial_input();
+    if(choice == 1) { profile->intel += 1; profile->faith -= 1; }
+    else if(choice == 2) { profile->might += 1; profile->honor -= 1; }
+    else if(choice == 3) { profile->honor += 1; profile->skill -= 1; }
+    else if(choice == 4) { profile->skill += 1; profile->intel -= 1; }
+    else if(choice == 5) { profile->faith += 1; profile->might -= 1; }
 
     evaluate_cosmic_alignment(profile);
     scene_class_selection(profile);
 }
 
+
+
 void evaluate_cosmic_alignment(CharacterProfile* profile) {
     clear_screen();
-    int min_distance = 999;
-    int distances[33];
+
+    // Variables for Cosine Similarity calculations
+    double max_cosine = -1.0;
+    int best_match_indices[33];
     int match_count = 0;
-    int tied_indices[33];
 
+    // Calculate Cosine Similarity against all 33 archetypes
     for (int i = 0; i < 33; i++) {
-        int d = abs(profile->intel - database[i].intel) +
-                abs(profile->might - database[i].might) +
-                abs(profile->honor - database[i].honor) +
-                abs(profile->skill - database[i].skill) +
-                abs(profile->faith - database[i].faith);
-        distances[i] = d;
-        if (d < min_distance) min_distance = d;
-    }
+        // Dot Product (A . B)
+        double dot_product = (profile->intel * database[i].intel) +
+                             (profile->might * database[i].might) +
+                             (profile->honor * database[i].honor) +
+                             (profile->skill * database[i].skill) +
+                             (profile->faith * database[i].faith);
 
-    for (int i = 0; i < 33; i++) {
-        if (distances[i] == min_distance) {
-            tied_indices[match_count] = i;
+        // Magnitude of Player Vector ||A||
+        double mag_A = sqrt(pow(profile->intel, 2) + pow(profile->might, 2) +
+                            pow(profile->honor, 2) + pow(profile->skill, 2) + pow(profile->faith, 2));
+
+        // Magnitude of Archetype Vector ||B||
+        double mag_B = sqrt(pow(database[i].intel, 2) + pow(database[i].might, 2) +
+                            pow(database[i].honor, 2) + pow(database[i].skill, 2) + pow(database[i].faith, 2));
+
+        // Cosine Theta
+        double cos_sim = 0.0;
+        if (mag_A > 0 && mag_B > 0) {
+            cos_sim = dot_product / (mag_A * mag_B);
+        }
+
+        // Floating point comparison with epsilon (0.0001) for accuracy
+        if (cos_sim > max_cosine + 0.0001) {
+            max_cosine = cos_sim;
+            match_count = 0;
+            best_match_indices[match_count] = i;
+            match_count++;
+        } else if (fabs(cos_sim - max_cosine) <= 0.0001) {
+            best_match_indices[match_count] = i;
             match_count++;
         }
     }
 
+    // UI Rendering
     if (current_lang == 1) {
         printf(COLOR_GOLD " =============================================================\n");
         printf("                     KOZMİK HÜKÜM                        \n");
@@ -629,8 +681,9 @@ void evaluate_cosmic_alignment(CharacterProfile* profile) {
         printf(" =============================================================\n\n" COLOR_RESET);
     }
 
-    if (min_distance == 0) {
-        int idx = tied_indices[0];
+    if (match_count == 1) {
+        // Single perfect alignment found
+        int idx = best_match_indices[0];
         strcpy(profile->god_alignment, database[idx].god);
         strcpy(profile->archetype_alignment, database[idx].archetype);
         strcpy(profile->archetype_alignment_tr, database[idx].archetype_tr);
@@ -638,17 +691,20 @@ void evaluate_cosmic_alignment(CharacterProfile* profile) {
         strcpy(profile->faction_class_tr, database[idx].faction_tr);
 
         if (current_lang == 1) {
+            printf(COLOR_WHITE "  Kozmik Vektör Eşleşmesi: " COLOR_CYAN "%%%.1f\n" COLOR_RESET, (max_cosine * 100.0));
             printf(COLOR_WHITE "  Kozmik Varlık devasa gözlerini kısıyor, alaycı bir şekilde gülüyor:\n\n" COLOR_RESET);
             printf(COLOR_CYAN "  \"Aaaa, %s'un bir çocuğu [ %s ]... Ne kadar şok edici derecede tahmin edilebilir.\"\n\n" COLOR_RESET,
                    profile->god_alignment, profile->archetype_alignment_tr);
         } else {
+            printf(COLOR_WHITE "  Cosmic Vector Match: " COLOR_CYAN "%%%.1f\n" COLOR_RESET, (max_cosine * 100.0));
             printf(COLOR_WHITE "  The Cosmic Entity narrows its massive eyes, laughing sarcastically:\n\n" COLOR_RESET);
             printf(COLOR_CYAN "  \"Aaaa, a child of %s [ %s ]... How shockingly predictable.\"\n\n" COLOR_RESET,
                    profile->god_alignment, profile->archetype_alignment);
         }
     }
     else {
-        int primary_idx = tied_indices[0];
+        // Multiple matches due to perfectly equal cosine distances
+        int primary_idx = best_match_indices[0];
         strcpy(profile->god_alignment, database[primary_idx].god);
         strcpy(profile->archetype_alignment, database[primary_idx].archetype);
         strcpy(profile->archetype_alignment_tr, database[primary_idx].archetype_tr);
@@ -656,60 +712,55 @@ void evaluate_cosmic_alignment(CharacterProfile* profile) {
         strcpy(profile->faction_class_tr, database[primary_idx].faction_tr);
 
         if (current_lang == 1) {
+            printf(COLOR_WHITE "  Kozmik Vektör Eşleşmesi: " COLOR_CYAN "%%%.1f\n" COLOR_RESET, (max_cosine * 100.0));
             printf(COLOR_WHITE "  Kozmik Varlık boyut matrisi üzerinden inceliyor:\n\n" COLOR_RESET);
             printf("  \"Bana daha çok " COLOR_CYAN "%s [ %s ]" COLOR_RESET " çocuğuna benziyorsun.\"\n\n",
                    profile->god_alignment, profile->archetype_alignment_tr);
 
-            if (match_count > 1) {
-                printf(COLOR_WHITE "  Yine de kozmik frekanslar çarpık. Gerçek soy alternatifini seç:\n\n" COLOR_RESET);
-                printf("  [1] Varlığın görüşünü kabul et (%s - %s)\n", database[primary_idx].god, database[primary_idx].archetype_tr);
+            printf(COLOR_WHITE "  Yine de kozmik frekanslar çarpık. Gerçek soy alternatifini seç:\n\n" COLOR_RESET);
+            printf("  [1] Varlığın görüşünü kabul et (%s - %s)\n", database[primary_idx].god, database[primary_idx].archetype_tr);
 
-                for (int i = 1; i < match_count; i++) {
-                    int idx = tied_indices[i];
-                    printf("  [%d] Aslında ben %s [ %s ] çocuğuyum\n", i + 1, database[idx].god, database[idx].archetype_tr);
-                }
-
-                printf("\n" COLOR_CYAN " Gerçek soy rezonansını seç (1-%d): " COLOR_RESET, match_count);
+            for (int i = 1; i < match_count; i++) {
+                int idx = best_match_indices[i];
+                printf("  [%d] Aslında ben %s [ %s ] çocuğuyum\n", i + 1, database[idx].god, database[idx].archetype_tr);
             }
+            printf("\n" COLOR_CYAN " Gerçek soy rezonansını seç (1-%d): " COLOR_RESET, match_count);
+
         } else {
+            printf(COLOR_WHITE "  Cosmic Vector Match: " COLOR_CYAN "%%%.1f\n" COLOR_RESET, (max_cosine * 100.0));
             printf(COLOR_WHITE "  The Cosmic Entity shifts through the dimension matrix:\n\n" COLOR_RESET);
             printf("  \"You look a lot like a child of " COLOR_CYAN "%s [ %s ]" COLOR_RESET " to me.\"\n\n",
                    profile->god_alignment, profile->archetype_alignment);
 
-            if (match_count > 1) {
-                printf(COLOR_WHITE "  Yet, the cosmic frequencies are warped. Choose your true bloodline alternative:\n\n" COLOR_RESET);
-                printf("  [1] Accept the Entity's vision (%s - %s)\n", database[primary_idx].god, database[primary_idx].archetype);
+            printf(COLOR_WHITE "  Yet, the cosmic frequencies are warped. Choose your true bloodline alternative:\n\n" COLOR_RESET);
+            printf("  [1] Accept the Entity's vision (%s - %s)\n", database[primary_idx].god, database[primary_idx].archetype);
 
-                for (int i = 1; i < match_count; i++) {
-                    int idx = tied_indices[i];
-                    printf("  [%d] Actually, I am the child of %s [ %s ]\n", i + 1, database[idx].god, database[idx].archetype);
-                }
-
-                printf("\n" COLOR_CYAN " Select your real bloodline resonance (1-%d): " COLOR_RESET, match_count);
+            for (int i = 1; i < match_count; i++) {
+                int idx = best_match_indices[i];
+                printf("  [%d] Actually, I am the child of %s [ %s ]\n", i + 1, database[idx].god, database[idx].archetype);
             }
+            printf("\n" COLOR_CYAN " Select your real bloodline resonance (1-%d): " COLOR_RESET, match_count);
         }
 
-        if (match_count > 1) {
-            char ch;
-            while(1) {
-                if(_kbhit()) {
-                    ch = _getch();
-                    int sel = ch - '0';
-                    if(sel >= 1 && sel <= match_count) {
-                        int final_idx = tied_indices[sel - 1];
-                        strcpy(profile->god_alignment, database[final_idx].god);
-                        strcpy(profile->archetype_alignment, database[final_idx].archetype);
-                        strcpy(profile->archetype_alignment_tr, database[final_idx].archetype_tr);
-                        strcpy(profile->faction_class, database[final_idx].faction);
-                        strcpy(profile->faction_class_tr, database[final_idx].faction_tr);
-                        break;
-                    }
+        char ch;
+        while(1) {
+            if(_kbhit()) {
+                ch = _getch();
+                int sel = ch - '0';
+                if(sel >= 1 && sel <= match_count) {
+                    int final_idx = best_match_indices[sel - 1];
+                    strcpy(profile->god_alignment, database[final_idx].god);
+                    strcpy(profile->archetype_alignment, database[final_idx].archetype);
+                    strcpy(profile->archetype_alignment_tr, database[final_idx].archetype_tr);
+                    strcpy(profile->faction_class, database[final_idx].faction);
+                    strcpy(profile->faction_class_tr, database[final_idx].faction_tr);
+                    break;
                 }
-                Sleep(2);
             }
-            if (current_lang == 1) printf(COLOR_GOLD "\n\n Matris son seçimine göre yeniden kalibre edildi!\n" COLOR_RESET);
-            else printf(COLOR_GOLD "\n\n Matrix re-calibrated to your final choice!\n" COLOR_RESET);
+            Sleep(2);
         }
+        if (current_lang == 1) printf(COLOR_GOLD "\n\n Matris son seçimine göre yeniden kalibre edildi!\n" COLOR_RESET);
+        else printf(COLOR_GOLD "\n\n Matrix re-calibrated to your final choice!\n" COLOR_RESET);
     }
 
     if (current_lang == 1) printf("\n\n" COLOR_WHITE " [Kader Yoluna devam etmek için HERHANGİ BİR TUŞA bas] " COLOR_RESET);
@@ -721,28 +772,12 @@ void evaluate_cosmic_alignment(CharacterProfile* profile) {
 // 6. CLASS SELECTION & ANOMALY SYSTEM
 // ============================================================================
 
-void get_god_affinity_data(const char* god_name, Nature* nature, int* r, int* s, int* a, int* d, int* m) {
-    if (strcmp(god_name, "Zeus") == 0)      { *nature = NATURE_AGGRESSIVE; *r=100; *s=70; *a=10; *d=60; *m=20; }
-    else if (strcmp(god_name, "Hera") == 0) { *nature = NATURE_AGGRESSIVE; *r=95;  *s=40; *a=20; *d=80; *m=30; }
-    else if (strcmp(god_name, "Hades") == 0){ *nature = NATURE_CALM;       *r=95;  *s=40; *a=10; *d=50; *m=80; }
-    else if (strcmp(god_name, "Athena")== 0){ *nature = NATURE_CALM;       *r=85;  *s=95; *a=60; *d=70; *m=40; }
-    else if (strcmp(god_name, "Ares") == 0) { *nature = NATURE_AGGRESSIVE; *r=30;  *s=100;*a=5;  *d=5;  *m=10; }
-    else if (strcmp(god_name, "Poseidon")==0){*nature = NATURE_AGGRESSIVE; *r=80;  *s=85; *a=15; *d=30; *m=50; }
-    else if (strcmp(god_name, "Apollo")== 0){ *nature = NATURE_CALM;       *r=60;  *s=70; *a=100;*d=60; *m=30; }
-    else if (strcmp(god_name, "Hephaestus")==0){*nature = NATURE_CALM;     *r=20;  *s=50; *a=95; *d=10; *m=80; }
-    else if (strcmp(god_name, "Aphrodite")==0){*nature= NATURE_AGGRESSIVE; *r=50;  *s=10; *a=90; *d=85; *m=50; }
-    else if (strcmp(god_name, "Dionysus")== 0){*nature= NATURE_AGGRESSIVE; *r=30;  *s=20; *a=95; *d=60; *m=50; }
-    else if (strcmp(god_name, "Hermes") == 0){*nature = NATURE_CALM;       *r=20;  *s=20; *a=40; *d=95; *m=100;}
-    else if (strcmp(god_name, "Artemis") ==0){*nature = NATURE_CALM;       *r=30;  *s=85; *a=20; *d=10; *m=10; }
-    else if (strcmp(god_name, "Demeter") ==0){*nature = NATURE_CALM;       *r=60;  *s=10; *a=30; *d=40; *m=80; }
-    else { *nature = NATURE_UNASSIGNED; *r=50; *s=50; *a=50; *d=50; *m=50; } // Fallback
-}
 
 void scene_class_selection(CharacterProfile* profile) {
     clear_screen();
-    int r, s, a, d, m;
-    get_god_affinity_data(profile->god_alignment, &profile->god_nature, &r, &s, &a, &d, &m);
-    profile->is_pure = (profile->player_nature == profile->god_nature);
+
+    // Default affinity logic (can be expanded later)
+    profile->affinity = 95;
 
     if (current_lang == 1) {
         printf(COLOR_GOLD " =============================================================\n");
@@ -778,11 +813,11 @@ void scene_class_selection(CharacterProfile* profile) {
             if (choice >= '1' && choice <= '5') {
                 valid = true;
                 switch(choice) {
-                    case '1': profile->chosen_class = CLASS_RULER; strcpy(profile->class_name, "Ruler"); strcpy(profile->class_name_tr, "Hükümdar"); profile->affinity = r; break;
-                    case '2': profile->chosen_class = CLASS_SOLDIER; strcpy(profile->class_name, "Soldier"); strcpy(profile->class_name_tr, "Asker"); profile->affinity = s; break;
-                    case '3': profile->chosen_class = CLASS_ARTIST; strcpy(profile->class_name, "Artist"); strcpy(profile->class_name_tr, "Sanatçı"); profile->affinity = a; break;
-                    case '4': profile->chosen_class = CLASS_DIPLOMAT; strcpy(profile->class_name, "Diplomat"); strcpy(profile->class_name_tr, "Diplomat"); profile->affinity = d; break;
-                    case '5': profile->chosen_class = CLASS_MERCHANT; strcpy(profile->class_name, "Merchant"); strcpy(profile->class_name_tr, "Tüccar"); profile->affinity = m; break;
+                    case '1': profile->chosen_class = CLASS_RULER; strcpy(profile->class_name, "Ruler"); strcpy(profile->class_name_tr, "Hükümdar"); break;
+                    case '2': profile->chosen_class = CLASS_SOLDIER; strcpy(profile->class_name, "Soldier"); strcpy(profile->class_name_tr, "Asker"); break;
+                    case '3': profile->chosen_class = CLASS_ARTIST; strcpy(profile->class_name, "Artist"); strcpy(profile->class_name_tr, "Sanatçı"); break;
+                    case '4': profile->chosen_class = CLASS_DIPLOMAT; strcpy(profile->class_name, "Diplomat"); strcpy(profile->class_name_tr, "Diplomat"); break;
+                    case '5': profile->chosen_class = CLASS_MERCHANT; strcpy(profile->class_name, "Merchant"); strcpy(profile->class_name_tr, "Tüccar"); break;
                 }
             }
         }
@@ -790,9 +825,6 @@ void scene_class_selection(CharacterProfile* profile) {
     }
 
     calculate_final_title(profile);
-
-    scene_init_subjects(profile); // Dersleri/Sınavları tanımla ve kaydet
-    scene_own_shrine(profile);
 }
 
 void set_titles(CharacterProfile* p, const char* en_title, const char* tr_title) {
@@ -801,38 +833,21 @@ void set_titles(CharacterProfile* p, const char* en_title, const char* tr_title)
 }
 
 void calculate_final_title(CharacterProfile* profile) {
-    int aff = profile->affinity;
-    bool pure = profile->is_pure;
-
+    // Simplified title assignment without Cross/Pure logic
     if (profile->chosen_class == CLASS_RULER) {
-        if(aff >= 90) pure ? set_titles(profile, "Divine Sovereign", "İlahi Hükümdar") : set_titles(profile, "Dread Tyrant", "Korkunç Tiran");
-        else if(aff >= 50) pure ? set_titles(profile, "Just Monarch", "Adil Hükümdar") : set_titles(profile, "Pragmatic Autocrat", "Pragmatik Otokrat");
-        else if(aff >= 10) pure ? set_titles(profile, "Visionary Guide", "Vizyoner Rehber") : set_titles(profile, "Chaotic Demagogue", "Kaotik Demagog");
-        else pure ? set_titles(profile, "Transcendent Overlord", "Yüce Derebeyi") : set_titles(profile, "Lord of Anarchy", "Anarşi Lordu");
+        set_titles(profile, "Divine Sovereign", "İlahi Hükümdar");
     }
     else if (profile->chosen_class == CLASS_SOLDIER) {
-        if(aff >= 90) pure ? set_titles(profile, "Sword of War", "Savaşın Kılıcı") : set_titles(profile, "Rider of the Apocalypse", "Kıyamet Binicisi");
-        else if(aff >= 50) pure ? set_titles(profile, "Honorable Commander", "Onurlu Komutan") : set_titles(profile, "Ruthless Mercenary", "Acımasız Paralı Asker");
-        else if(aff >= 10) pure ? set_titles(profile, "Unorthodox Tactician", "Sıradışı Taktisyen") : set_titles(profile, "Phantom Guerrilla", "Hayalet Gerilla");
-        else pure ? set_titles(profile, "Peaceful Blademaster", "Barışçıl Kılıç Ustası") : set_titles(profile, "Walking Calamity", "Yürüyen Felaket");
+        set_titles(profile, "Sword of War", "Savaşın Kılıcı");
     }
     else if (profile->chosen_class == CLASS_ARTIST) {
-        if(aff >= 90) pure ? set_titles(profile, "Cosmic Creator", "Kozmik Yaratıcı") : set_titles(profile, "Mind-Bending Genius", "Zihin Büken Dahi");
-        else if(aff >= 50) pure ? set_titles(profile, "Master Artisan", "Usta Zanaatkar") : set_titles(profile, "Avant-Garde Rebel", "Avangard İsyankar");
-        else if(aff >= 10) pure ? set_titles(profile, "Eccentric Surrealist", "Eksantrik Sürrealist") : set_titles(profile, "Provocative Illusionist", "Kışkırtıcı İllüzyonist");
-        else pure ? set_titles(profile, "Bard of the Void", "Hiçliğin Ozanı") : set_titles(profile, "Reality Weaver", "Gerçeklik Dokuyucusu");
+        set_titles(profile, "Cosmic Creator", "Kozmik Yaratıcı");
     }
     else if (profile->chosen_class == CLASS_DIPLOMAT) {
-        if(aff >= 90) pure ? set_titles(profile, "Divine Mediator", "İlahi Arabulucu") : set_titles(profile, "Mind Puppeteer", "Zihin Kuklacısı");
-        else if(aff >= 50) pure ? set_titles(profile, "Chief Negotiator", "Baş Müzakereci") : set_titles(profile, "Shadow Broker", "Gölge Simsarı");
-        else if(aff >= 10) pure ? set_titles(profile, "Unpredictable Envoy", "Öngörülemez Elçi") : set_titles(profile, "Chaos Whisperer", "Kaos Fısıldayan");
-        else pure ? set_titles(profile, "Silent Oracle", "Sessiz Kahin") : set_titles(profile, "Concept Distorter", "Kavram Çarpıtıcı");
+        set_titles(profile, "Divine Mediator", "İlahi Arabulucu");
     }
     else if (profile->chosen_class == CLASS_MERCHANT) {
-        if(aff >= 90) pure ? set_titles(profile, "Golden Sovereign", "Altın Hükümdar") : set_titles(profile, "Underworld Emperor", "Yeraltı İmparatoru");
-        else if(aff >= 50) pure ? set_titles(profile, "Trade Baron", "Ticaret Baronu") : set_titles(profile, "Black Market Cartel", "Karaborsa Karteli");
-        else if(aff >= 10) pure ? set_titles(profile, "Enigmatic Collector", "Esrarengiz Koleksiyoncu") : set_titles(profile, "Fortune Smuggler", "Servet Kaçakçısı");
-        else pure ? set_titles(profile, "Weaver of Fates", "Kaderlerin Dokuyucusu") : set_titles(profile, "Calamity Speculator", "Felaket Spekülatörü");
+        set_titles(profile, "Golden Sovereign", "Altın Hükümdar");
     }
 
     clear_screen();
@@ -840,21 +855,15 @@ void calculate_final_title(CharacterProfile* profile) {
         printf(COLOR_RED " =============================================================\n");
         printf("                      GERÇEK FORMUN UYANIYOR                  \n");
         printf(" =============================================================\n\n" COLOR_RESET);
-
-        printf(COLOR_WHITE "  Kan Bağı Rezonansı : " COLOR_CYAN "%d%%\n" COLOR_RESET, aff);
-        printf(COLOR_WHITE "  Zihniyet Uyumu     : %s\n", pure ? COLOR_GOLD "SAFKAN (Uyumlu)" COLOR_RESET : COLOR_RED "ÇAPRAZ (Anormal)" COLOR_RESET);
+        printf(COLOR_WHITE "  Kan Bağı Rezonansı : " COLOR_CYAN "%d%%\n" COLOR_RESET, profile->affinity);
         printf(COLOR_WHITE "  Kader Unvanı       : " COLOR_GOLD "[ %s ]\n\n" COLOR_RESET, profile->final_title_tr);
-
         printf(COLOR_DARK " [Kaderini onaylamak için HERHANGİ BİR TUŞA bas] " COLOR_RESET);
     } else {
         printf(COLOR_RED " =============================================================\n");
         printf("                      YOUR TRUE FORM AWAKENS                  \n");
         printf(" =============================================================\n\n" COLOR_RESET);
-
-        printf(COLOR_WHITE "  Bloodline Affinity : " COLOR_CYAN "%d%%\n" COLOR_RESET, aff);
-        printf(COLOR_WHITE "  Mindset Alignment  : %s\n", pure ? COLOR_GOLD "PURE (Harmonious)" COLOR_RESET : COLOR_RED "CROSS (Anomalous)" COLOR_RESET);
+        printf(COLOR_WHITE "  Bloodline Affinity : " COLOR_CYAN "%d%%\n" COLOR_RESET, profile->affinity);
         printf(COLOR_WHITE "  Destined Title     : " COLOR_GOLD "[ %s ]\n\n" COLOR_RESET, profile->final_title);
-
         printf(COLOR_DARK " [Press ANY KEY to finalize your destiny] " COLOR_RESET);
     }
     _getch();
@@ -1067,13 +1076,6 @@ void display_character_sheet(CharacterProfile* profile) {
     printf("│\n");
     // ---------------------------------------------------
 
-    const char* m_str = profile->is_pure ? (current_lang == 1 ? "SAFKAN (Uyumlu)" : "PURE (Harmonious)") : (current_lang == 1 ? "ÇAPRAZ (Anormal)" : "CROSS (Anomalous)");
-    const char* m_col = profile->is_pure ? COLOR_GOLD : COLOR_RED;
-    vis_len = 20 + strlen(m_str);
-    if (current_lang == 1) printf("   │  " COLOR_RESET "ZİHİN DURUMU       :  %s%s" COLOR_DARK, m_col, m_str);
-    else printf("   │  " COLOR_RESET "MINDSET STATE  :  %s%s" COLOR_DARK, m_col, m_str);
-    for(int i = 0; i < 72 - vis_len; i++) printf(" ");
-    printf("│\n");
 
     printf("   │                                                                        │\n");
     if (current_lang == 1) printf("   │  ======================== [ " COLOR_CYAN "DERS İSTATİSTİKLERİ" COLOR_DARK " ] =======================  │\n");
