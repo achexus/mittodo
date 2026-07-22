@@ -404,19 +404,32 @@ void render_menu_options(bool is_flashing) {
 
 bool scene_start_journey(CharacterProfile* profile) {
     clear_screen();
-
-    // Direct entry into the system
-    if (current_lang == 1) {
-        printf(COLOR_CYAN "\n\n  Düşüşten önceki adın neydi? : " COLOR_RESET);
-    } else {
-        printf(COLOR_CYAN "\n\n  What was your name before the fall? : " COLOR_RESET);
-    }
-
-    set_cursor_visibility(true);
-    scanf(" %[^\n]", profile->player_name);
     set_cursor_visibility(false);
 
-    // Immediately jump to the trial
+    // 1. Absolute darkness and silence
+    Sleep(2000); // Wait in darkness
+
+    // 2. The subtle trigger
+    if (current_lang == 1) {
+        printf(COLOR_DARK "\n\n\n\n\n\n\n\n\n\n                                  * pısst *\n" COLOR_RESET);
+    } else {
+        printf(COLOR_DARK "\n\n\n\n\n\n\n\n\n\n                                  * psst *\n" COLOR_RESET);
+    }
+
+    Sleep(1800); // Let the realization sink in
+
+    // 3. Sudden awakening (Lightning flash effect)
+    for (int i = 0; i < 3; i++) {
+        clear_screen();
+        printf(COLOR_WHITE);
+        printf("\n\n\n\n          ,/\n        ,///\n      ,/////\n    ,///////\n   /////////\n      //\n      /\n");
+        printf(COLOR_RESET);
+        Sleep(50);
+        clear_screen();
+        Sleep(50);
+    }
+
+    // Immediately jump into the chaos of Trial 1
     execute_parametric_test(profile);
     return true;
 }
@@ -499,32 +512,57 @@ void print_dynamic_trial(int trial_num, const char* title_en, const char* title_
 
 void execute_parametric_test(CharacterProfile* profile) {
     int choice;
+    clear_screen();
 
-    // --- TRIAL 1: THE AMBUSH ---
+    // --- TRIAL 1: THE AWAKENING IN CHAOS ---
     const char* q1_en[] = {
-        "Analyze the enemy formation to find a weak point.",
-        "Charge directly at their leader to break their morale.",
-        "Form a defensive shield wall to protect the vulnerable.",
-        "Use the terrain to flank them stealthily.",
-        "Pray to the gods for a shift in the wind to aid you."
+        "Grab the thick ropes of the main mast and brace against the impact.",
+        "Use the ship's tilt to quickly slide into the lower hatch.",
+        "Open your arms to the wave, accepting the chaotic flow."
     };
     const char* q1_tr[] = {
-        "Zayıf bir nokta bulmak için düşman dizilişini analiz et.",
-        "Morallerini bozmak için doğrudan liderlerine saldır.",
-        "Savunmasızları korumak için savunma duvarı oluştur.",
-        "Araziyi kullanarak gizlice arkalarından dolaş.",
-        "Rüzgarın yön değiştirmesi için tanrılara dua et."
+        "Ana direğin kalın halatlarına sıkıca sarılıp çarpışmayı olduğum yerde karşılarım.",
+        "Geminin eğiminden faydalanıp saniyeler içinde alt ambar kapağının boşluğuna kayarım.",
+        "Kollarımı dalgaya doğru açarak suyun beni sürükleyeceği o kaotik akışı kabullenirim."
     };
-    print_dynamic_trial(1, "The Ambush", "Pusu",
-                        "Your camp is suddenly surrounded by heavily armed mercenaries. You are outnumbered. What is your immediate reaction?",
-                        "Kampın aniden ağır silahlı paralı askerler tarafından kuşatıldı. Sayıca azsınız. İlk tepkin ne olur?", q1_en, q1_tr);
-    choice = get_trial_input();
-    if(choice == 1) { profile->intel += 1; profile->might -= 1; }
-    else if(choice == 2) { profile->might += 1; profile->intel -= 1; }
-    else if(choice == 3) { profile->honor += 1; profile->skill -= 1; }
-    else if(choice == 4) { profile->skill += 1; profile->honor -= 1; }
-    else if(choice == 5) { profile->faith += 1; profile->skill -= 1; }
 
+    if (current_lang == 1) {
+        printf(COLOR_GOLD "\n [SAHNE I] Uyanış\n\n" COLOR_RESET);
+        printf(COLOR_WHITE " Yüzüne şiddetle çarpan tuzlu suyla gözlerini açıyorsun. Çatırdayan ahşap bir güvertedesin.\n");
+        printf(" Ufku tamamen kaplayan, etrafındaki tüm ışığı yutan kapkara devasa bir yaratık denizin ortasında dikiliyor.\n");
+        printf(" Tepesinde ise göğü yırtarak inen, altın ışıklar saçan efsanevi bir figür var.\n\n");
+        printf(" Ancak bunu idrak etmeye vaktin yok. Devasa, kapkara bir dalga tam üzerine kırılmak üzere!\n\n" COLOR_RESET);
+
+        for (int i = 0; i < 3; i++) printf("  [" COLOR_CYAN "%d" COLOR_RESET "] %s\n", i + 1, q1_tr[i]);
+        printf(COLOR_CYAN "\n  İlk içgüdün nedir? (1-3): " COLOR_RESET);
+    } else {
+        printf(COLOR_GOLD "\n [SCENE I] The Awakening\n\n" COLOR_RESET);
+        printf(COLOR_WHITE " You open your eyes to freezing saltwater striking your face. You are on a creaking wooden deck.\n");
+        printf(" A colossal, pitch-black creature that swallows all light dominates the horizon.\n");
+        printf(" Above it, a legendary figure radiating golden light descends, tearing through the sky.\n\n");
+        printf(" But you have no time to comprehend this. A massive, dark wave is about to crash right on top of you!\n\n" COLOR_RESET);
+
+        for (int i = 0; i < 3; i++) printf("  [" COLOR_CYAN "%d" COLOR_RESET "] %s\n", i + 1, q1_en[i]);
+        printf(COLOR_CYAN "\n  What is your first instinct? (1-3): " COLOR_RESET);
+    }
+
+    // Helper loop for 3 options instead of 5
+    while (1) {
+        if (_kbhit()) {
+            char ch = _getch();
+            if (ch >= '1' && ch <= '3') {
+                choice = ch - '0';
+                break;
+            }
+        }
+        Sleep(20);
+    }
+
+    // Background Stat Calculations
+    if (choice == 1) { profile->might += 1; profile->intel -= 1; }      // Earth/Brace
+    else if (choice == 2) { profile->skill += 1; profile->honor -= 1; } // Ocean/Adapt
+    else if (choice == 3) { profile->faith += 1; profile->might -= 1; } // Sun/Accept
+    
     // --- TRIAL 2: THE FORBIDDEN RELIC ---
     const char* q2_en[] = {
         "Study its mechanisms from a safe distance.",
@@ -964,7 +1002,7 @@ void display_character_sheet(CharacterProfile* profile) {
 
     vis_len = 23 + strlen(buffer);
     if (current_lang == 1) printf(COLOR_DARK "   │  " COLOR_CYAN "[ID]" COLOR_RESET " TANIMLAMA     : " COLOR_WHITE "%s" COLOR_DARK, buffer);
-    else printf(COLOR_DARK "   │  " COLOR_CYAN "[ID]" COLOR_RESET " DESIGNATION   : " COLOR_WHITE "%s" COLOR_DARK, buffer);
+    else printf(COLOR_DARK "   │  " COLOR_CYAN "[ID]" COLOR_RESET " NAME   : " COLOR_WHITE "%s" COLOR_DARK, buffer);
     for(int i = 0; i < 72 - vis_len; i++) printf(" ");
     printf("│\n");
 
