@@ -36,7 +36,18 @@ typedef enum {
 } Nature;
 
 
+// ============================================================================
+// BADGE (GİZLİ ETİKET) SİSTEMİ
+// ============================================================================
+typedef enum {
+    BADGE_CURSE_OF_THANATOS = 0, // Ölüm Kılıcının Laneti
+    BADGE_BROKEN_BONES,          // Kırık Kemikler (Seviye 1-5)
+    BADGE_BLESSING_HELIOS,       // Helios'un Kutsaması
+    BADGE_BLESSING_POSEIDON,     // Poseidon'un Kutsaması
+    // YENİ ROZETLERİ BURAYA EKLEYEBİLİRSİN...
 
+    MAX_BADGES                   // SİSTEM: Toplam rozet sayısını otomatik tutar
+} BadgeID;
 
 // ============================================================================
 // GÜNCELLENMİŞ KARAKTER VERİTABANI (ESKİ VE YENİ SİSTEM BİRLEŞTİRİLDİ)
@@ -78,6 +89,8 @@ typedef struct {
 
     // GİZLİ VETO SİSTEMİ (Boğulma testini geçemeyenler için)
     int poseidon_veto;
+
+    int badges[MAX_BADGES];
 
 } CharacterProfile;
 
@@ -190,7 +203,19 @@ void scene_inside_location(const char* loc_name_tr, const char* loc_name_en);
 void print_mythic_date(void);
 void append_study_log(const char* subject, int earned_exp, int minutes);
 void scene_awaken_destiny(CharacterProfile* profile);
+// Tüm rozetleri tek kalemde sıfırlar (Yeni oyun başlarken kullanılır)
+void reset_all_badges(CharacterProfile* profile) {
+    for (int i = 0; i < MAX_BADGES; i++) {
+        profile->badges[i] = 0;
+    }
+}
 
+// Karaktere rozet vermek veya seviyesini güncellemek için kullanılır
+void set_badge(CharacterProfile* profile, BadgeID badge, int level) {
+    if (badge >= 0 && badge < MAX_BADGES) {
+        profile->badges[badge] = level;
+    }
+}
 
 // ============================================================================
 // 3. MAIN GAME LOOP
@@ -233,6 +258,10 @@ int main(void) {
                     // Reset stats for a new session
                     player.intel = 5; player.might = 5; player.honor = 5; player.skill = 5; player.faith = 5;
                     player.affinity = 0;
+                    player.poseidon_veto = 0;
+
+                    // TÜM ROZETLERİ TEK SATIRDA SIFIRLA
+                    reset_all_badges(&player);
 
                     for(int i=0; i<15; i++) player.study_stats[i] = 0;
                     player.total_exp = 0;
@@ -1245,6 +1274,7 @@ void execute_parametric_test(CharacterProfile* profile) {
         }
         // 2.3 - Sandık Yağmalayanlar (Thanatos'un Laneti)
         else if (choice_3 == 3) {
+            set_badge(profile, BADGE_CURSE_OF_THANATOS, 1);
             if (current_lang == 1) {
                 printf(COLOR_GOLD "\n [SAHNE V] Thanatos'un Dokunuşu\n\n" COLOR_RESET);
                 printf(COLOR_WHITE " Kaosun içinde karanlıkta sandıkları parçalarken, eline ağır, soğuk bir cisim geliyor.\n");
@@ -1302,6 +1332,7 @@ void execute_parametric_test(CharacterProfile* profile) {
 
         // 3.1.2 - Poseidon'a Güvenenler (Tanrının Avucunda ve PARRY Mekaniği)
         else if (choice_3 == 2) {
+            set_badge(profile, BADGE_BLESSING_POSEIDON, 1);
             if (current_lang == 1) {
                 printf(COLOR_GOLD "\n [SAHNE V] Tanrıların Avucunda\n\n" COLOR_RESET);
                 printf(COLOR_WHITE " Gözlerini kapatıp düşüşü kabulleniyorsun. Sulara çakılmadan milisaniyeler önce,\n");
@@ -1362,6 +1393,7 @@ void execute_parametric_test(CharacterProfile* profile) {
 
             clear_screen();
             if (parry_success == 1) { // PARRY BAŞARILI
+                set_badge(profile, BADGE_BLESSING_HELIOS, 1);
                 if (current_lang == 1) {
                     printf(COLOR_CYAN " [ PARRY BAŞARILI! ]\n\n" COLOR_RESET);
                     printf(COLOR_WHITE " Vücudunu mükemmel bir refleksle zıt yöne savuruyorsun!\n");
@@ -1388,6 +1420,7 @@ void execute_parametric_test(CharacterProfile* profile) {
 
                 // Gizli İnanç Zarı Devreye Giriyor
                 if (profile->faith >= 7) {
+                    set_badge(profile, BADGE_BLESSING_HELIOS, 1);
                     if (current_lang == 1) {
                         printf(COLOR_CYAN " [ GİZLİ İNANÇ ZARI BAŞARILI: İNANCIN (>=7) SENİ KORUYOR ]\n\n" COLOR_RESET);
                         printf(COLOR_GOLD " Ancak Helios seni bir kez daha gözden çıkarmıyor!\n");
@@ -1418,6 +1451,7 @@ void execute_parametric_test(CharacterProfile* profile) {
 
         // 3.1.3 - Poseidon'a Bağıranlar (Kemikleri Kırılan Karınca)
         else if (choice_3 == 3) {
+            set_badge(profile, BADGE_BROKEN_BONES, 5);
             if (current_lang == 1) {
                 printf(COLOR_GOLD "\n [SAHNE V] Karıncanın Düşüşü\n\n" COLOR_RESET);
                 printf(COLOR_WHITE " Bütün gücünle Poseidon'a bağırıyorsun! Ama okyanusların efendisi,\n");
@@ -2525,6 +2559,8 @@ void scene_init_subjects(CharacterProfile* profile) {
     save_game(profile); // Dosyaya kaydet
 }
 
+
+
 void scene_own_shrine(CharacterProfile* profile) {
     bool in_shrine = true;
 
@@ -2569,3 +2605,4 @@ void scene_own_shrine(CharacterProfile* profile) {
         }
     }
 }
+
