@@ -253,6 +253,264 @@ void set_badge(CharacterProfile* profile, BadgeID badge, int level) {
 }
 
 // ============================================================================
+// STAT ŞELALESİ (CASCADE) SİSTEMİ
+// ============================================================================
+typedef enum {
+    STAT_INTEL,
+    STAT_SKILL,
+    STAT_MIGHT,
+    STAT_HONOR,
+    STAT_FAITH
+} StatType;
+
+// Eksi puanların kaybolmasını önleyen ve kardeş statlardan çeken algoritma
+void update_stat(CharacterProfile* p, StatType stat, int amount) {
+    // 1. Durum: Eğer puan ekleniyorsa (Pozitif) doğrudan ekle
+    if (amount > 0) {
+        switch(stat) {
+            case STAT_INTEL: p->intel += amount; break;
+            case STAT_SKILL: p->skill += amount; break;
+            case STAT_MIGHT: p->might += amount; break;
+            case STAT_HONOR: p->honor += amount; break;
+            case STAT_FAITH: p->faith += amount; break;
+        }
+        return;
+    }
+
+    // 2. Durum: Eğer puan düşüyorsa (Negatif), şelale sistemini başlat
+    int deficit = -amount; // Eksiyi pozitife çevir ki döngüde kullanabilelim
+    StatType current_stat = stat;
+
+    // Negatif hasar (deficit) sıfırlanana kadar zincirleme hasar vur
+    while (deficit > 0) {
+        int* target_val = NULL;
+        StatType next_stat;
+
+        // Lore uyumlu kardeşlik zinciri
+        switch(current_stat) {
+            case STAT_INTEL: target_val = &p->intel; next_stat = STAT_SKILL; break;
+            case STAT_SKILL: target_val = &p->skill; next_stat = STAT_MIGHT; break;
+            case STAT_MIGHT: target_val = &p->might; next_stat = STAT_HONOR; break;
+            case STAT_HONOR: target_val = &p->honor; next_stat = STAT_FAITH; break;
+            case STAT_FAITH: target_val = &p->faith; next_stat = STAT_INTEL; break; // Döngüyü başa sarar
+        }
+
+        // Eğer mevcut stat bu hasarı karşılayabiliyorsa
+        if (*target_val >= deficit) {
+            *target_val -= deficit;
+            deficit = 0; // Hasar emildi, döngü biter
+        }
+        // Eğer stat yetmiyorsa, elindekini sıfırla, kalanı (kardeş) stata devret
+        else {
+            deficit -= *target_val;
+            *target_val = 0;
+            current_stat = next_stat; // Hedef artık bir sonraki kardeş stat
+        }
+    }
+}
+
+// ============================================================================
+// HIZLI MATRİS TEST MODU (HİKAYESİZ SİMÜLASYON)
+// ============================================================================
+void test_matrix_simulation(CharacterProfile* profile) {
+    clear_screen();
+    set_cursor_visibility(true);
+
+    printf(COLOR_GOLD " === KOZMİK MATRİS TEST MODU ===\n\n" COLOR_RESET);
+    printf(COLOR_DARK " (Sadece şıkların numaralarını girip Enter'a basınız)\n\n" COLOR_RESET);
+
+    // Statları Yeni Sisteme Göre Sıfırla (1,1,1,1,1 Kuralı)
+    profile->intel = 1; profile->might = 1; profile->honor = 1; profile->skill = 1; profile->faith = 1;
+    reset_all_badges(profile);
+    profile->poseidon_veto = 0;
+
+    int c1 = 0, c2 = 0, c3 = 0, final_ans = 0;
+
+    // --- SINAV 1 ---
+    printf(" Sınav 1 Kararı (1-3): "); scanf("%d", &c1);
+    if (c1 == 1) { update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_INTEL, -1); }
+    else if (c1 == 2) { update_stat(profile, STAT_INTEL, 2); update_stat(profile, STAT_HONOR, -1); }
+    else if (c1 == 3) { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_MIGHT, -1); }
+
+    // --- SINAV 2 ---
+    printf(" Sınav 2 Kararı (1-3): "); scanf("%d", &c2);
+    if (c1 == 1) {
+        if (c2 == 1) { update_stat(profile, STAT_HONOR, 2); update_stat(profile, STAT_SKILL, -1); }
+        else if (c2 == 2) { update_stat(profile, STAT_SKILL, 2); update_stat(profile, STAT_FAITH, -1); }
+        else if (c2 == 3) { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_INTEL, -1); }
+    } else if (c1 == 2) {
+        if (c2 == 1) { update_stat(profile, STAT_SKILL, 2); update_stat(profile, STAT_INTEL, -1); }
+        else if (c2 == 2) { update_stat(profile, STAT_INTEL, 2); update_stat(profile, STAT_MIGHT, -1); }
+        else if (c2 == 3) { update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_SKILL, -1); }
+    } else if (c1 == 3) {
+        if (c2 == 1) { update_stat(profile, STAT_SKILL, 2); update_stat(profile, STAT_HONOR, -1); }
+        else if (c2 == 2) { update_stat(profile, STAT_HONOR, 2); update_stat(profile, STAT_INTEL, -1); }
+        else if (c2 == 3) { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_MIGHT, -1); }
+    }
+
+    // --- ARA KONTROL (Drowning Fail) ---
+    if (c1 == 1 && c2 == 2) {
+        int d_fail;
+        printf(" [!] Boğulma minigame başarısız mı? (1: Evet, 0: Hayır): "); scanf("%d", &d_fail);
+        if (d_fail == 1) { update_stat(profile, STAT_INTEL, -2); update_stat(profile, STAT_SKILL, -2); }
+    }
+
+    // --- SINAV 3 / REAKSİYON ---
+    printf(" Sınav 3 Reaksiyonu (1-3): "); scanf("%d", &c3);
+    if (c1 == 1 && c2 == 1) {
+        if (c3 == 1) { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_HONOR, -1); }
+        else if (c3 == 2) { update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_FAITH, -1); }
+        else if (c3 == 3) { update_stat(profile, STAT_HONOR, 2); update_stat(profile, STAT_SKILL, -1); }
+    } else if (c1 == 1 && c2 == 2) {
+        if (c3 == 1) { update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_INTEL, -1); }
+        else if (c3 == 2) { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_HONOR, -1); }
+        else if (c3 == 3) { update_stat(profile, STAT_INTEL, 2); update_stat(profile, STAT_FAITH, -1); }
+    } else if (c1 == 2) {
+        if (c3 == 1) { update_stat(profile, STAT_HONOR, 2); update_stat(profile, STAT_INTEL, -1); }
+        else if (c3 == 2) { update_stat(profile, STAT_INTEL, 2); update_stat(profile, STAT_MIGHT, -1); }
+        else if (c3 == 3) { update_stat(profile, STAT_SKILL, 2); update_stat(profile, STAT_HONOR, -1); }
+    } else if (c1 == 3 && c2 == 1) {
+        if (c3 == 1) { update_stat(profile, STAT_SKILL, 2); update_stat(profile, STAT_FAITH, -1); }
+        else if (c3 == 2) { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_MIGHT, -1); }
+        else if (c3 == 3) { update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_INTEL, -1); }
+    } else {
+        if (c3 == 1) { update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_HONOR, -1); }
+        else if (c3 == 2) { update_stat(profile, STAT_INTEL, 2); update_stat(profile, STAT_FAITH, -1); }
+        else if (c3 == 3) { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_SKILL, -1); }
+    }
+
+    // --- ROZETLER & ARA OLAYLAR ---
+    bool is_spectator = false;
+    if ((c1 == 1 && c2 == 1 && (c3 == 1 || c3 == 2)) || (c1 == 1 && c2 == 3) || (c1 == 3 && (c2 == 2 || c2 == 3))) is_spectator = true;
+
+    if (is_spectator) {
+        int struggle;
+        printf(" [!] Helios dikkat çekme minigame başarılı mı? (1: Evet, 0: Hayır): "); scanf("%d", &struggle);
+        if (struggle == 1) set_badge(profile, BADGE_BLESSING_HELIOS, 1);
+    } else if (c1 == 2 && c3 == 2) {
+        set_badge(profile, BADGE_BROKEN_BONES, 5);
+    } else if (c1 == 2 && c3 == 3) {
+        set_badge(profile, BADGE_CURSE_OF_THANATOS, 1);
+    } else if (c1 == 3 && c2 == 1 && c3 == 2) {
+        set_badge(profile, BADGE_BLESSING_POSEIDON, 1);
+        int parry;
+        printf(" [!] Havada Parry minigame başarılı mı? (1: Evet, 0: Hayır): "); scanf("%d", &parry);
+        if (parry == 1) {
+            set_badge(profile, BADGE_BLESSING_HELIOS, 1);
+            update_stat(profile, STAT_SKILL, 2); update_stat(profile, STAT_MIGHT, -1);
+        } else if (profile->faith >= 7) {
+            set_badge(profile, BADGE_BLESSING_HELIOS, 1);
+        }
+    } else if (c1 == 3 && c2 == 1 && c3 == 3) {
+        set_badge(profile, BADGE_BROKEN_BONES, 5);
+        int crawl;
+        printf(" [!] Kırık Kemik Kararı (1: Sürün, 2: Yat): "); scanf("%d", &crawl);
+        if (crawl == 1) {
+            update_stat(profile, STAT_HONOR, 2); update_stat(profile, STAT_INTEL, -1);
+            set_badge(profile, BADGE_BLESSING_HELIOS, 1);
+        } else {
+            update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_MIGHT, -1);
+        }
+    }
+
+    // --- SCENE VI (HELIOS / DROWNER) ---
+    if (profile->badges[BADGE_BLESSING_HELIOS] == 1) {
+        int h_choice;
+        printf(" [!] Helios Kararı (1: Çıkış, 2: Atla, 3: Kal, 4: Soru Sor): "); scanf("%d", &h_choice);
+        if (h_choice == 1) return;
+        else if (h_choice == 2) {
+            profile->badges[BADGE_BLESSING_HELIOS] = 0;
+            update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_INTEL, -1);
+        } else if (h_choice == 3) { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_SKILL, -1); }
+        else if (h_choice == 4) { update_stat(profile, STAT_INTEL, 2); update_stat(profile, STAT_FAITH, -1); }
+    }
+
+    if (profile->badges[BADGE_BLESSING_HELIOS] == 0) {
+        if (c1 == 1 && c2 == 1 && c3 == 3) profile->poseidon_veto = 1; // Whirlpool Kurbanı
+        int d_choice;
+        printf(" [!] Boğulma Kararı (1: Sinirlen, 2: Debelen, 3: Öl, 4: Sese Odaklan): "); scanf("%d", &d_choice);
+        if (d_choice == 3) return;
+        if (d_choice == 1) { update_stat(profile, STAT_INTEL, 2); update_stat(profile, STAT_FAITH, -1); }
+        else if (d_choice == 2) { update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_INTEL, -1); }
+        else if (d_choice == 4) {
+            update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_MIGHT, -1);
+            if (profile->badges[BADGE_CURSE_OF_THANATOS] > 0) {
+                int curse;
+                printf(" [!] Lanet Kararı (1: Sil, 2: Tut): "); scanf("%d", &curse);
+                if (curse == 1) { update_stat(profile, STAT_HONOR, 2); update_stat(profile, STAT_SKILL, -1); profile->badges[BADGE_CURSE_OF_THANATOS] = 0; }
+                else { update_stat(profile, STAT_SKILL, 2); update_stat(profile, STAT_HONOR, -1); }
+            }
+        }
+    }
+
+    // --- ALTIN VURUŞ (NİHAİ KARAR) ---
+    printf("\n Nihai Sınav (Altın Vuruş) (1-7): "); scanf("%d", &final_ans);
+    if (final_ans == 1) { update_stat(profile, STAT_MIGHT, 4); update_stat(profile, STAT_FAITH, -2); }
+    else if (final_ans == 2) { update_stat(profile, STAT_HONOR, 4); update_stat(profile, STAT_INTEL, -2); }
+    else if (final_ans == 3) { update_stat(profile, STAT_MIGHT, 4); update_stat(profile, STAT_HONOR, -2); }
+    else if (final_ans == 4) { update_stat(profile, STAT_INTEL, 4); update_stat(profile, STAT_MIGHT, -2); }
+    else if (final_ans == 5) { update_stat(profile, STAT_SKILL, 4); update_stat(profile, STAT_FAITH, -2); }
+    else if (final_ans == 6) { update_stat(profile, STAT_HONOR, 4); update_stat(profile, STAT_MIGHT, -2); }
+    else if (final_ans == 7) { update_stat(profile, STAT_FAITH, 4); update_stat(profile, STAT_SKILL, -2); }
+
+    // Klavyedeki Enter tuşunu bellekten temizle
+    int c; while ((c = getchar()) != '\n' && c != EOF);
+    set_cursor_visibility(false);
+    clear_screen();
+
+    // --- KOSİNÜS MATEMATİĞİNİ ÇALIŞTIR ---
+    double max_cosine = -2.0;
+    int best_match_idx = 0;
+
+    for (int i = 0; i < 33; i++) {
+        if (profile->poseidon_veto == 1 && strcmp(database[i].god, "Poseidon") == 0) continue;
+
+        double dot = (profile->intel * database[i].intel) + (profile->might * database[i].might) +
+                     (profile->honor * database[i].honor) + (profile->skill * database[i].skill) + (profile->faith * database[i].faith);
+        double mag_A = sqrt(pow(profile->intel, 2) + pow(profile->might, 2) + pow(profile->honor, 2) + pow(profile->skill, 2) + pow(profile->faith, 2));
+        double mag_B = sqrt(pow(database[i].intel, 2) + pow(database[i].might, 2) + pow(database[i].honor, 2) + pow(database[i].skill, 2) + pow(database[i].faith, 2));
+
+        double cos_sim = (mag_A > 0 && mag_B > 0) ? (dot / (mag_A * mag_B)) : 0.0;
+        if (cos_sim > max_cosine) { max_cosine = cos_sim; best_match_idx = i; }
+    }
+
+    profile->affinity = (int)(max_cosine * 100.0);
+    strcpy(profile->god_alignment, database[best_match_idx].god);
+
+    // Dil kontrolüne göre Türkçe veya İngilizce Arketip ataması
+    if (current_lang == 1) {
+        strcpy(profile->archetype_alignment_tr, database[best_match_idx].archetype_tr);
+        strcpy(profile->faction_class_tr, database[best_match_idx].faction_tr);
+    } else {
+        strcpy(profile->archetype_alignment, database[best_match_idx].archetype);
+        strcpy(profile->faction_class, database[best_match_idx].faction);
+    }
+
+    // --- SONUÇLARI EKRANA YAZDIR ---
+    printf("\n" COLOR_GOLD " ================= TEST SONUÇLARI =================" COLOR_RESET "\n");
+    printf(COLOR_CYAN "\n [ STAT DAĞILIMI (Şelale Sonrası) ]\n" COLOR_RESET);
+    printf(" Zeka: %d | Güç: %d | Onur: %d | Yetenek: %d | İnanç: %d\n",
+           profile->intel, profile->might, profile->honor, profile->skill, profile->faith);
+
+    printf("\n" COLOR_CYAN " [ KOSİNÜS EŞLEŞMESİ ]\n" COLOR_RESET);
+    printf(" Eşleşme Oranı : " COLOR_WHITE "%%%d\n" COLOR_RESET, profile->affinity);
+    printf(" Çıkan Tanrı   : " COLOR_GOLD "%s\n" COLOR_RESET, profile->god_alignment);
+
+    if (current_lang == 1) {
+        printf(" Arketip       : " COLOR_WHITE "%s\n" COLOR_RESET, profile->archetype_alignment_tr);
+        printf(" Sınıf         : %s\n", profile->faction_class_tr);
+    } else {
+        printf(" Archetype     : " COLOR_WHITE "%s\n" COLOR_RESET, profile->archetype_alignment);
+        printf(" Faction       : %s\n", profile->faction_class);
+    }
+    printf(COLOR_GOLD " ==================================================" COLOR_RESET "\n");
+
+    if (current_lang == 1) printf("\n" COLOR_DARK " [Menüye dönmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
+    else printf("\n" COLOR_DARK " [Press ANY KEY to return to menu]\n" COLOR_RESET);
+    _getch();
+}
+
+// ============================================================================
 // 3. MAIN GAME LOOP
 // ============================================================================
 int main(void) {
@@ -274,7 +532,7 @@ int main(void) {
         .story = STORY_UNASSIGNED,
         .affinity = 0,
         // Initialize base stats to perfectly balanced 5
-        .intel = 5, .might = 5, .honor = 5, .skill = 5, .faith = 5
+        .intel = 1, .might = 1, .honor = 1, .skill = 1, .faith = 1
     };
     clear_screen();
     set_cursor_visibility(false);
@@ -321,6 +579,9 @@ int main(void) {
                     if (current_lang == 1) printf(COLOR_WHITE "\n \"Kaderinden kaçamazsın; sadece onu geciktirebilirsin.\"\n" COLOR_RESET);
                     else printf(COLOR_WHITE "\n \"You cannot escape your destiny; you can only delay it.\"\n" COLOR_RESET);
                     running = false;
+                    break;
+                case '5':
+                    test_matrix_simulation(&player);
                     break;
                 case '0':
                     scene_system_status(&player);
@@ -480,6 +741,7 @@ void render_menu_options(bool is_flashing) {
         printf("   [%s2%s] YOLCULUĞA DEVAM ET\033[K\n", option_color, border_color);
         printf("   [%s3%s] DİL SEÇENEKLERİ\033[K\n", option_color, border_color);
         printf("   [%s4%s] KADERDEN KAÇ (Çıkış)\033[K\n", option_color, border_color);
+        printf("   [%s5%s] TEST MATRİSİ (Hızlı Simülasyon)\033[K\n", option_color, border_color);
         printf("   -------------------------------------------------------------\033[K\n");
         printf("   [%s0%s] Sistem Durumu & Matris Doğrulama\033[K\n", title_color, border_color);
         printf("   -------------------------------------------------------------\033[K\n\n");
@@ -489,6 +751,7 @@ void render_menu_options(bool is_flashing) {
         printf("   [%s2%s] CONTINUE JOURNEY\033[K\n", option_color, border_color);
         printf("   [%s3%s] LANGUAGE OPTIONS\033[K\n", option_color, border_color);
         printf("   [%s4%s] ESCAPE DESTINY (Exit Game)\033[K\n", option_color, border_color);
+        printf("   [%s5%s] TEST MATRIX (Quick Simulation)\033[K\n", option_color, border_color);
         printf("   -------------------------------------------------------------\033[K\n");
         printf("   [%s0%s] System Status & Matrix Verification\033[K\n", title_color, border_color);
         printf("   -------------------------------------------------------------\033[K\n\n");
@@ -654,10 +917,19 @@ void execute_parametric_test(CharacterProfile* profile) {
         Sleep(20);
     }
 
-    // Trial 1 Stat Application (+1 / -1 Rule)
-    if (choice == 1) { profile->might += 1; profile->intel -= 1; }      // Kaba kuvvet, Zekayı düşürür
-    else if (choice == 2) { profile->intel += 1; profile->honor -= 1; } // Kaçışı hesaplamak zekicedir ama onur kırar
-    else if (choice == 3) { profile->faith += 1; profile->might -= 1; } // Kabulleniş inançtır, kaba gücü reddeder
+    // Trial 1 Stat Application (Cascade Sistemi: +2 / -1)
+    if (choice == 1) {
+        update_stat(profile, STAT_MIGHT, 2);
+        update_stat(profile, STAT_INTEL, -1);
+    } // Kaba kuvvet, Zekayı vurur -> Yoksa Yeteneği
+    else if (choice == 2) {
+        update_stat(profile, STAT_INTEL, 2);
+        update_stat(profile, STAT_HONOR, -1);
+    } // Zeka, Onuru vurur -> Yoksa İnancı
+    else if (choice == 3) {
+        update_stat(profile, STAT_FAITH, 2);
+        update_stat(profile, STAT_MIGHT, -1);
+    } // İnanç, Gücü vurur -> Yoksa Onuru
     prev_choice = choice;
 
     // ========================================================================
@@ -756,19 +1028,19 @@ void execute_parametric_test(CharacterProfile* profile) {
         Sleep(20);
     }
 
-    // Trial 2 Stat Application (+1 / -1 Rule)
+    // Trial 2 Stat Application (Cascade Sistemi: +2 / -1)
     if (prev_choice == 1) {
-        if (choice == 1) { profile->honor += 1; profile->skill -= 1; }      // Direnmek onurludur ama hantalcadır
-        else if (choice == 2) { profile->skill += 1; profile->faith -= 1; } // Refleks
-        else if (choice == 3) { profile->faith += 1; profile->intel -= 1; } // Körü körüne inanç zekayı düşürür
+        if (choice == 1) { update_stat(profile, STAT_HONOR, 2); update_stat(profile, STAT_SKILL, -1); }
+        else if (choice == 2) { update_stat(profile, STAT_SKILL, 2); update_stat(profile, STAT_FAITH, -1); }
+        else if (choice == 3) { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_INTEL, -1); }
     } else if (prev_choice == 2) {
-        if (choice == 1) { profile->skill += 1; profile->intel -= 1; }      // Panik refleksi
-        else if (choice == 2) { profile->intel += 1; profile->might -= 1; } // Analiz
-        else if (choice == 3) { profile->might += 1; profile->skill -= 1; } // Kaskatı kasılmak
+        if (choice == 1) { update_stat(profile, STAT_SKILL, 2); update_stat(profile, STAT_INTEL, -1); }
+        else if (choice == 2) { update_stat(profile, STAT_INTEL, 2); update_stat(profile, STAT_MIGHT, -1); }
+        else if (choice == 3) { update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_SKILL, -1); }
     } else if (prev_choice == 3) {
-        if (choice == 1) { profile->skill += 1; profile->honor -= 1; }      // Kaçmak
-        else if (choice == 2) { profile->honor += 1; profile->intel -= 1; } // Göğüs germek onurlu ama akılsızca
-        else if (choice == 3) { profile->faith += 1; profile->might -= 1; } // Saf teslimiyet
+        if (choice == 1) { update_stat(profile, STAT_SKILL, 2); update_stat(profile, STAT_HONOR, -1); }
+        else if (choice == 2) { update_stat(profile, STAT_HONOR, 2); update_stat(profile, STAT_INTEL, -1); }
+        else if (choice == 3) { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_MIGHT, -1); }
     }
     choice_2 = choice;
 
@@ -829,9 +1101,9 @@ void execute_parametric_test(CharacterProfile* profile) {
         while (1) {
             if (_kbhit()) {
                 char ch = _getch();
-                if (ch == '1') { profile->faith += 1; profile->honor -= 1; choice_3 = 1; break; }
-                else if (ch == '2') { profile->might += 1; profile->faith -= 1; choice_3 = 2; break; }
-                else if (ch == '3') { profile->honor += 1; profile->skill -= 1; choice_3 = 3; break; }
+                if (ch == '1') { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_HONOR, -1); choice_3 = 1; break; }
+                else if (ch == '2') { update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_FAITH, -1); choice_3 = 2; break; }
+                else if (ch == '3') { update_stat(profile, STAT_HONOR, 2); update_stat(profile, STAT_SKILL, -1); choice_3 = 3; break; }
             }
             Sleep(20);
         }
@@ -867,10 +1139,10 @@ void execute_parametric_test(CharacterProfile* profile) {
             else printf(COLOR_RED "\n\n  DROWNING! (MASH SPACE!)\n\n" COLOR_RESET);
             while (_kbhit()) {
                 char ch = _getch();
-                if (ch == ' ') { oxygen += 4.0f; if (oxygen > 100.0f) oxygen = 100.0f; }
+                if (ch == ' ') { oxygen += 6.0f; if (oxygen > 100.0f) oxygen = 100.0f; }
             }
             oxygen -= depletion_rate;
-            if (ticks % 10 == 0) depletion_rate += 0.25f;
+            if (ticks % 10 == 0) depletion_rate += 0.15f;
             if (oxygen <= 0) { oxygen = 0; conscious = false; }
 
             if (current_lang == 1) printf("  " COLOR_CYAN "Oksijen: " COLOR_RESET "[");
@@ -938,9 +1210,9 @@ void execute_parametric_test(CharacterProfile* profile) {
         while (1) {
             if (_kbhit()) {
                 char ch = _getch();
-                if (ch == '1') { profile->might += 1; profile->intel -= 1; choice_3 = 1; break; }
-                else if (ch == '2') { profile->faith += 1; profile->honor -= 1; choice_3 = 2; break; }
-                else if (ch == '3') { profile->intel += 1; profile->faith -= 1; choice_3 = 3; break; }
+                if (ch == '1') { update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_INTEL, -1); choice_3 = 1; break; }
+                else if (ch == '2') { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_HONOR, -1); choice_3 = 2; break; }
+                else if (ch == '3') { update_stat(profile, STAT_INTEL, 2); update_stat(profile, STAT_FAITH, -1); choice_3 = 3; break; }
             }
             Sleep(20);
         }
@@ -987,9 +1259,9 @@ void execute_parametric_test(CharacterProfile* profile) {
         while (1) {
             if (_kbhit()) {
                 char ch = _getch();
-                if (ch == '1') { profile->honor += 1; profile->intel -= 1; choice_3 = 1; break; }
-                else if (ch == '2') { profile->intel += 1; profile->might -= 1; choice_3 = 2; break; }
-                else if (ch == '3') { profile->skill += 1; profile->honor -= 1; choice_3 = 3; break; }
+                if (ch == '1') { update_stat(profile, STAT_HONOR, 2); update_stat(profile, STAT_INTEL, -1); choice_3 = 1; break; }
+                else if (ch == '2') { update_stat(profile, STAT_INTEL, 2); update_stat(profile, STAT_MIGHT, -1); choice_3 = 2; break; }
+                else if (ch == '3') { update_stat(profile, STAT_SKILL, 2); update_stat(profile, STAT_HONOR, -1); choice_3 = 3; break; }
             }
             Sleep(20);
         }
@@ -1039,9 +1311,9 @@ void execute_parametric_test(CharacterProfile* profile) {
         while (1) {
             if (_kbhit()) {
                 char ch = _getch();
-                if (ch == '1') { profile->skill += 1; profile->faith -= 1; choice_3 = 1; break; }
-                else if (ch == '2') { profile->faith += 1; profile->might -= 1; choice_3 = 2; break; }
-                else if (ch == '3') { profile->might += 1; profile->intel -= 1; choice_3 = 3; break; }
+                if (ch == '1') { update_stat(profile, STAT_SKILL, 2); update_stat(profile, STAT_FAITH, -1); choice_3 = 1; break; }
+                else if (ch == '2') { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_MIGHT, -1); choice_3 = 2; break; }
+                else if (ch == '3') { update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_INTEL, -1); choice_3 = 3; break; }
             }
             Sleep(20);
         }
@@ -1100,9 +1372,9 @@ void execute_parametric_test(CharacterProfile* profile) {
         while (1) {
             if (_kbhit()) {
                 char ch = _getch();
-                if (ch == '1') { profile->might += 1; profile->honor -= 1; choice_3 = 1; break; } // Hırs onuru bozar
-                else if (ch == '2') { profile->intel += 1; profile->faith -= 1; choice_3 = 2; break; } // Gerçekçilik inancı bozar
-                else if (ch == '3') { profile->faith += 1; profile->skill -= 1; choice_3 = 3; break; }
+                if (ch == '1') { update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_HONOR, -1); choice_3 = 1; break; }
+                else if (ch == '2') { update_stat(profile, STAT_INTEL, 2); update_stat(profile, STAT_FAITH, -1); choice_3 = 2; break; }
+                else if (ch == '3') { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_SKILL, -1); choice_3 = 3; break; }
             }
             Sleep(20);
         }
@@ -1451,14 +1723,14 @@ void execute_parametric_test(CharacterProfile* profile) {
             int attack_dir = rand() % 2; // 0 = Left, 1 = Right
             if (current_lang == 1) {
                 printf(COLOR_GOLD "\n [SAHNE V] Göklerde Hayatta Kalma\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " Güneş arabasında, gökyüzünde korkunç bir hızla ilerliyorsunuz. Savaşın yıkımı her yerde.\n");
-                printf(" Savaş anlatılırken aniden devasa bir enkaz parçası hızla üzerine doğru savruluyor!\n\n" COLOR_RESET);
+                printf(COLOR_WHITE " Güneş arabasıyla savaşın merkezinden inanılmaz bir hızla uzaklaşıyorsunuz.\n");
+                printf(" Fırtınanın kopardığı devasa bir gemi direği hızla üzerine doğru savruluyor!\n\n" COLOR_RESET);
                 if (attack_dir == 0) printf(COLOR_RED "  >>> SOL TARAFTAN ENKAZ GELİYOR! (PARRY İÇİN SAĞ OK TUŞUNA BAS) >>>\n\n" COLOR_RESET);
                 else printf(COLOR_RED "  <<< SAĞ TARAFTAN ENKAZ GELİYOR! (PARRY İÇİN SOL OK TUŞUNA BAS) <<<\n\n" COLOR_RESET);
             } else {
                 printf(COLOR_GOLD "\n [SCENE V] Survival in the Skies\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " You are moving at terrifying speed in the sun chariot. Destruction is everywhere.\n");
-                printf(" As the battle unfolds, suddenly a massive piece of debris hurtles towards you!\n\n" COLOR_RESET);
+                printf(COLOR_WHITE " You are moving at terrifying speed away from the battlefield.\n");
+                printf(" A massive ship mast torn by the storm hurtles towards you!\n\n" COLOR_RESET);
                 if (attack_dir == 0) printf(COLOR_RED "  >>> DEBRIS INCOMING FROM LEFT! (PRESS RIGHT ARROW TO PARRY) >>>\n\n" COLOR_RESET);
                 else printf(COLOR_RED "  <<< DEBRIS INCOMING FROM RIGHT! (PRESS LEFT ARROW TO PARRY) <<<\n\n" COLOR_RESET);
             }
@@ -1467,13 +1739,16 @@ void execute_parametric_test(CharacterProfile* profile) {
             int parry_success = 0;
             long start_time = clock();
 
-            while ((clock() - start_time) * 1000 / CLOCKS_PER_SEC < 2000) {
+            // SÜRE 2 SANİYEDEN 3.5 SANİYEYE ÇIKARILDI (Klavye gecikmesi toleransı)
+            while ((clock() - start_time) * 1000 / CLOCKS_PER_SEC < 3500) {
                 if (_kbhit()) {
                     int ch = _getch();
-                    if (ch == 0 || ch == 224) {
+                    if (ch == 0 || ch == 224) { // Yön tuşları
                         ch = _getch();
                         if (ch == required_key) { parry_success = 1; break; }
                         else if (ch == 75 || ch == 77 || ch == 72 || ch == 80) { parry_success = -1; break; }
+                    } else {
+                        parry_success = -1; break; // Panik yapıp harflere basarsa da başarısız olur
                     }
                 }
                 Sleep(10);
@@ -1493,38 +1768,38 @@ void execute_parametric_test(CharacterProfile* profile) {
                     printf(" The massive debris grazes past the chariot. As Helios drives his chariot\n");
                     printf(" towards the heavens, you manage to survive...\n\n" COLOR_RESET);
                 }
-                profile->skill += 1; profile->might -= 1; // Success Bonus
+                update_stat(profile, STAT_SKILL, 2); update_stat(profile, STAT_MIGHT, -1); // Success Bonus
             }
             else {
                 if (current_lang == 1) {
                     printf(COLOR_RED " [ PARRY BAŞARISIZ! ]\n\n" COLOR_RESET);
-                    printf(COLOR_WHITE " Yanlış hamle yaptın! Devasa enkaz sana şiddetle çarpıyor.\n");
-                    printf(" Arabadan sökülüp gökyüzünden okyanusa doğru ölümcül bir düşüşe geçiyorsun!\n\n" COLOR_RESET);
                 } else {
                     printf(COLOR_RED " [ PARRY FAILED! ]\n\n" COLOR_RESET);
-                    printf(COLOR_WHITE " Wrong move! The massive debris violently crashes into you.\n");
-                    printf(" You are ripped from the chariot, entering a fatal freefall towards the ocean!\n\n" COLOR_RESET);
                 }
 
                 if (profile->faith >= 7) {
                     set_badge(profile, BADGE_BLESSING_HELIOS, 1);
                     if (current_lang == 1) {
-                        printf(COLOR_CYAN " [ GİZLİ İNANÇ ZARI BAŞARILI: İNANCIN (>=7) SENİ KORUYOR ]\n\n" COLOR_RESET);
-                        printf(COLOR_GOLD " Ancak Helios seni bir kez daha gözden çıkarmıyor!\n");
-                        printf(" Güneş arabasıyla inanılmaz bir dalış yapıp sulara çakılmadan hemen önce\n");
-                        printf(" seni tekrar ensenden yakalıyor. İkinci bir şans elde ettin.\n\n" COLOR_RESET);
+                        printf(COLOR_WHITE " Devasa enkaz tam seni biçecekken...\n\n" COLOR_RESET);
+                        printf(COLOR_CYAN " [ GİZLİ İNANÇ ZARI BAŞARILI: İNANCIN (>=7) BİR MUCİZE YARATTI ]\n\n" COLOR_RESET);
+                        printf(COLOR_GOLD " Helios son anda arabayı sertçe kırıyor!\n");
+                        printf(" Enkaz sadece omzunu sıyırıp geçiyor. Arabanın zeminine yığılıyorsun ama hayattasın.\n\n" COLOR_RESET);
                     } else {
-                        printf(COLOR_CYAN " [ HIDDEN FAITH DICE SUCCESS: YOUR FAITH (>=7) PROTECTS YOU ]\n\n" COLOR_RESET);
-                        printf(COLOR_GOLD " But Helios does not give up on you!\n");
-                        printf(" He makes an incredible dive with his sun chariot, catching you by the scruff\n");
-                        printf(" right before you hit the water. You have been granted a second chance.\n\n" COLOR_RESET);
+                        printf(COLOR_WHITE " Just as the debris is about to rip you apart...\n\n" COLOR_RESET);
+                        printf(COLOR_CYAN " [ HIDDEN FAITH DICE SUCCESS: YOUR FAITH (>=7) CREATES A MIRACLE ]\n\n" COLOR_RESET);
+                        printf(COLOR_GOLD " Helios swerves the chariot sharply at the last second!\n");
+                        printf(" The debris only grazes your shoulder. You collapse on the floor, but you are alive.\n\n" COLOR_RESET);
                     }
                 } else {
                     if (current_lang == 1) {
+                        printf(COLOR_WHITE " Yanlış hamle yaptın! Devasa enkaz sana şiddetle çarpıyor.\n");
+                        printf(" Arabadan sökülüp gökyüzünden okyanusa doğru ölümcül bir düşüşe geçiyorsun!\n\n" COLOR_RESET);
                         printf(COLOR_DARK " [ GİZLİ İNANÇ ZARI BAŞARISIZ ]\n\n" COLOR_RESET);
                         printf(COLOR_WHITE " Havada çaresizce süzülüyorsun. Tanrılar artık seninle ilgilenmiyor.\n");
                         printf(" Son sürat denize çakılıyor ve boğularak karanlık sulara gömülüyorsun...\n\n" COLOR_RESET);
                     } else {
+                        printf(COLOR_WHITE " Wrong move! The massive debris violently crashes into you.\n");
+                        printf(" You are ripped from the chariot, entering a fatal freefall towards the ocean!\n\n" COLOR_RESET);
                         printf(COLOR_DARK " [ HIDDEN FAITH DICE FAILED ]\n\n" COLOR_RESET);
                         printf(COLOR_WHITE " You drift helplessly in the air. The gods no longer care for you.\n");
                         printf(" You plunge into the sea at terminal velocity, drowning in the dark waters...\n\n" COLOR_RESET);
@@ -1567,8 +1842,8 @@ void execute_parametric_test(CharacterProfile* profile) {
             while (1) {
                 if (_kbhit()) {
                     char ch = _getch();
-                    if (ch == '1') { profile->honor += 1; profile->intel -= 1; crawl_choice = 1; break; } // Sürünmek onurlu bir direniştir
-                    else if (ch == '2') { profile->faith += 1; profile->might -= 1; crawl_choice = 2; break; }
+                    if (ch == '1') { update_stat(profile, STAT_HONOR, 2); update_stat(profile, STAT_INTEL, -1); crawl_choice = 1; break; }
+                    else if (ch == '2') { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_MIGHT, -1); crawl_choice = 2; break; }
                 }
                 Sleep(20);
             }
@@ -1700,7 +1975,7 @@ void execute_parametric_test(CharacterProfile* profile) {
         }
         else if (helios_choice == 2) {
             profile->badges[BADGE_BLESSING_HELIOS] = 0; // Jumps out -> Becomes a Drowner
-            profile->might += 1; profile->intel -= 1; // Arabadan atlamak güçlü bir irade ama akılsızca
+            update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_INTEL, -1); // Arabadan atlamak cesur ama akılsızca
 
             if (current_lang == 1) {
                 printf(COLOR_DARK "\n [SAHNE VI] Düşüş\n\n" COLOR_RESET);
@@ -1717,8 +1992,8 @@ void execute_parametric_test(CharacterProfile* profile) {
             _getch();
         }
         else {
-            if (helios_choice == 3) { profile->faith += 1; profile->skill -= 1; }
-            if (helios_choice == 4) { profile->intel += 1; profile->faith -= 1; }
+            if (helios_choice == 3) { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_SKILL, -1); }
+            if (helios_choice == 4) { update_stat(profile, STAT_INTEL, 2); update_stat(profile, STAT_FAITH, -1); }
 
             if (current_lang == 1) {
                 printf(COLOR_GOLD "\n [SAHNE VI] İlahi Yolculuk\n\n" COLOR_RESET);
@@ -1783,10 +2058,10 @@ void execute_parametric_test(CharacterProfile* profile) {
         if (drown_choice == 3) { exit(0); } // Silently die.
 
         clear_screen();
-        if (drown_choice == 1) { profile->intel += 1; profile->faith -= 1; }
-        else if (drown_choice == 2) { profile->might += 1; profile->intel -= 1; }
+        if (drown_choice == 1) { update_stat(profile, STAT_INTEL, 2); update_stat(profile, STAT_FAITH, -1); }
+        else if (drown_choice == 2) { update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_INTEL, -1); }
         else if (drown_choice == 4) {
-            profile->faith += 1; profile->might -= 1;
+            update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_MIGHT, -1);
 
             if (profile->badges[BADGE_CURSE_OF_THANATOS] > 0) {
                 if (current_lang == 1) {
@@ -1813,8 +2088,8 @@ void execute_parametric_test(CharacterProfile* profile) {
                     Sleep(20);
                 }
 
-                if (curse_choice == 1) { profile->honor += 1; profile->skill -= 1; profile->badges[BADGE_CURSE_OF_THANATOS] = 0; }
-                else { profile->skill += 1; profile->honor -= 1; }
+                if (curse_choice == 1) { update_stat(profile, STAT_HONOR, 2); update_stat(profile, STAT_SKILL, -1); profile->badges[BADGE_CURSE_OF_THANATOS] = 0; }
+                else { update_stat(profile, STAT_SKILL, 2); update_stat(profile, STAT_HONOR, -1); }
             }
         }
         if (current_lang == 1) printf(COLOR_CYAN " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
@@ -1884,18 +2159,27 @@ void execute_parametric_test(CharacterProfile* profile) {
             char ch = _getch();
             if (ch >= '1' && ch <= '7') {
                 int final_ans = ch - '0';
-                if (final_ans == 1) { profile->might += 1; profile->faith -= 1; }
-                if (final_ans == 2) { profile->honor += 1; profile->intel -= 1; }
-                if (final_ans == 3) { profile->might += 1; profile->honor -= 1; }
-                if (final_ans == 4) { profile->intel += 1; profile->might -= 1; }
-                if (final_ans == 5) { profile->skill += 1; profile->faith -= 1; }
-                if (final_ans == 6) { profile->honor += 1; profile->might -= 1; }
-                if (final_ans == 7) { profile->faith += 1; profile->skill -= 1; }
+                // Altın Vuruş: +4 / -2 ile matrisi kilitler
+                if (final_ans == 1) { update_stat(profile, STAT_MIGHT, 4); update_stat(profile, STAT_FAITH, -2); }
+                if (final_ans == 2) { update_stat(profile, STAT_HONOR, 4); update_stat(profile, STAT_INTEL, -2); }
+                if (final_ans == 3) { update_stat(profile, STAT_MIGHT, 4); update_stat(profile, STAT_HONOR, -2); }
+                if (final_ans == 4) { update_stat(profile, STAT_INTEL, 4); update_stat(profile, STAT_MIGHT, -2); }
+                if (final_ans == 5) { update_stat(profile, STAT_SKILL, 4); update_stat(profile, STAT_FAITH, -2); }
+                if (final_ans == 6) { update_stat(profile, STAT_HONOR, 4); update_stat(profile, STAT_MIGHT, -2); }
+                if (final_ans == 7) { update_stat(profile, STAT_FAITH, 4); update_stat(profile, STAT_SKILL, -2); }
                 break;
             }
         }
         Sleep(20);
     }
+
+    clear_screen();
+    if (current_lang == 1) {
+        printf(COLOR_CYAN "\n\n  [ KOZMİK MATRİS MÜHÜRLENİYOR... ]\n" COLOR_RESET);
+    } else {
+        printf(COLOR_CYAN "\n\n  [ SEALING COSMIC MATRIX... ]\n" COLOR_RESET);
+    }
+    Sleep(2000);
 
     // ========================================================================
     // SILENT COSMIC MATRIX CALCULATION
@@ -1953,7 +2237,9 @@ void execute_parametric_test(CharacterProfile* profile) {
             printf("  Karanlığın içinden devasa, tanrısal bir el müthiş bir hızla yükseliyor!\n");
             printf("  Seni parmaklarının arasına aldığı gibi acımasızca, kemiklerini çatırdatırcasına sıkıyor!\n\n" COLOR_RESET);
             printf(COLOR_DARK "  Nefesin kesiliyor...\n  Gözlerin kararıyor...\n  Hiçliğe karışıyorsun...\n\n" COLOR_RESET);
-            Sleep(3000);
+            if (current_lang == 1) printf(COLOR_CYAN "  [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
+            else printf(COLOR_CYAN "  [Press ANY KEY to continue]\n" COLOR_RESET);
+            _getch();
 
             // Drowners Name Input
             clear_screen();
@@ -2184,7 +2470,9 @@ void execute_parametric_test(CharacterProfile* profile) {
             printf(" In the millisecond you blink...\n\n" COLOR_RESET);
         }
 
-        Sleep(2500);
+        if (current_lang == 1) printf(COLOR_DARK " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
+        else printf(COLOR_DARK " [Press ANY KEY to continue]\n" COLOR_RESET);
+        _getch();
     }
 
     // ========================================================================
