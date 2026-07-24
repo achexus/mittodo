@@ -50,6 +50,28 @@ typedef enum {
 } BadgeID;
 
 // ============================================================================
+// NPC İLİŞKİ (RELATIONSHIP) SİSTEMİ
+// ============================================================================
+typedef enum {
+    NPC_HELIOS = 0,
+    NPC_POSEIDON,
+    NPC_APOLLO,
+    NPC_ATHENA,
+    // Yeni karakterler eklendikçe buraya yazılacak...
+
+    MAX_NPCS // Sistem otomatik sayar
+} NPC_ID;
+
+// ...
+
+// CharacterProfile struct'ının İÇİNE şunları ekle:
+// --- 6. SOSYAL İLİŞKİ AĞI (Yeni) ---
+int npc_relationship[MAX_NPCS]; // Karakterlerle olan ilişki puanı (-100 ile +100 arası)
+bool npc_met[MAX_NPCS];         // Karakterle tanışıldı mı? (İlişki barı açık mı?)
+
+// Not: main() fonksiyonu içinde yeni oyun (1'e basıldığında) başlarken
+// bu dizileri 0 ve false olarak sıfırlamayı unutma!
+// ============================================================================
 // GÜNCELLENMİŞ KARAKTER VERİTABANI (ESKİ VE YENİ SİSTEM BİRLEŞTİRİLDİ)
 // ============================================================================
 typedef struct {
@@ -86,6 +108,10 @@ typedef struct {
     int last_login_day;
     int last_login_month;
     int last_login_year;
+
+    // --- 6. SOSYAL İLİŞKİ AĞI (Yeni) ---
+    int npc_relationship[MAX_NPCS]; // Karakterlerle olan ilişki puanı (-100 ile +100 arası)
+    bool npc_met[MAX_NPCS];
 
     // GİZLİ VETO SİSTEMİ (Boğulma testini geçemeyenler için)
     int poseidon_veto;
@@ -2261,57 +2287,313 @@ void execute_parametric_test(CharacterProfile* profile) {
     strcpy(profile->faction_class, database[best_match_idx].faction);
     strcpy(profile->faction_class_tr, database[best_match_idx].faction_tr);
 
-    // ========================================================================
-    // SAHNE VIII: UYANIŞ VE DEV EL (Matris hesaplandıktan sonraki olaylar)
+  // ========================================================================
+    // SAHNE VIII: UYANIŞ (Matris hesaplandıktan sonraki olaylar)
     // ========================================================================
     clear_screen();
 
-    // Eğer karakter Poseidon çocuğu çıkmışsa ve BOĞULUYORSA gizli yetenek tetiklenir!
-    if (profile->badges[BADGE_BLESSING_HELIOS] == 0 && strcmp(profile->god_alignment, "Poseidon") == 0) {
-        if (current_lang == 1) {
-            printf(COLOR_CYAN "\n  Kafandaki ses kıkırdayarak fısıldar:\n");
-            printf("  \"Nefes almaya çalışsana...\"\n\n" COLOR_RESET);
-            Sleep(2000);
-            printf(COLOR_WHITE "  İstemsizce derin bir nefes alıyorsun... ve ciğerlerine su yerine hava dolduğunu fark ediyorsun!\n");
-            printf("  Okyanus seni boğmuyor. Sen okyanusa aitsin.\n");
-            printf("  Var gücünle yukarı, ışığa doğru yüzmeye başlıyorsun...\n\n" COLOR_RESET);
-        } else {
-            printf(COLOR_CYAN "\n  The voice in your head chuckles and whispers:\n");
-            printf("  \"Try taking a breath...\"\n\n" COLOR_RESET);
-            Sleep(2000);
-            printf(COLOR_WHITE "  You involuntarily take a deep breath... and realize your lungs fill with air, not water!\n");
-            printf("  The ocean is not drowning you. You belong to the ocean.\n");
-            printf("  You start swimming upwards with all your might, towards the light...\n\n" COLOR_RESET);
+    // BOĞULANLARIN ORTAK SONU (Devasa El ve Poseidon Uyanışı)
+    if (profile->badges[BADGE_BLESSING_HELIOS] == 0) {
+        if (strcmp(profile->god_alignment, "Poseidon") == 0) {
+            if (current_lang == 1) {
+                printf(COLOR_CYAN "\n  Kafandaki ses kıkırdayarak fısıldar:\n");
+                printf("  \"Nefes almaya çalışsana...\"\n\n" COLOR_RESET);
+                Sleep(2000);
+                printf(COLOR_WHITE "  İstemsizce derin bir nefes alıyorsun... ve ciğerlerine su yerine hava dolduğunu fark ediyorsun!\n");
+                printf("  Okyanus seni boğmuyor. Sen okyanusa aitsin.\n");
+                printf("  Var gücünle yukarı, ışığa doğru yüzmeye başlıyorsun...\n\n" COLOR_RESET);
+            } else {
+                printf(COLOR_CYAN "\n  The voice in your head chuckles and whispers:\n");
+                printf("  \"Try taking a breath...\"\n\n" COLOR_RESET);
+                Sleep(2000);
+                printf(COLOR_WHITE "  You involuntarily take a deep breath... and realize your lungs fill with air, not water!\n");
+                printf("  The ocean is not drowning you. You belong to the ocean.\n");
+                printf("  You start swimming upwards with all your might, towards the light...\n\n" COLOR_RESET);
+            }
+            Sleep(2500);
         }
-        Sleep(2500);
+
+        if (current_lang == 1) {
+            printf(COLOR_RED "  TAM O AN...\n\n");
+            printf("  Karanlığın içinden devasa, tanrısal bir el müthiş bir hızla yükseliyor!\n");
+            printf("  Seni parmaklarının arasına aldığı gibi acımasızca, kemiklerini çatırdatırcasına sıkıyor!\n\n" COLOR_RESET);
+            printf(COLOR_DARK "  Nefesin kesiliyor...\n  Gözlerin kararıyor...\n  Hiçliğe karışıyorsun...\n\n" COLOR_RESET);
+        } else {
+            printf(COLOR_RED "  JUST THEN...\n\n");
+            printf("  A colossal, divine hand rises from the darkness at terrifying speed!\n");
+            printf("  It catches you in its fingers and crushes you mercilessly, making your bones crack!\n\n" COLOR_RESET);
+            printf(COLOR_DARK "  You lose your breath...\n  Your vision fades to black...\n  You merge with the void...\n\n" COLOR_RESET);
+        }
+        Sleep(4000);
+
+        // Doğrudan ders tanımlama ve Shrine (Tapınak) ekranına atlar
+        scene_init_subjects(profile);
+        scene_own_shrine(profile);
     }
+    // HELIOS İLE UÇANLARIN UYANIŞI VE MÜDÜR ODASI
+    else {
+        if (current_lang == 1) {
+            printf(COLOR_GOLD "\n [SAHNE VIII] Güneşin Şehri\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Gözlerini yavaşça aralıyorsun... Görme yetin yavaş yavaş geri geliyor.\n");
+            printf(" Helios arabasında sana tepeden bakıyor.\n\n" COLOR_RESET);
+            printf(COLOR_GOLD " \"Uyandın demek...\"\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Ona bomboş, anlamlandıramayan gözlerle bakıyorsun. Zihnin az önceki kozmik\n");
+            printf(" yüzleşmenin ağırlığıyla darmadağın olmuş durumda. Helios bu boş bakışını affederek\n");
+            printf(" ihtişamlı ve devasa bir tavırla kollarını açıyor:\n\n" COLOR_RESET);
+            printf(COLOR_GOLD " \"Ben Helios! Göğün yanan gözü, Güneşin kudretli Titanı!\"\n" COLOR_RESET);
+            printf(COLOR_WHITE " Sesinin tınısı bile gök gürültüsü gibi havayı titretiyor.\n" COLOR_RESET);
+            printf(COLOR_GOLD " \"Ve sen de, benim bizzat müdürü olduğum bu kadim akademinin yeni öğrencisisin.\"\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Şaşkınlıkla etrafına bakınıp fısıldıyorsun: " COLOR_CYAN "\"Peki... Ben kimim?\"\n\n" COLOR_RESET);
+            printf(COLOR_GOLD " \"Madem soruyorsun,\" " COLOR_WHITE "diyor Helios hafifçe gülümseyerek, " COLOR_GOLD "\"Sana ne olarak seslenmemi istersin?\"\n\n" COLOR_RESET);
+            printf(COLOR_CYAN "  Adını Gir: " COLOR_RESET);
+        } else {
+            printf(COLOR_GOLD "\n [SCENE VIII] City of the Sun\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " You slowly open your eyes... Your vision gradually returns.\n");
+            printf(" Helios is looking down at you in his chariot.\n\n" COLOR_RESET);
+            printf(COLOR_GOLD " \"So you are awake...\"\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " You stare at him with blank, uncomprehending eyes. Your mind is shattered by the\n");
+            printf(" weight of the cosmic confrontation. Forgiving your blank stare, Helios spreads\n");
+            printf(" his arms with magnificent grandeur:\n\n" COLOR_RESET);
+            printf(COLOR_GOLD " \"I am Helios! The burning eye of the sky, the mighty Titan of the Sun!\"\n" COLOR_RESET);
+            printf(COLOR_WHITE " Even the timbre of his voice vibrates the air like thunder.\n" COLOR_RESET);
+            printf(COLOR_GOLD " \"And you are the new student of this ancient academy, where I serve as principal.\"\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " You look around in bewilderment and whisper: " COLOR_CYAN "\"Then... Who am I?\"\n\n" COLOR_RESET);
+            printf(COLOR_GOLD " \"Since you ask,\" " COLOR_WHITE "says Helios with a slight smile, " COLOR_GOLD "\"What would you like me to call you?\"\n\n" COLOR_RESET);
+            printf(COLOR_CYAN "  Enter your Name: " COLOR_RESET);
+        }
 
-    // HERKES İÇİN ORTAK SON (Devasa El)
-    if (current_lang == 1) {
-        printf(COLOR_RED "  TAM O AN...\n\n");
-        printf("  Karanlığın içinden devasa, tanrısal bir el müthiş bir hızla yükseliyor!\n");
-        printf("  Seni parmaklarının arasına aldığı gibi acımasızca, kemiklerini çatırdatırcasına sıkıyor!\n\n" COLOR_RESET);
-        printf(COLOR_DARK "  Nefesin kesiliyor...\n  Gözlerin kararıyor...\n  Hiçliğe karışıyorsun...\n\n" COLOR_RESET);
-    } else {
-        printf(COLOR_RED "  JUST THEN...\n\n");
-        printf("  A colossal, divine hand rises from the darkness at terrifying speed!\n");
-        printf("  It catches you in its fingers and crushes you mercilessly, making your bones crack!\n\n" COLOR_RESET);
-        printf(COLOR_DARK "  You lose your breath...\n  Your vision fades to black...\n  You merge with the void...\n\n" COLOR_RESET);
+        // Oyuncu adını kaydeder (Önceden kalma "Wastrel" ismini siler)
+        set_cursor_visibility(true);
+        read_string_safe(profile->player_name, 50);
+        set_cursor_visibility(false);
+        clear_screen();
+
+        if (current_lang == 1) {
+            printf(COLOR_GOLD "\n [SAHNE VIII] Kan Bağı\n\n" COLOR_RESET);
+            printf(COLOR_GOLD " \"Hmm, %s...\"\n" COLOR_RESET, profile->player_name);
+            printf(COLOR_WHITE " Helios gözlerini kısarak ruhunun derinliklerine bakıyor.\n" COLOR_RESET);
+            printf(COLOR_GOLD " \"Sen herhangi bir insan değilsin. Sen bir melezsin.\n");
+            printf(" Kanında %s kudreti akıyor.\"\n\n" COLOR_RESET, profile->god_alignment);
+            printf(COLOR_GOLD " \"Ruhunun matrisini, gerçekte kim olduğunu görmek ister misin?\"\n\n" COLOR_RESET);
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Evet, bana kim olduğumu göster. (Karakter Kağıdı)\n");
+            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Hayır, şu an buna hazır değilim.\n\n");
+            printf(COLOR_CYAN "  Kararın (1-2): " COLOR_RESET);
+        } else {
+            printf(COLOR_GOLD "\n [SCENE VIII] Bloodline\n\n" COLOR_RESET);
+            printf(COLOR_GOLD " \"Hmm, %s...\"\n" COLOR_RESET, profile->player_name);
+            printf(COLOR_WHITE " Helios narrows his eyes, looking into the depths of your soul.\n" COLOR_RESET);
+            printf(COLOR_GOLD " \"You are not just any human. You are a demigod.\n");
+            printf(" The might of %s flows in your blood.\"\n\n" COLOR_RESET, profile->god_alignment);
+            printf(COLOR_GOLD " \"Do you wish to see the matrix of your soul, who you truly are?\"\n\n" COLOR_RESET);
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Yes, show me who I am. (Character Sheet)\n");
+            printf("  [" COLOR_CYAN "2" COLOR_RESET "] No, I am not ready for that yet.\n\n");
+            printf(COLOR_CYAN "  Decision (1-2): " COLOR_RESET);
+        }
+
+        char sheet_choice = '0';
+        while (1) {
+            if (_kbhit()) {
+                sheet_choice = _getch();
+                if (sheet_choice == '1' || sheet_choice == '2') break;
+            }
+            Sleep(20);
+        }
+
+        if (sheet_choice == '1') {
+            display_character_sheet(profile);
+            clear_screen();
+        } else {
+            if (current_lang == 1) printf(COLOR_GOLD "\n \"Sen bilirsin...\" " COLOR_WHITE "diyerek gülümsüyor Helios.\n\n" COLOR_RESET);
+            else printf(COLOR_GOLD "\n \"Suit yourself...\" " COLOR_WHITE "Helios smiles.\n\n" COLOR_RESET);
+            Sleep(1500);
+            clear_screen();
+        }
+
+        // AKADEMİYE İNİŞ VE YANMA SEKANSI
+        if (current_lang == 1) {
+            printf(COLOR_GOLD "\n [SAHNE VIII] Düşüş ve Uyanış\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Güneş arabası bulutları yırtarak aşağı doğru süzülüyor.\n");
+            printf(COLOR_GOLD " \"Aşağıya bak...\"\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Aşağı baktığında nefesin kesiliyor. Uçsuz bucaksız bir uçurumun kenarında, havada\n");
+            printf(" süzülen devasa bir toprak parçasının üzerinde kristalimsi, görkemli bir kale var.\n");
+            printf(" Altından gürül gürül bir nehir akıyor. Şehir kuşbakışı bakıldığında tıpkı devasa\n");
+            printf(" bir güneş sembolü gibi inşa edilmiş. Köşelerinde farklı tanrılara ait kulübeler,\n");
+            printf(" tam merkezinde ise ihtişamlı ana bina (Akademi) yer alıyor.\n\n");
+
+            printf(COLOR_DARK " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
+            _getch(); clear_screen();
+
+            printf(COLOR_RED "\n  YANIYORSUN!\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Helios arabasını inanılmaz bir hızla doğrudan ana binanın çatısına indiriyor!\n");
+            printf(" Çatıya adımını attığın an, güneşin koruyucu kalkanından çıktığın için o saf ve\n");
+            printf(" vahşi enerji tenini yakmaya başlıyor. Alevler içinde kalıyorsun!\n\n");
+            printf(COLOR_DARK " Acıdan çığlık atmana bile fırsat kalmadan...\n Gözünü kırptığın o milisaniyede...\n\n" COLOR_RESET);
+            printf(COLOR_CYAN " Kendini serin, loş ve kitap kokan bir odada buluyorsun.\n");
+            printf(" Müdür Odasındasın.\n\n" COLOR_RESET);
+            printf(COLOR_DARK " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
+        } else {
+            printf(COLOR_GOLD "\n [SCENE VIII] Fall and Awakening\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " The sun chariot tears through the clouds, gliding downwards.\n");
+            printf(COLOR_GOLD " \"Look below...\"\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " You look down and gasp. On the edge of an endless cliff, resting on a colossal\n");
+            printf(" floating landmass, lies a crystalline, magnificent fortress.\n");
+            printf(" A roaring river flows beneath it. From a bird's-eye view, the city is built exactly\n");
+            printf(" like a massive sun symbol. Shrines are placed at its edges, with a magnificent\n");
+            printf(" main building (The Academy) right in the center.\n\n");
+
+            printf(COLOR_DARK " [Press ANY KEY to continue]\n" COLOR_RESET);
+            _getch(); clear_screen();
+
+            printf(COLOR_RED "\n  YOU ARE BURNING!\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Helios dives his chariot directly onto the roof of the main building at incredible speed!\n");
+            printf(" The moment you step onto the roof, stepping out of the sun's protective shield, that\n");
+            printf(" pure and wild energy begins to scorch your skin. You burst into flames!\n\n");
+            printf(COLOR_DARK " Before you even have a chance to scream in agony...\n In the millisecond you blink...\n\n" COLOR_RESET);
+            printf(COLOR_CYAN " You find yourself in a cool, dimly lit room smelling of old books.\n");
+            printf(" You are in the Principal's Office.\n\n" COLOR_RESET);
+            printf(COLOR_DARK " [Press ANY KEY to continue]\n" COLOR_RESET);
+        }
+        _getch();
+
+        // --------------------------------------------------------------------
+        // MÜDÜR ODASI SOHBETİ VE İLK İLİŞKİ BARININ AÇILMASI
+        // --------------------------------------------------------------------
+
+        // SİSTEM: Helios ile ilk kez yüz yüze gelindi. İlişki barı kilidi açıldı!
+        profile->npc_met[NPC_HELIOS] = true;
+
+        if (current_lang == 1) {
+            printf(COLOR_GOLD "\n [SAHNE VIII] Büyükler Ligi\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Helios devasa meşe masasının arkasında duruyor. Odanın içi bunaltıcı olmayan,\n");
+            printf(" huzurlu ama kudretli bir güneş sıcaklığıyla dolu. Sana keskin gözlerle bakıyor:\n\n" COLOR_RESET);
+
+            printf(COLOR_GOLD " \"Burada kalabilmek için çok çalışman gerek evlat...\"\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Sesi az önceki fırtınaya kıyasla daha sakin ama kelimeleri dağ gibi ağır.\n\n" COLOR_RESET);
+            printf(COLOR_GOLD " \"Burası melezler için büyükler ligi. Bir tanrı gücünde olmanı bekliyoruz senin.\n");
+            printf(" %s sınıfındasın. Belaya bulaşma.\"\n\n" COLOR_RESET, profile->faction_class_tr);
+
+            printf(COLOR_WHITE " Bir süre sessizce gözlerinin içine bakarak seni süzüyor. Sonra hafifçe öne eğilip soruyor:\n\n" COLOR_RESET);
+            printf(COLOR_GOLD " \"Şimdi söyle bana... İçindeki o kudreti evcilleştirip bu akademiye layık mı olacaksın,\n");
+            printf(" yoksa o gücün altında ezilip yok mu olacaksın?\"\n\n" COLOR_RESET);
+
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] \"O güce hükmedeceğim. Hatta bir gün hepinizi aşacağım.\" " COLOR_DARK "(Kibirli)" COLOR_RESET "\n");
+            printf("  [" COLOR_CYAN "2" COLOR_RESET "] \"Kurallarınıza uyacağım ve elimden gelenin en iyisini yapacağım, efendim.\" " COLOR_DARK "(Saygılı)" COLOR_RESET "\n");
+            printf("  [" COLOR_CYAN "3" COLOR_RESET "] \"Bunu zaman gösterecek. Şimdilik sadece hayatta kalmaya çalışıyorum.\" " COLOR_DARK "(Gerçekçi/Soğukkanlı)" COLOR_RESET "\n");
+            printf("  [" COLOR_CYAN "4" COLOR_RESET "] \"Beni buraya zorla getirdiniz. Benden hiçbir şey beklemeyin.\" " COLOR_DARK "(İsyankar)" COLOR_RESET "\n\n");
+            printf(COLOR_CYAN "  Cevabın nedir? (1-4): " COLOR_RESET);
+        } else {
+            printf(COLOR_GOLD "\n [SCENE VIII] The Big Leagues\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Helios stands behind a massive oak desk. The room is filled with a peaceful yet\n");
+            printf(" mighty solar warmth. He looks at you with piercing eyes:\n\n" COLOR_RESET);
+
+            printf(COLOR_GOLD " \"You need to work hard to stay here, kid...\"\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " His voice is calmer compared to the storm, but his words carry the weight of mountains.\n\n" COLOR_RESET);
+            printf(COLOR_GOLD " \"This is the big leagues for demigods. We expect you to be at god-level power.\n");
+            printf(" You are in %s class. Don't get into trouble.\"\n\n" COLOR_RESET, profile->faction_class);
+
+            printf(COLOR_WHITE " He silently scrutinizes you for a moment. Then he leans forward slightly and asks:\n\n" COLOR_RESET);
+            printf(COLOR_GOLD " \"Now tell me... Will you tame that might inside you and prove worthy of this academy,\n");
+            printf(" or will you be crushed and destroyed under its weight?\"\n\n" COLOR_RESET);
+
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] \"I will command that power. One day, I will even surpass all of you.\"\n");
+            printf("  [" COLOR_CYAN "2" COLOR_RESET "] \"I will follow your rules and do my absolute best, sir.\"\n");
+            printf("  [" COLOR_CYAN "3" COLOR_RESET "] \"Only time will tell. For now, I am just trying to survive.\"\n");
+            printf("  [" COLOR_CYAN "4" COLOR_RESET "] \"You brought me here by force. Do not expect anything from me.\"\n\n");
+            printf(COLOR_CYAN "  What is your answer? (1-4): " COLOR_RESET);
+        }
+
+        int dialog_choice = 0;
+        while (1) {
+            if (_kbhit()) {
+                char ch = _getch();
+                if (ch >= '1' && ch <= '4') { dialog_choice = ch - '0'; break; }
+            }
+            Sleep(20);
+        }
+
+        clear_screen();
+
+        // --------------------------------------------------------------------
+        // İLİŞKİ TEPKİLERİ VE GERİ BİLDİRİMLER (Sadece Diyalog, Stat Değişmez)
+        // --------------------------------------------------------------------
+        if (dialog_choice == 1) {
+            // Helios kibri ve özgüveni sever (Sonuçta Güneş Tanrısı)
+            profile->npc_relationship[NPC_HELIOS] += 5;
+            if (current_lang == 1) {
+                printf(COLOR_GOLD "\n [SAHNE VIII] Güneşin Tebessümü\n\n" COLOR_RESET);
+                printf(COLOR_WHITE " Helios duyduğu bu kibirli cevaba kahkaha atmamak için kendini zor tutuyor.\n");
+                printf(COLOR_GOLD " \"Büyük sözler... Güneşin bu kadar yakınındayken yanmamaya dikkat et o zaman.\"\n\n" COLOR_RESET);
+                printf(COLOR_GRN " [SİSTEM] Helios sana saygı duydu. (İlişki: %+d)\n\n" COLOR_RESET, profile->npc_relationship[NPC_HELIOS]);
+            } else {
+                printf(COLOR_GOLD "\n [SCENE VIII] Smile of the Sun\n\n" COLOR_RESET);
+                printf(COLOR_WHITE " Helios struggles not to laugh at this arrogant answer.\n");
+                printf(COLOR_GOLD " \"Big words... Make sure you don't burn when you are this close to the sun.\"\n\n" COLOR_RESET);
+                printf(COLOR_GRN " [SYSTEM] Helios respects your ambition. (Affinity: %+d)\n\n" COLOR_RESET, profile->npc_relationship[NPC_HELIOS]);
+            }
+        }
+        else if (dialog_choice == 2) {
+            // Sıkıcı bulur ama makul karşılar
+            profile->npc_relationship[NPC_HELIOS] += 2;
+            if (current_lang == 1) {
+                printf(COLOR_GOLD "\n [SAHNE VIII] İtaatkar Fani\n\n" COLOR_RESET);
+                printf(COLOR_WHITE " Helios başını hafifçe sallıyor, cevabını biraz sıkıcı ama disiplinli buluyor.\n");
+                printf(COLOR_GOLD " \"Göreceğiz... Sözlerin kadar icraatın da itaatkar olmalı.\"\n\n" COLOR_RESET);
+                printf(COLOR_CYAN " [SİSTEM] Helios seni disiplinli buldu. (İlişki: %+d)\n\n" COLOR_RESET, profile->npc_relationship[NPC_HELIOS]);
+            } else {
+                printf(COLOR_GOLD "\n [SCENE VIII] Obedient Mortal\n\n" COLOR_RESET);
+                printf(COLOR_WHITE " Helios nods slightly, finding your answer a bit boring but disciplined.\n");
+                printf(COLOR_GOLD " \"We shall see... Your actions must be as obedient as your words.\"\n\n" COLOR_RESET);
+                printf(COLOR_CYAN " [SYSTEM] Helios finds you disciplined. (Affinity: %+d)\n\n" COLOR_RESET, profile->npc_relationship[NPC_HELIOS]);
+            }
+        }
+        else if (dialog_choice == 3) {
+            // Dürüstlüğe saygı duyar
+            profile->npc_relationship[NPC_HELIOS] += 3;
+            if (current_lang == 1) {
+                printf(COLOR_GOLD "\n [SAHNE VIII] Soğukkanlılık\n\n" COLOR_RESET);
+                printf(COLOR_WHITE " Helios bu dürüst ve pragmatik yaklaşıma hafifçe gülümsüyor.\n");
+                printf(COLOR_GOLD " \"Hayatta kalmak iyi bir başlangıçtır evlat. Ama burada kalıcı olmak için yetmez.\"\n\n" COLOR_RESET);
+                printf(COLOR_CYAN " [SİSTEM] Helios dürüstlüğünü takdir etti. (İlişki: %+d)\n\n" COLOR_RESET, profile->npc_relationship[NPC_HELIOS]);
+            } else {
+                printf(COLOR_GOLD "\n [SCENE VIII] Cold-Blooded\n\n" COLOR_RESET);
+                printf(COLOR_WHITE " Helios smiles slightly at this honest and pragmatic approach.\n");
+                printf(COLOR_GOLD " \"Surviving is a good start, kid. But it's not enough to be permanent here.\"\n\n" COLOR_RESET);
+                printf(COLOR_CYAN " [SYSTEM] Helios appreciates your honesty. (Affinity: %+d)\n\n" COLOR_RESET, profile->npc_relationship[NPC_HELIOS]);
+            }
+        }
+        else if (dialog_choice == 4) {
+            // Güneş tanrısına saygısızlık ters teper
+            profile->npc_relationship[NPC_HELIOS] -= 5;
+            if (current_lang == 1) {
+                printf(COLOR_GOLD "\n [SAHNE VIII] Güneşin Öfkesi\n\n" COLOR_RESET);
+                printf(COLOR_WHITE " Odanın içindeki sıcaklık bir anda boğucu ve kavurucu bir seviyeye ulaşıyor.\n");
+                printf(COLOR_GOLD " \"Okyanusun dibinde balıklara yem olmanı izlemeliydim... Bir daha benimle\n");
+                printf(" konuşurken haddini bil, yoksa o saygısız dilini kül ederim.\"\n\n" COLOR_RESET);
+                printf(COLOR_RED " [SİSTEM] Helios'u kızdırdın! (İlişki: %d)\n\n" COLOR_RESET, profile->npc_relationship[NPC_HELIOS]);
+            } else {
+                printf(COLOR_GOLD "\n [SCENE VIII] Wrath of the Sun\n\n" COLOR_RESET);
+                printf(COLOR_WHITE " The temperature in the room suddenly rises to a suffocating, scorching level.\n");
+                printf(COLOR_GOLD " \"I should have watched you become fish food at the bottom of the ocean...\n");
+                printf(" Know your place when you speak to me, or I will turn that disrespectful tongue to ash.\"\n\n" COLOR_RESET);
+                printf(COLOR_RED " [SYSTEM] You angered Helios! (Affinity: %d)\n\n" COLOR_RESET, profile->npc_relationship[NPC_HELIOS]);
+            }
+        }
+
+        if (current_lang == 1) printf(COLOR_DARK " [Oda kapısından çıkmak için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
+        else printf(COLOR_DARK " [Press ANY KEY to walk out the office door]\n" COLOR_RESET);
+        _getch();
+
+        // --------------------------------------------------------------------
+        // Doğrudan ders tanımlama ve Shrine (Tapınak) ekranına atlar
+        // --------------------------------------------------------------------
+        scene_init_subjects(profile);
+        scene_own_shrine(profile);
+
+        // Ders tanımlama ekranına ve Tapınağa gönderir
+        scene_init_subjects(profile);
+        scene_own_shrine(profile);
     }
-
-    Sleep(4000); // 4 Saniye siyah ekranda bekletir
-
-    // Doğrudan ders tanımlama ve Shrine (Tapınak) ekranına atlar, Karakter Kağıdı (Dossier) atlandı!
-    scene_init_subjects(profile);
-    scene_own_shrine(profile);
-
-    // ========================================================================
-    // FINAL EVALUATION (SCENE V happens internally)
-    // ========================================================================
-    // End of individual trials, calculate archetype and finalize destiny
-    evaluate_cosmic_alignment(profile);
-    scene_awaken_destiny(profile);
-}
+} // <-- Fonksiyonun kapanış parantezi
 
 
 
