@@ -310,203 +310,185 @@ void update_stat(CharacterProfile* p, StatType stat, int amount) {
 }
 
 // ============================================================================
-// HIZLI MATRİS TEST MODU (HİKAYESİZ SİMÜLASYON)
+// HIZLI MATRİS TEST MODU (OTOMATİK BRUTE-FORCE TARAMASI VE İSTATİSTİK)
 // ============================================================================
-void test_matrix_simulation(CharacterProfile* profile) {
+void test_matrix_simulation(CharacterProfile* dummy_profile) {
     clear_screen();
-    set_cursor_visibility(true);
+    set_cursor_visibility(false);
 
-    printf(COLOR_GOLD " === KOZMİK MATRİS TEST MODU ===\n\n" COLOR_RESET);
-    printf(COLOR_DARK " (Sadece şıkların numaralarını girip Enter'a basınız)\n\n" COLOR_RESET);
+    printf(COLOR_GOLD " === KOZMİK MATRİS OTOMATİK TARAMA ===\n\n" COLOR_RESET);
+    printf(COLOR_DARK " Sistem tüm ihtimalleri hesaplıyor...\n");
+    printf(" Lütfen bekleyin, sonuçlar derleniyor...\n\n" COLOR_RESET);
 
-    // Statları Yeni Sisteme Göre Sıfırla (1,1,1,1,1 Kuralı)
-    profile->intel = 1; profile->might = 1; profile->honor = 1; profile->skill = 1; profile->faith = 1;
-    reset_all_badges(profile);
-    profile->poseidon_veto = 0;
+    // İstatistikleri hafızada tutacak diziler
+    int archetype_counts[33] = {0};   // Hangi arketip kaç kere çıktı?
+    int first_path[33][5] = {0};      // O arketipi bulan İLK yol
+    int first_stats[33][5] = {0};     // O arketipi bulan İLK yolun statları
+    int first_affinity[33] = {0};     // O arketipi bulan İLK yolun uyum yüzdesi
 
-    int c1 = 0, c2 = 0, c3 = 0, final_ans = 0;
+    int total_combinations_tested = 0;
+    int unique_results = 0;
 
-    // --- SINAV 1 ---
-    printf(" Sınav 1 Kararı (1-3): "); scanf("%d", &c1);
-    if (c1 == 1) { update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_INTEL, -1); }
-    else if (c1 == 2) { update_stat(profile, STAT_INTEL, 2); update_stat(profile, STAT_HONOR, -1); }
-    else if (c1 == 3) { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_MIGHT, -1); }
+    // 5 Karar aşaması için iç içe döngüler
+    for(int c1 = 1; c1 <= 3; c1++) {
+        for(int c2 = 1; c2 <= 3; c2++) {
+            for(int c3 = 1; c3 <= 3; c3++) {
+                for(int c4 = 1; c4 <= 4; c4++) {
+                    for(int final_ans = 1; final_ans <= 7; final_ans++) {
 
-    // --- SINAV 2 ---
-    printf(" Sınav 2 Kararı (1-3): "); scanf("%d", &c2);
-    if (c1 == 1) {
-        if (c2 == 1) { update_stat(profile, STAT_HONOR, 2); update_stat(profile, STAT_SKILL, -1); }
-        else if (c2 == 2) { update_stat(profile, STAT_SKILL, 2); update_stat(profile, STAT_FAITH, -1); }
-        else if (c2 == 3) { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_INTEL, -1); }
-    } else if (c1 == 2) {
-        if (c2 == 1) { update_stat(profile, STAT_SKILL, 2); update_stat(profile, STAT_INTEL, -1); }
-        else if (c2 == 2) { update_stat(profile, STAT_INTEL, 2); update_stat(profile, STAT_MIGHT, -1); }
-        else if (c2 == 3) { update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_SKILL, -1); }
-    } else if (c1 == 3) {
-        if (c2 == 1) { update_stat(profile, STAT_SKILL, 2); update_stat(profile, STAT_HONOR, -1); }
-        else if (c2 == 2) { update_stat(profile, STAT_HONOR, 2); update_stat(profile, STAT_INTEL, -1); }
-        else if (c2 == 3) { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_MIGHT, -1); }
-    }
+                        // Her döngüde sıfırdan yepyeni bir karakter yarat (1,1,1,1,1 Kuralı)
+                        CharacterProfile p;
+                        memset(&p, 0, sizeof(CharacterProfile));
+                        p.intel = 1; p.might = 1; p.honor = 1; p.skill = 1; p.faith = 1;
+                        p.poseidon_veto = 0;
 
-    // --- ARA KONTROL (Drowning Fail) ---
-    if (c1 == 1 && c2 == 2) {
-        int d_fail;
-        printf(" [!] Boğulma minigame başarısız mı? (1: Evet, 0: Hayır): "); scanf("%d", &d_fail);
-        if (d_fail == 1) { update_stat(profile, STAT_INTEL, -2); update_stat(profile, STAT_SKILL, -2); }
-    }
+                        // --- 1. SINAV ---
+                        if (c1 == 1) { update_stat(&p, STAT_MIGHT, 2); update_stat(&p, STAT_INTEL, -1); }
+                        else if (c1 == 2) { update_stat(&p, STAT_INTEL, 2); update_stat(&p, STAT_HONOR, -1); }
+                        else if (c1 == 3) { update_stat(&p, STAT_FAITH, 2); update_stat(&p, STAT_MIGHT, -1); }
 
-    // --- SINAV 3 / REAKSİYON ---
-    printf(" Sınav 3 Reaksiyonu (1-3): "); scanf("%d", &c3);
-    if (c1 == 1 && c2 == 1) {
-        if (c3 == 1) { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_HONOR, -1); }
-        else if (c3 == 2) { update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_FAITH, -1); }
-        else if (c3 == 3) { update_stat(profile, STAT_HONOR, 2); update_stat(profile, STAT_SKILL, -1); }
-    } else if (c1 == 1 && c2 == 2) {
-        if (c3 == 1) { update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_INTEL, -1); }
-        else if (c3 == 2) { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_HONOR, -1); }
-        else if (c3 == 3) { update_stat(profile, STAT_INTEL, 2); update_stat(profile, STAT_FAITH, -1); }
-    } else if (c1 == 2) {
-        if (c3 == 1) { update_stat(profile, STAT_HONOR, 2); update_stat(profile, STAT_INTEL, -1); }
-        else if (c3 == 2) { update_stat(profile, STAT_INTEL, 2); update_stat(profile, STAT_MIGHT, -1); }
-        else if (c3 == 3) { update_stat(profile, STAT_SKILL, 2); update_stat(profile, STAT_HONOR, -1); }
-    } else if (c1 == 3 && c2 == 1) {
-        if (c3 == 1) { update_stat(profile, STAT_SKILL, 2); update_stat(profile, STAT_FAITH, -1); }
-        else if (c3 == 2) { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_MIGHT, -1); }
-        else if (c3 == 3) { update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_INTEL, -1); }
-    } else {
-        if (c3 == 1) { update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_HONOR, -1); }
-        else if (c3 == 2) { update_stat(profile, STAT_INTEL, 2); update_stat(profile, STAT_FAITH, -1); }
-        else if (c3 == 3) { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_SKILL, -1); }
-    }
+                        // --- 2. SINAV ---
+                        if (c1 == 1) {
+                            if (c2 == 1) { update_stat(&p, STAT_HONOR, 2); update_stat(&p, STAT_SKILL, -1); }
+                            else if (c2 == 2) { update_stat(&p, STAT_SKILL, 2); update_stat(&p, STAT_FAITH, -1); }
+                            else if (c2 == 3) { update_stat(&p, STAT_FAITH, 2); update_stat(&p, STAT_INTEL, -1); }
+                        } else if (c1 == 2) {
+                            if (c2 == 1) { update_stat(&p, STAT_SKILL, 2); update_stat(&p, STAT_INTEL, -1); }
+                            else if (c2 == 2) { update_stat(&p, STAT_INTEL, 2); update_stat(&p, STAT_MIGHT, -1); }
+                            else if (c2 == 3) { update_stat(&p, STAT_MIGHT, 2); update_stat(&p, STAT_SKILL, -1); }
+                        } else if (c1 == 3) {
+                            if (c2 == 1) { update_stat(&p, STAT_SKILL, 2); update_stat(&p, STAT_HONOR, -1); }
+                            else if (c2 == 2) { update_stat(&p, STAT_HONOR, 2); update_stat(&p, STAT_INTEL, -1); }
+                            else if (c2 == 3) { update_stat(&p, STAT_FAITH, 2); update_stat(&p, STAT_MIGHT, -1); }
+                        }
 
-    // --- ROZETLER & ARA OLAYLAR ---
-    bool is_spectator = false;
-    if ((c1 == 1 && c2 == 1 && (c3 == 1 || c3 == 2)) || (c1 == 1 && c2 == 3) || (c1 == 3 && (c2 == 2 || c2 == 3))) is_spectator = true;
+                        // --- 3. SINAV REAKSİYONU ---
+                        if (c1 == 1 && c2 == 1) {
+                            if (c3 == 1) { update_stat(&p, STAT_FAITH, 2); update_stat(&p, STAT_HONOR, -1); }
+                            else if (c3 == 2) { update_stat(&p, STAT_MIGHT, 2); update_stat(&p, STAT_FAITH, -1); }
+                            else if (c3 == 3) { update_stat(&p, STAT_HONOR, 2); update_stat(&p, STAT_SKILL, -1); }
+                        } else if (c1 == 1 && c2 == 2) {
+                            if (c3 == 1) { update_stat(&p, STAT_MIGHT, 2); update_stat(&p, STAT_INTEL, -1); }
+                            else if (c3 == 2) { update_stat(&p, STAT_FAITH, 2); update_stat(&p, STAT_HONOR, -1); }
+                            else if (c3 == 3) { update_stat(&p, STAT_INTEL, 2); update_stat(&p, STAT_FAITH, -1); }
+                        } else if (c1 == 2) {
+                            if (c3 == 1) { update_stat(&p, STAT_HONOR, 2); update_stat(&p, STAT_INTEL, -1); }
+                            else if (c3 == 2) { update_stat(&p, STAT_INTEL, 2); update_stat(&p, STAT_MIGHT, -1); }
+                            else if (c3 == 3) { update_stat(&p, STAT_SKILL, 2); update_stat(&p, STAT_HONOR, -1); }
+                        } else if (c1 == 3 && c2 == 1) {
+                            if (c3 == 1) { update_stat(&p, STAT_SKILL, 2); update_stat(&p, STAT_FAITH, -1); }
+                            else if (c3 == 2) { update_stat(&p, STAT_FAITH, 2); update_stat(&p, STAT_MIGHT, -1); }
+                            else if (c3 == 3) { update_stat(&p, STAT_MIGHT, 2); update_stat(&p, STAT_INTEL, -1); }
+                        } else {
+                            if (c3 == 1) { update_stat(&p, STAT_MIGHT, 2); update_stat(&p, STAT_HONOR, -1); }
+                            else if (c3 == 2) { update_stat(&p, STAT_INTEL, 2); update_stat(&p, STAT_FAITH, -1); }
+                            else if (c3 == 3) { update_stat(&p, STAT_FAITH, 2); update_stat(&p, STAT_SKILL, -1); }
+                        }
 
-    if (is_spectator) {
-        int struggle;
-        printf(" [!] Helios dikkat çekme minigame başarılı mı? (1: Evet, 0: Hayır): "); scanf("%d", &struggle);
-        if (struggle == 1) set_badge(profile, BADGE_BLESSING_HELIOS, 1);
-    } else if (c1 == 2 && c3 == 2) {
-        set_badge(profile, BADGE_BROKEN_BONES, 5);
-    } else if (c1 == 2 && c3 == 3) {
-        set_badge(profile, BADGE_CURSE_OF_THANATOS, 1);
-    } else if (c1 == 3 && c2 == 1 && c3 == 2) {
-        set_badge(profile, BADGE_BLESSING_POSEIDON, 1);
-        int parry;
-        printf(" [!] Havada Parry minigame başarılı mı? (1: Evet, 0: Hayır): "); scanf("%d", &parry);
-        if (parry == 1) {
-            set_badge(profile, BADGE_BLESSING_HELIOS, 1);
-            update_stat(profile, STAT_SKILL, 2); update_stat(profile, STAT_MIGHT, -1);
-        } else if (profile->faith >= 7) {
-            set_badge(profile, BADGE_BLESSING_HELIOS, 1);
-        }
-    } else if (c1 == 3 && c2 == 1 && c3 == 3) {
-        set_badge(profile, BADGE_BROKEN_BONES, 5);
-        int crawl;
-        printf(" [!] Kırık Kemik Kararı (1: Sürün, 2: Yat): "); scanf("%d", &crawl);
-        if (crawl == 1) {
-            update_stat(profile, STAT_HONOR, 2); update_stat(profile, STAT_INTEL, -1);
-            set_badge(profile, BADGE_BLESSING_HELIOS, 1);
-        } else {
-            update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_MIGHT, -1);
-        }
-    }
+                        // Helios veya Derinlik Yolu Belirleme
+                        bool helios_path = false;
+                        if ((c1 == 1 && c2 == 1 && (c3 == 1 || c3 == 2)) || (c1 == 1 && c2 == 3) || (c1 == 3 && (c2 == 2 || c2 == 3))) helios_path = true;
+                        if (c1 == 3 && c2 == 1 && c3 == 2) helios_path = true;
+                        if (c1 == 3 && c2 == 1 && c3 == 3) helios_path = true;
 
-    // --- SCENE VI (HELIOS / DROWNER) ---
-    if (profile->badges[BADGE_BLESSING_HELIOS] == 1) {
-        int h_choice;
-        printf(" [!] Helios Kararı (1: Çıkış, 2: Atla, 3: Kal, 4: Soru Sor): "); scanf("%d", &h_choice);
-        if (h_choice == 1) return;
-        else if (h_choice == 2) {
-            profile->badges[BADGE_BLESSING_HELIOS] = 0;
-            update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_INTEL, -1);
-        } else if (h_choice == 3) { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_SKILL, -1); }
-        else if (h_choice == 4) { update_stat(profile, STAT_INTEL, 2); update_stat(profile, STAT_FAITH, -1); }
-    }
+                        if (c1 == 1 && c2 == 1 && c3 == 3) p.poseidon_veto = 1; // Poseidon Girdap Votosu
 
-    if (profile->badges[BADGE_BLESSING_HELIOS] == 0) {
-        if (c1 == 1 && c2 == 1 && c3 == 3) profile->poseidon_veto = 1; // Whirlpool Kurbanı
-        int d_choice;
-        printf(" [!] Boğulma Kararı (1: Sinirlen, 2: Debelen, 3: Öl, 4: Sese Odaklan): "); scanf("%d", &d_choice);
-        if (d_choice == 3) return;
-        if (d_choice == 1) { update_stat(profile, STAT_INTEL, 2); update_stat(profile, STAT_FAITH, -1); }
-        else if (d_choice == 2) { update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_INTEL, -1); }
-        else if (d_choice == 4) {
-            update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_MIGHT, -1);
-            if (profile->badges[BADGE_CURSE_OF_THANATOS] > 0) {
-                int curse;
-                printf(" [!] Lanet Kararı (1: Sil, 2: Tut): "); scanf("%d", &curse);
-                if (curse == 1) { update_stat(profile, STAT_HONOR, 2); update_stat(profile, STAT_SKILL, -1); profile->badges[BADGE_CURSE_OF_THANATOS] = 0; }
-                else { update_stat(profile, STAT_SKILL, 2); update_stat(profile, STAT_HONOR, -1); }
+                        // --- 4. SAHNE VI (HELIOS veya DROWNER) ---
+                        if (helios_path) {
+                            if (c4 == 1) continue; // Oyundan Çıkış seçeneği -> Bu ihtimali çöpe at
+                            else if (c4 == 2) { update_stat(&p, STAT_MIGHT, 2); update_stat(&p, STAT_INTEL, -1); }
+                            else if (c4 == 3) { update_stat(&p, STAT_FAITH, 2); update_stat(&p, STAT_SKILL, -1); }
+                            else if (c4 == 4) { update_stat(&p, STAT_INTEL, 2); update_stat(&p, STAT_FAITH, -1); }
+                        } else {
+                            if (c4 == 3) continue; // Oyundan Çıkış (Sessizce öl) seçeneği -> Bu ihtimali çöpe at
+                            if (c4 == 1) { update_stat(&p, STAT_INTEL, 2); update_stat(&p, STAT_FAITH, -1); }
+                            else if (c4 == 2) { update_stat(&p, STAT_MIGHT, 2); update_stat(&p, STAT_INTEL, -1); }
+                            else if (c4 == 4) {
+                                update_stat(&p, STAT_FAITH, 2); update_stat(&p, STAT_MIGHT, -1);
+                                // Not: Otomatik test için alt-lanet şıkkını varsayılan olarak Laneti Sil (1) sayıyoruz
+                                if (c1 == 2 && c3 == 3) {
+                                    update_stat(&p, STAT_HONOR, 2); update_stat(&p, STAT_SKILL, -1);
+                                }
+                            }
+                        }
+
+                        // --- 5. ALTIN VURUŞ ---
+                        if (final_ans == 1) { update_stat(&p, STAT_MIGHT, 4); update_stat(&p, STAT_FAITH, -2); }
+                        else if (final_ans == 2) { update_stat(&p, STAT_HONOR, 4); update_stat(&p, STAT_INTEL, -2); }
+                        else if (final_ans == 3) { update_stat(&p, STAT_MIGHT, 4); update_stat(&p, STAT_HONOR, -2); }
+                        else if (final_ans == 4) { update_stat(&p, STAT_INTEL, 4); update_stat(&p, STAT_MIGHT, -2); }
+                        else if (final_ans == 5) { update_stat(&p, STAT_SKILL, 4); update_stat(&p, STAT_FAITH, -2); }
+                        else if (final_ans == 6) { update_stat(&p, STAT_HONOR, 4); update_stat(&p, STAT_MIGHT, -2); }
+                        else if (final_ans == 7) { update_stat(&p, STAT_FAITH, 4); update_stat(&p, STAT_SKILL, -2); }
+
+                        total_combinations_tested++;
+
+                        // --- KOSİNÜS MATEMATİĞİNİ ÇALIŞTIR ---
+                        double max_cosine = -2.0;
+                        int best_match_idx = 0;
+
+                        for (int i = 0; i < 33; i++) {
+                            if (p.poseidon_veto == 1 && strcmp(database[i].god, "Poseidon") == 0) continue;
+
+                            double dot = (p.intel * database[i].intel) + (p.might * database[i].might) +
+                                         (p.honor * database[i].honor) + (p.skill * database[i].skill) + (p.faith * database[i].faith);
+                            double mag_A = sqrt(pow(p.intel, 2) + pow(p.might, 2) + pow(p.honor, 2) + pow(p.skill, 2) + pow(p.faith, 2));
+                            double mag_B = sqrt(pow(database[i].intel, 2) + pow(database[i].might, 2) + pow(database[i].honor, 2) + pow(database[i].skill, 2) + pow(database[i].faith, 2));
+
+                            double cos_sim = (mag_A > 0 && mag_B > 0) ? (dot / (mag_A * mag_B)) : 0.0;
+                            if (cos_sim > max_cosine) { max_cosine = cos_sim; best_match_idx = i; }
+                        }
+
+                        // İstatistiği hafızaya kaydet
+                        if (archetype_counts[best_match_idx] == 0) {
+                            // Bu arketip İLK DEFA bulunduysa, yolunu ve statlarını kaydet
+                            first_path[best_match_idx][0] = c1;
+                            first_path[best_match_idx][1] = c2;
+                            first_path[best_match_idx][2] = c3;
+                            first_path[best_match_idx][3] = c4;
+                            first_path[best_match_idx][4] = final_ans;
+
+                            first_stats[best_match_idx][0] = p.intel;
+                            first_stats[best_match_idx][1] = p.might;
+                            first_stats[best_match_idx][2] = p.honor;
+                            first_stats[best_match_idx][3] = p.skill;
+                            first_stats[best_match_idx][4] = p.faith;
+
+                            first_affinity[best_match_idx] = (int)(max_cosine * 100.0);
+                            unique_results++;
+                        }
+                        // Sayacı 1 artır
+                        archetype_counts[best_match_idx]++;
+
+                    }
+                }
             }
         }
     }
 
-    // --- ALTIN VURUŞ (NİHAİ KARAR) ---
-    printf("\n Nihai Sınav (Altın Vuruş) (1-7): "); scanf("%d", &final_ans);
-    if (final_ans == 1) { update_stat(profile, STAT_MIGHT, 4); update_stat(profile, STAT_FAITH, -2); }
-    else if (final_ans == 2) { update_stat(profile, STAT_HONOR, 4); update_stat(profile, STAT_INTEL, -2); }
-    else if (final_ans == 3) { update_stat(profile, STAT_MIGHT, 4); update_stat(profile, STAT_HONOR, -2); }
-    else if (final_ans == 4) { update_stat(profile, STAT_INTEL, 4); update_stat(profile, STAT_MIGHT, -2); }
-    else if (final_ans == 5) { update_stat(profile, STAT_SKILL, 4); update_stat(profile, STAT_FAITH, -2); }
-    else if (final_ans == 6) { update_stat(profile, STAT_HONOR, 4); update_stat(profile, STAT_MIGHT, -2); }
-    else if (final_ans == 7) { update_stat(profile, STAT_FAITH, 4); update_stat(profile, STAT_SKILL, -2); }
-
-    // Klavyedeki Enter tuşunu bellekten temizle
-    int c; while ((c = getchar()) != '\n' && c != EOF);
-    set_cursor_visibility(false);
-    clear_screen();
-
-    // --- KOSİNÜS MATEMATİĞİNİ ÇALIŞTIR ---
-    double max_cosine = -2.0;
-    int best_match_idx = 0;
-
+    // Tüm hesaplamalar bittikten sonra TOPLU halde ekrana bas
     for (int i = 0; i < 33; i++) {
-        if (profile->poseidon_veto == 1 && strcmp(database[i].god, "Poseidon") == 0) continue;
-
-        double dot = (profile->intel * database[i].intel) + (profile->might * database[i].might) +
-                     (profile->honor * database[i].honor) + (profile->skill * database[i].skill) + (profile->faith * database[i].faith);
-        double mag_A = sqrt(pow(profile->intel, 2) + pow(profile->might, 2) + pow(profile->honor, 2) + pow(profile->skill, 2) + pow(profile->faith, 2));
-        double mag_B = sqrt(pow(database[i].intel, 2) + pow(database[i].might, 2) + pow(database[i].honor, 2) + pow(database[i].skill, 2) + pow(database[i].faith, 2));
-
-        double cos_sim = (mag_A > 0 && mag_B > 0) ? (dot / (mag_A * mag_B)) : 0.0;
-        if (cos_sim > max_cosine) { max_cosine = cos_sim; best_match_idx = i; }
+        if (archetype_counts[i] > 0) {
+            printf(" YOL [%d.%d.%d.%d.%d] -> " COLOR_CYAN "Z:%02d G:%02d O:%02d Y:%02d I:%02d" COLOR_RESET " | " COLOR_GOLD "%%%02d %s - %s" COLOR_RESET " | " COLOR_RED "[ %d Kez Çıktı ]" COLOR_RESET "\n",
+                first_path[i][0], first_path[i][1], first_path[i][2], first_path[i][3], first_path[i][4],
+                first_stats[i][0], first_stats[i][1], first_stats[i][2], first_stats[i][3], first_stats[i][4],
+                first_affinity[i], database[i].god,
+                (current_lang == 1 ? database[i].archetype_tr : database[i].archetype),
+                archetype_counts[i] // <- Toplam ulaşılma sayısı
+            );
+        }
     }
 
-    profile->affinity = (int)(max_cosine * 100.0);
-    strcpy(profile->god_alignment, database[best_match_idx].god);
-
-    // Dil kontrolüne göre Türkçe veya İngilizce Arketip ataması
-    if (current_lang == 1) {
-        strcpy(profile->archetype_alignment_tr, database[best_match_idx].archetype_tr);
-        strcpy(profile->faction_class_tr, database[best_match_idx].faction_tr);
-    } else {
-        strcpy(profile->archetype_alignment, database[best_match_idx].archetype);
-        strcpy(profile->faction_class, database[best_match_idx].faction);
-    }
-
-    // --- SONUÇLARI EKRANA YAZDIR ---
-    printf("\n" COLOR_GOLD " ================= TEST SONUÇLARI =================" COLOR_RESET "\n");
-    printf(COLOR_CYAN "\n [ STAT DAĞILIMI (Şelale Sonrası) ]\n" COLOR_RESET);
-    printf(" Zeka: %d | Güç: %d | Onur: %d | Yetenek: %d | İnanç: %d\n",
-           profile->intel, profile->might, profile->honor, profile->skill, profile->faith);
-
-    printf("\n" COLOR_CYAN " [ KOSİNÜS EŞLEŞMESİ ]\n" COLOR_RESET);
-    printf(" Eşleşme Oranı : " COLOR_WHITE "%%%d\n" COLOR_RESET, profile->affinity);
-    printf(" Çıkan Tanrı   : " COLOR_GOLD "%s\n" COLOR_RESET, profile->god_alignment);
-
-    if (current_lang == 1) {
-        printf(" Arketip       : " COLOR_WHITE "%s\n" COLOR_RESET, profile->archetype_alignment_tr);
-        printf(" Sınıf         : %s\n", profile->faction_class_tr);
-    } else {
-        printf(" Archetype     : " COLOR_WHITE "%s\n" COLOR_RESET, profile->archetype_alignment);
-        printf(" Faction       : %s\n", profile->faction_class);
-    }
-    printf(COLOR_GOLD " ==================================================" COLOR_RESET "\n");
+    printf("\n" COLOR_WHITE "  -------------------------------------------------" COLOR_RESET "\n");
+    printf(COLOR_WHITE "  Toplam Hesaplanıp Geçilen Kombinasyon : %d\n" COLOR_RESET, total_combinations_tested);
+    printf(COLOR_CYAN "  Sistemin Ulaşabildiği Arketip Sayısı  : %d / 33\n" COLOR_RESET, unique_results);
+    printf(COLOR_WHITE "  -------------------------------------------------" COLOR_RESET "\n");
 
     if (current_lang == 1) printf("\n" COLOR_DARK " [Menüye dönmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
     else printf("\n" COLOR_DARK " [Press ANY KEY to return to menu]\n" COLOR_RESET);
+
+    // Klavyedeki bufferı temizleyip çıkışı bekle
+    while (_kbhit()) _getch();
     _getch();
 }
 
