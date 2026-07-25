@@ -253,7 +253,7 @@ void set_badge(CharacterProfile* profile, BadgeID badge, int level) {
 }
 
 // ============================================================================
-// STAT ŞELALESİ (CASCADE) SİSTEMİ
+// STAT ŞELALESİ (CASCADE) SİSTEMİ - KOZMİK SÜRTÜNME İLE
 // ============================================================================
 typedef enum {
     STAT_INTEL,
@@ -263,9 +263,8 @@ typedef enum {
     STAT_FAITH
 } StatType;
 
-// Eksi puanların kaybolmasını önleyen ve kardeş statlardan çeken algoritma
+// Eksi puanların kaybolmasını önleyen ve "Kozmik Sürtünme" ile yığılmayı engelleyen algoritma
 void update_stat(CharacterProfile* p, StatType stat, int amount) {
-    // 1. Durum: Eğer puan ekleniyorsa (Pozitif) doğrudan ekle
     if (amount > 0) {
         switch(stat) {
             case STAT_INTEL: p->intel += amount; break;
@@ -277,34 +276,33 @@ void update_stat(CharacterProfile* p, StatType stat, int amount) {
         return;
     }
 
-    // 2. Durum: Eğer puan düşüyorsa (Negatif), şelale sistemini başlat
-    int deficit = -amount; // Eksiyi pozitife çevir ki döngüde kullanabilelim
+    int deficit = -amount;
     StatType current_stat = stat;
 
-    // Negatif hasar (deficit) sıfırlanana kadar zincirleme hasar vur
     while (deficit > 0) {
         int* target_val = NULL;
         StatType next_stat;
 
-        // Lore uyumlu kardeşlik zinciri
         switch(current_stat) {
             case STAT_INTEL: target_val = &p->intel; next_stat = STAT_SKILL; break;
             case STAT_SKILL: target_val = &p->skill; next_stat = STAT_MIGHT; break;
             case STAT_MIGHT: target_val = &p->might; next_stat = STAT_HONOR; break;
             case STAT_HONOR: target_val = &p->honor; next_stat = STAT_FAITH; break;
-            case STAT_FAITH: target_val = &p->faith; next_stat = STAT_INTEL; break; // Döngüyü başa sarar
+            case STAT_FAITH: target_val = &p->faith; next_stat = STAT_INTEL; break;
         }
 
-        // Eğer mevcut stat bu hasarı karşılayabiliyorsa
         if (*target_val >= deficit) {
             *target_val -= deficit;
-            deficit = 0; // Hasar emildi, döngü biter
+            deficit = 0;
         }
-        // Eğer stat yetmiyorsa, elindekini sıfırla, kalanı (kardeş) stata devret
         else {
             deficit -= *target_val;
             *target_val = 0;
-            current_stat = next_stat; // Hedef artık bir sonraki kardeş stat
+            current_stat = next_stat;
+
+            // YARATICI ÇÖZÜM 1: Kozmik Sürtünme
+            // Eksi puan başka bir stata atlarken enerjisinin yarısını kaybeder.
+            deficit = deficit / 2;
         }
     }
 }
@@ -318,28 +316,27 @@ void test_matrix_simulation(CharacterProfile* dummy_profile) {
 
     printf(COLOR_GOLD " === KOZMİK MATRİS OTOMATİK TARAMA ===\n\n" COLOR_RESET);
     printf(COLOR_DARK " Sistem tüm ihtimalleri hesaplıyor...\n");
-    printf(" Lütfen bekleyin, sonuçlar derleniyor...\n\n" COLOR_RESET);
+    printf(" Lütfen bekleyin, 'Karesel Zirve Dağıtımı' devrede...\n\n" COLOR_RESET);
 
-    // İstatistikleri hafızada tutacak diziler
-    int archetype_counts[33] = {0};   // Hangi arketip kaç kere çıktı?
-    int first_path[33][5] = {0};      // O arketipi bulan İLK yol
-    int first_stats[33][5] = {0};     // O arketipi bulan İLK yolun statları
-    int first_affinity[33] = {0};     // O arketipi bulan İLK yolun uyum yüzdesi
+    int archetype_counts[33] = {0};
+    int first_path[33][5] = {0};
+    int first_stats[33][5] = {0};
+    int first_affinity[33] = {0};
 
     int total_combinations_tested = 0;
     int unique_results = 0;
 
-    // 5 Karar aşaması için iç içe döngüler
     for(int c1 = 1; c1 <= 3; c1++) {
         for(int c2 = 1; c2 <= 3; c2++) {
             for(int c3 = 1; c3 <= 3; c3++) {
                 for(int c4 = 1; c4 <= 4; c4++) {
                     for(int final_ans = 1; final_ans <= 7; final_ans++) {
 
-                        // Her döngüde sıfırdan yepyeni bir karakter yarat (1,1,1,1,1 Kuralı)
                         CharacterProfile p;
                         memset(&p, 0, sizeof(CharacterProfile));
-                        p.intel = 1; p.might = 1; p.honor = 1; p.skill = 1; p.faith = 1;
+
+                        // Tampon Başlangıç Matrisi
+                        p.intel = 2; p.might = 2; p.honor = 2; p.skill = 2; p.faith = 2;
                         p.poseidon_veto = 0;
 
                         // --- 1. SINAV ---
@@ -385,63 +382,84 @@ void test_matrix_simulation(CharacterProfile* dummy_profile) {
                             else if (c3 == 3) { update_stat(&p, STAT_FAITH, 2); update_stat(&p, STAT_SKILL, -1); }
                         }
 
-                        // Helios veya Derinlik Yolu Belirleme
                         bool helios_path = false;
                         if ((c1 == 1 && c2 == 1 && (c3 == 1 || c3 == 2)) || (c1 == 1 && c2 == 3) || (c1 == 3 && (c2 == 2 || c2 == 3))) helios_path = true;
                         if (c1 == 3 && c2 == 1 && c3 == 2) helios_path = true;
                         if (c1 == 3 && c2 == 1 && c3 == 3) helios_path = true;
-
-                        if (c1 == 1 && c2 == 1 && c3 == 3) p.poseidon_veto = 1; // Poseidon Girdap Votosu
+                        if (c1 == 1 && c2 == 1 && c3 == 3) p.poseidon_veto = 1;
 
                         // --- 4. SAHNE VI (HELIOS veya DROWNER) ---
                         if (helios_path) {
-                            if (c4 == 1) continue; // Oyundan Çıkış seçeneği -> Bu ihtimali çöpe at
+                            if (c4 == 1) continue;
                             else if (c4 == 2) { update_stat(&p, STAT_MIGHT, 2); update_stat(&p, STAT_INTEL, -1); }
                             else if (c4 == 3) { update_stat(&p, STAT_FAITH, 2); update_stat(&p, STAT_SKILL, -1); }
                             else if (c4 == 4) { update_stat(&p, STAT_INTEL, 2); update_stat(&p, STAT_FAITH, -1); }
                         } else {
-                            if (c4 == 3) continue; // Oyundan Çıkış (Sessizce öl) seçeneği -> Bu ihtimali çöpe at
+                            if (c4 == 3) continue;
                             if (c4 == 1) { update_stat(&p, STAT_INTEL, 2); update_stat(&p, STAT_FAITH, -1); }
                             else if (c4 == 2) { update_stat(&p, STAT_MIGHT, 2); update_stat(&p, STAT_INTEL, -1); }
                             else if (c4 == 4) {
                                 update_stat(&p, STAT_FAITH, 2); update_stat(&p, STAT_MIGHT, -1);
-                                // Not: Otomatik test için alt-lanet şıkkını varsayılan olarak Laneti Sil (1) sayıyoruz
                                 if (c1 == 2 && c3 == 3) {
                                     update_stat(&p, STAT_HONOR, 2); update_stat(&p, STAT_SKILL, -1);
                                 }
                             }
                         }
 
-                        // --- 5. ALTIN VURUŞ ---
-                        if (final_ans == 1) { update_stat(&p, STAT_MIGHT, 4); update_stat(&p, STAT_FAITH, -2); }
-                        else if (final_ans == 2) { update_stat(&p, STAT_HONOR, 4); update_stat(&p, STAT_INTEL, -2); }
-                        else if (final_ans == 3) { update_stat(&p, STAT_MIGHT, 4); update_stat(&p, STAT_HONOR, -2); }
-                        else if (final_ans == 4) { update_stat(&p, STAT_INTEL, 4); update_stat(&p, STAT_MIGHT, -2); }
-                        else if (final_ans == 5) { update_stat(&p, STAT_SKILL, 4); update_stat(&p, STAT_FAITH, -2); }
-                        else if (final_ans == 6) { update_stat(&p, STAT_HONOR, 4); update_stat(&p, STAT_MIGHT, -2); }
-                        else if (final_ans == 7) { update_stat(&p, STAT_FAITH, 4); update_stat(&p, STAT_SKILL, -2); }
+                        // --- 5. ALTIN VURUŞ (ÜÇLÜ SİNERJİ) ---
+                        if (final_ans == 1) { update_stat(&p, STAT_MIGHT, 3); update_stat(&p, STAT_SKILL, 2); update_stat(&p, STAT_FAITH, -2); }
+                        else if (final_ans == 2) { update_stat(&p, STAT_HONOR, 3); update_stat(&p, STAT_MIGHT, 2); update_stat(&p, STAT_INTEL, -2); }
+                        else if (final_ans == 3) { update_stat(&p, STAT_INTEL, 3); update_stat(&p, STAT_MIGHT, 2); update_stat(&p, STAT_HONOR, -2); }
+                        else if (final_ans == 4) { update_stat(&p, STAT_INTEL, 3); update_stat(&p, STAT_HONOR, 2); update_stat(&p, STAT_MIGHT, -2); }
+                        else if (final_ans == 5) { update_stat(&p, STAT_SKILL, 3); update_stat(&p, STAT_FAITH, 2); update_stat(&p, STAT_HONOR, -2); }
+                        else if (final_ans == 6) { update_stat(&p, STAT_FAITH, 3); update_stat(&p, STAT_HONOR, 2); update_stat(&p, STAT_SKILL, -2); }
+                        else if (final_ans == 7) { update_stat(&p, STAT_FAITH, 3); update_stat(&p, STAT_INTEL, 2); update_stat(&p, STAT_MIGHT, -2); }
 
                         total_combinations_tested++;
 
-                        // --- KOSİNÜS MATEMATİĞİNİ ÇALIŞTIR ---
-                        double max_cosine = -2.0;
+                        // ====================================================================
+                        // YENİ: KARESEL ZİRVE EŞLEŞTİRME (SQUARED PEAK-MATCHING)
+                        // ====================================================================
+                        double max_squared_cosine = -2.0;
+                        double raw_display_cosine = 0.0; // Ekrana basılacak % için normal değer
                         int best_match_idx = 0;
+
+                        // 1. Oyuncu statlarının karesini al (Zirveleri devasa yap)
+                        double p_i = (double)(p.intel * p.intel);
+                        double p_m = (double)(p.might * p.might);
+                        double p_h = (double)(p.honor * p.honor);
+                        double p_s = (double)(p.skill * p.skill);
+                        double p_f = (double)(p.faith * p.faith);
 
                         for (int i = 0; i < 33; i++) {
                             if (p.poseidon_veto == 1 && strcmp(database[i].god, "Poseidon") == 0) continue;
 
-                            double dot = (p.intel * database[i].intel) + (p.might * database[i].might) +
-                                         (p.honor * database[i].honor) + (p.skill * database[i].skill) + (p.faith * database[i].faith);
-                            double mag_A = sqrt(pow(p.intel, 2) + pow(p.might, 2) + pow(p.honor, 2) + pow(p.skill, 2) + pow(p.faith, 2));
-                            double mag_B = sqrt(pow(database[i].intel, 2) + pow(database[i].might, 2) + pow(database[i].honor, 2) + pow(database[i].skill, 2) + pow(database[i].faith, 2));
+                            // 2. Tanrı statlarının karesini al
+                            double d_i = (double)(database[i].intel * database[i].intel);
+                            double d_m = (double)(database[i].might * database[i].might);
+                            double d_h = (double)(database[i].honor * database[i].honor);
+                            double d_s = (double)(database[i].skill * database[i].skill);
+                            double d_f = (double)(database[i].faith * database[i].faith);
 
-                            double cos_sim = (mag_A > 0 && mag_B > 0) ? (dot / (mag_A * mag_B)) : 0.0;
-                            if (cos_sim > max_cosine) { max_cosine = cos_sim; best_match_idx = i; }
+                            // 3. Karesel Dot Product ve Büyüklük (Magnitude) hesapla
+                            double sq_dot = (p_i * d_i) + (p_m * d_m) + (p_h * d_h) + (p_s * d_s) + (p_f * d_f);
+                            double sq_mag_A = sqrt((p_i * p_i) + (p_m * p_m) + (p_h * p_h) + (p_s * p_s) + (p_f * p_f));
+                            double sq_mag_B = sqrt((d_i * d_i) + (d_m * d_m) + (d_h * d_h) + (d_s * d_s) + (d_f * d_f));
+                            double sq_cos_sim = (sq_mag_A > 0 && sq_mag_B > 0) ? (sq_dot / (sq_mag_A * sq_mag_B)) : 0.0;
+
+                            if (sq_cos_sim > max_squared_cosine) {
+                                max_squared_cosine = sq_cos_sim;
+                                best_match_idx = i;
+
+                                // Ekrana %98 gibi normal bir sayı basmak için standart hesabı arkada tut
+                                double norm_dot = (p.intel * database[i].intel) + (p.might * database[i].might) + (p.honor * database[i].honor) + (p.skill * database[i].skill) + (p.faith * database[i].faith);
+                                double norm_mag_A = sqrt(pow(p.intel, 2) + pow(p.might, 2) + pow(p.honor, 2) + pow(p.skill, 2) + pow(p.faith, 2));
+                                double norm_mag_B = sqrt(pow(database[i].intel, 2) + pow(database[i].might, 2) + pow(database[i].honor, 2) + pow(database[i].skill, 2) + pow(database[i].faith, 2));
+                                raw_display_cosine = (norm_mag_A > 0 && norm_mag_B > 0) ? (norm_dot / (norm_mag_A * norm_mag_B)) : 0.0;
+                            }
                         }
 
-                        // İstatistiği hafızaya kaydet
                         if (archetype_counts[best_match_idx] == 0) {
-                            // Bu arketip İLK DEFA bulunduysa, yolunu ve statlarını kaydet
                             first_path[best_match_idx][0] = c1;
                             first_path[best_match_idx][1] = c2;
                             first_path[best_match_idx][2] = c3;
@@ -454,19 +472,16 @@ void test_matrix_simulation(CharacterProfile* dummy_profile) {
                             first_stats[best_match_idx][3] = p.skill;
                             first_stats[best_match_idx][4] = p.faith;
 
-                            first_affinity[best_match_idx] = (int)(max_cosine * 100.0);
+                            first_affinity[best_match_idx] = (int)(raw_display_cosine * 100.0);
                             unique_results++;
                         }
-                        // Sayacı 1 artır
                         archetype_counts[best_match_idx]++;
-
                     }
                 }
             }
         }
     }
 
-    // Tüm hesaplamalar bittikten sonra TOPLU halde ekrana bas
     for (int i = 0; i < 33; i++) {
         if (archetype_counts[i] > 0) {
             printf(" YOL [%d.%d.%d.%d.%d] -> " COLOR_CYAN "Z:%02d G:%02d O:%02d Y:%02d I:%02d" COLOR_RESET " | " COLOR_GOLD "%%%02d %s - %s" COLOR_RESET " | " COLOR_RED "[ %d Kez Çıktı ]" COLOR_RESET "\n",
@@ -474,7 +489,7 @@ void test_matrix_simulation(CharacterProfile* dummy_profile) {
                 first_stats[i][0], first_stats[i][1], first_stats[i][2], first_stats[i][3], first_stats[i][4],
                 first_affinity[i], database[i].god,
                 (current_lang == 1 ? database[i].archetype_tr : database[i].archetype),
-                archetype_counts[i] // <- Toplam ulaşılma sayısı
+                archetype_counts[i]
             );
         }
     }
@@ -487,7 +502,6 @@ void test_matrix_simulation(CharacterProfile* dummy_profile) {
     if (current_lang == 1) printf("\n" COLOR_DARK " [Menüye dönmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
     else printf("\n" COLOR_DARK " [Press ANY KEY to return to menu]\n" COLOR_RESET);
 
-    // Klavyedeki bufferı temizleyip çıkışı bekle
     while (_kbhit()) _getch();
     _getch();
 }
