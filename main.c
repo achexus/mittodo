@@ -308,7 +308,16 @@ void update_stat(CharacterProfile* p, StatType stat, int amount) {
 }
 
 // ============================================================================
-// HIZLI MATRİS TEST MODU (OTOMATİK BRUTE-FORCE TARAMASI VE İSTATİSTİK)
+// STAT UYGULAYICI (BASİT VE DENGELİ)
+// ============================================================================
+// Şelale sistemi iptal edildi. Statlar minimum 1'e kadar düşer, başka statı yemez.
+void apply_stat(int* stat, int amount) {
+    *stat += amount;
+    if (*stat < 1) *stat = 1;
+}
+
+// ============================================================================
+// HIZLI MATRİS TEST MODU (ZEKA BUFF'LI VE DENGELİ EKONOMİ)
 // ============================================================================
 void test_matrix_simulation(CharacterProfile* dummy_profile) {
     clear_screen();
@@ -316,7 +325,7 @@ void test_matrix_simulation(CharacterProfile* dummy_profile) {
 
     printf(COLOR_GOLD " === KOZMİK MATRİS OTOMATİK TARAMA ===\n\n" COLOR_RESET);
     printf(COLOR_DARK " Sistem tüm ihtimalleri hesaplıyor...\n");
-    printf(" Lütfen bekleyin, 'Karesel Zirve Dağıtımı' devrede...\n\n" COLOR_RESET);
+    printf(" Lütfen bekleyin, 'Zeka Buff'lı Doğrusal Dağılım' devrede...\n\n" COLOR_RESET);
 
     int archetype_counts[33] = {0};
     int first_path[33][5] = {0};
@@ -335,51 +344,51 @@ void test_matrix_simulation(CharacterProfile* dummy_profile) {
                         CharacterProfile p;
                         memset(&p, 0, sizeof(CharacterProfile));
 
-                        // Tampon Başlangıç Matrisi
-                        p.intel = 2; p.might = 2; p.honor = 2; p.skill = 2; p.faith = 2;
+                        // Merkezcil (Çekirdek) Başlangıç
+                        p.intel = 3; p.might = 3; p.honor = 3; p.skill = 3; p.faith = 3;
                         p.poseidon_veto = 0;
 
                         // --- 1. SINAV ---
-                        if (c1 == 1) { update_stat(&p, STAT_MIGHT, 2); update_stat(&p, STAT_INTEL, -1); }
-                        else if (c1 == 2) { update_stat(&p, STAT_INTEL, 2); update_stat(&p, STAT_HONOR, -1); }
-                        else if (c1 == 3) { update_stat(&p, STAT_FAITH, 2); update_stat(&p, STAT_MIGHT, -1); }
+                        if (c1 == 1) { apply_stat(&p.might, 3); apply_stat(&p.intel, -1); }
+                        else if (c1 == 2) { apply_stat(&p.intel, 4); } // ZEKA BUFF: +4 / Ceza Yok
+                        else if (c1 == 3) { apply_stat(&p.faith, 3); apply_stat(&p.might, -1); }
 
                         // --- 2. SINAV ---
                         if (c1 == 1) {
-                            if (c2 == 1) { update_stat(&p, STAT_HONOR, 2); update_stat(&p, STAT_SKILL, -1); }
-                            else if (c2 == 2) { update_stat(&p, STAT_SKILL, 2); update_stat(&p, STAT_FAITH, -1); }
-                            else if (c2 == 3) { update_stat(&p, STAT_FAITH, 2); update_stat(&p, STAT_INTEL, -1); }
+                            if (c2 == 1) { apply_stat(&p.honor, 3); apply_stat(&p.skill, -1); }
+                            else if (c2 == 2) { apply_stat(&p.skill, 3); apply_stat(&p.faith, -1); }
+                            else if (c2 == 3) { apply_stat(&p.faith, 3); apply_stat(&p.intel, -1); }
                         } else if (c1 == 2) {
-                            if (c2 == 1) { update_stat(&p, STAT_SKILL, 2); update_stat(&p, STAT_INTEL, -1); }
-                            else if (c2 == 2) { update_stat(&p, STAT_INTEL, 2); update_stat(&p, STAT_MIGHT, -1); }
-                            else if (c2 == 3) { update_stat(&p, STAT_MIGHT, 2); update_stat(&p, STAT_SKILL, -1); }
+                            if (c2 == 1) { apply_stat(&p.skill, 3); apply_stat(&p.intel, -1); }
+                            else if (c2 == 2) { apply_stat(&p.intel, 4); } // ZEKA BUFF
+                            else if (c2 == 3) { apply_stat(&p.might, 3); apply_stat(&p.skill, -1); }
                         } else if (c1 == 3) {
-                            if (c2 == 1) { update_stat(&p, STAT_SKILL, 2); update_stat(&p, STAT_HONOR, -1); }
-                            else if (c2 == 2) { update_stat(&p, STAT_HONOR, 2); update_stat(&p, STAT_INTEL, -1); }
-                            else if (c2 == 3) { update_stat(&p, STAT_FAITH, 2); update_stat(&p, STAT_MIGHT, -1); }
+                            if (c2 == 1) { apply_stat(&p.skill, 3); apply_stat(&p.honor, -1); }
+                            else if (c2 == 2) { apply_stat(&p.honor, 3); apply_stat(&p.intel, -1); }
+                            else if (c2 == 3) { apply_stat(&p.faith, 3); apply_stat(&p.might, -1); }
                         }
 
                         // --- 3. SINAV REAKSİYONU ---
                         if (c1 == 1 && c2 == 1) {
-                            if (c3 == 1) { update_stat(&p, STAT_FAITH, 2); update_stat(&p, STAT_HONOR, -1); }
-                            else if (c3 == 2) { update_stat(&p, STAT_MIGHT, 2); update_stat(&p, STAT_FAITH, -1); }
-                            else if (c3 == 3) { update_stat(&p, STAT_HONOR, 2); update_stat(&p, STAT_SKILL, -1); }
+                            if (c3 == 1) { apply_stat(&p.faith, 3); apply_stat(&p.honor, -1); }
+                            else if (c3 == 2) { apply_stat(&p.might, 3); apply_stat(&p.faith, -1); }
+                            else if (c3 == 3) { apply_stat(&p.honor, 3); apply_stat(&p.skill, -1); }
                         } else if (c1 == 1 && c2 == 2) {
-                            if (c3 == 1) { update_stat(&p, STAT_MIGHT, 2); update_stat(&p, STAT_INTEL, -1); }
-                            else if (c3 == 2) { update_stat(&p, STAT_FAITH, 2); update_stat(&p, STAT_HONOR, -1); }
-                            else if (c3 == 3) { update_stat(&p, STAT_INTEL, 2); update_stat(&p, STAT_FAITH, -1); }
+                            if (c3 == 1) { apply_stat(&p.might, 3); apply_stat(&p.intel, -1); }
+                            else if (c3 == 2) { apply_stat(&p.faith, 3); apply_stat(&p.honor, -1); }
+                            else if (c3 == 3) { apply_stat(&p.intel, 4); } // ZEKA BUFF
                         } else if (c1 == 2) {
-                            if (c3 == 1) { update_stat(&p, STAT_HONOR, 2); update_stat(&p, STAT_INTEL, -1); }
-                            else if (c3 == 2) { update_stat(&p, STAT_INTEL, 2); update_stat(&p, STAT_MIGHT, -1); }
-                            else if (c3 == 3) { update_stat(&p, STAT_SKILL, 2); update_stat(&p, STAT_HONOR, -1); }
+                            if (c3 == 1) { apply_stat(&p.honor, 3); apply_stat(&p.intel, -1); }
+                            else if (c3 == 2) { apply_stat(&p.intel, 4); } // ZEKA BUFF
+                            else if (c3 == 3) { apply_stat(&p.skill, 3); apply_stat(&p.honor, -1); }
                         } else if (c1 == 3 && c2 == 1) {
-                            if (c3 == 1) { update_stat(&p, STAT_SKILL, 2); update_stat(&p, STAT_FAITH, -1); }
-                            else if (c3 == 2) { update_stat(&p, STAT_FAITH, 2); update_stat(&p, STAT_MIGHT, -1); }
-                            else if (c3 == 3) { update_stat(&p, STAT_MIGHT, 2); update_stat(&p, STAT_INTEL, -1); }
+                            if (c3 == 1) { apply_stat(&p.skill, 3); apply_stat(&p.faith, -1); }
+                            else if (c3 == 2) { apply_stat(&p.faith, 3); apply_stat(&p.might, -1); }
+                            else if (c3 == 3) { apply_stat(&p.might, 3); apply_stat(&p.intel, -1); }
                         } else {
-                            if (c3 == 1) { update_stat(&p, STAT_MIGHT, 2); update_stat(&p, STAT_HONOR, -1); }
-                            else if (c3 == 2) { update_stat(&p, STAT_INTEL, 2); update_stat(&p, STAT_FAITH, -1); }
-                            else if (c3 == 3) { update_stat(&p, STAT_FAITH, 2); update_stat(&p, STAT_SKILL, -1); }
+                            if (c3 == 1) { apply_stat(&p.might, 3); apply_stat(&p.honor, -1); }
+                            else if (c3 == 2) { apply_stat(&p.intel, 4); } // ZEKA BUFF
+                            else if (c3 == 3) { apply_stat(&p.faith, 3); apply_stat(&p.skill, -1); }
                         }
 
                         bool helios_path = false;
@@ -391,72 +400,46 @@ void test_matrix_simulation(CharacterProfile* dummy_profile) {
                         // --- 4. SAHNE VI (HELIOS veya DROWNER) ---
                         if (helios_path) {
                             if (c4 == 1) continue;
-                            else if (c4 == 2) { update_stat(&p, STAT_MIGHT, 2); update_stat(&p, STAT_INTEL, -1); }
-                            else if (c4 == 3) { update_stat(&p, STAT_FAITH, 2); update_stat(&p, STAT_SKILL, -1); }
-                            else if (c4 == 4) { update_stat(&p, STAT_INTEL, 2); update_stat(&p, STAT_FAITH, -1); }
+                            else if (c4 == 2) { apply_stat(&p.might, 3); apply_stat(&p.intel, -1); }
+                            else if (c4 == 3) { apply_stat(&p.faith, 3); apply_stat(&p.skill, -1); }
+                            else if (c4 == 4) { apply_stat(&p.intel, 4); } // ZEKA BUFF
                         } else {
                             if (c4 == 3) continue;
-                            if (c4 == 1) { update_stat(&p, STAT_INTEL, 2); update_stat(&p, STAT_FAITH, -1); }
-                            else if (c4 == 2) { update_stat(&p, STAT_MIGHT, 2); update_stat(&p, STAT_INTEL, -1); }
+                            if (c4 == 1) { apply_stat(&p.intel, 4); } // ZEKA BUFF
+                            else if (c4 == 2) { apply_stat(&p.might, 3); apply_stat(&p.intel, -1); }
                             else if (c4 == 4) {
-                                update_stat(&p, STAT_FAITH, 2); update_stat(&p, STAT_MIGHT, -1);
+                                apply_stat(&p.faith, 3); apply_stat(&p.might, -1);
                                 if (c1 == 2 && c3 == 3) {
-                                    update_stat(&p, STAT_HONOR, 2); update_stat(&p, STAT_SKILL, -1);
+                                    apply_stat(&p.honor, 3); apply_stat(&p.skill, -1);
                                 }
                             }
                         }
 
-                        // --- 5. ALTIN VURUŞ (ÜÇLÜ SİNERJİ) ---
-                        if (final_ans == 1) { update_stat(&p, STAT_MIGHT, 3); update_stat(&p, STAT_SKILL, 2); update_stat(&p, STAT_FAITH, -2); }
-                        else if (final_ans == 2) { update_stat(&p, STAT_HONOR, 3); update_stat(&p, STAT_MIGHT, 2); update_stat(&p, STAT_INTEL, -2); }
-                        else if (final_ans == 3) { update_stat(&p, STAT_INTEL, 3); update_stat(&p, STAT_MIGHT, 2); update_stat(&p, STAT_HONOR, -2); }
-                        else if (final_ans == 4) { update_stat(&p, STAT_INTEL, 3); update_stat(&p, STAT_HONOR, 2); update_stat(&p, STAT_MIGHT, -2); }
-                        else if (final_ans == 5) { update_stat(&p, STAT_SKILL, 3); update_stat(&p, STAT_FAITH, 2); update_stat(&p, STAT_HONOR, -2); }
-                        else if (final_ans == 6) { update_stat(&p, STAT_FAITH, 3); update_stat(&p, STAT_HONOR, 2); update_stat(&p, STAT_SKILL, -2); }
-                        else if (final_ans == 7) { update_stat(&p, STAT_FAITH, 3); update_stat(&p, STAT_INTEL, 2); update_stat(&p, STAT_MIGHT, -2); }
+                        // --- 5. ALTIN VURUŞ (NİHAİ KARAR) ---
+                        if (final_ans == 1) { apply_stat(&p.might, 5); apply_stat(&p.faith, -2); }
+                        else if (final_ans == 2) { apply_stat(&p.honor, 5); apply_stat(&p.intel, -1); }
+                        else if (final_ans == 3) { apply_stat(&p.might, 5); apply_stat(&p.honor, -2); }
+                        else if (final_ans == 4) { apply_stat(&p.intel, 6); } // ZEKA BUFF: Mükemmel Zeka +6
+                        else if (final_ans == 5) { apply_stat(&p.skill, 5); apply_stat(&p.faith, -2); }
+                        else if (final_ans == 6) { apply_stat(&p.honor, 5); apply_stat(&p.might, -2); }
+                        else if (final_ans == 7) { apply_stat(&p.faith, 5); apply_stat(&p.skill, -2); }
 
                         total_combinations_tested++;
 
-                        // ====================================================================
-                        // YENİ: KARESEL ZİRVE EŞLEŞTİRME (SQUARED PEAK-MATCHING)
-                        // ====================================================================
-                        double max_squared_cosine = -2.0;
-                        double raw_display_cosine = 0.0; // Ekrana basılacak % için normal değer
+                        // --- STANDART KOSİNÜS MATEMATİĞİ (ORİJİNAL) ---
+                        double max_cosine = -2.0;
                         int best_match_idx = 0;
-
-                        // 1. Oyuncu statlarının karesini al (Zirveleri devasa yap)
-                        double p_i = (double)(p.intel * p.intel);
-                        double p_m = (double)(p.might * p.might);
-                        double p_h = (double)(p.honor * p.honor);
-                        double p_s = (double)(p.skill * p.skill);
-                        double p_f = (double)(p.faith * p.faith);
 
                         for (int i = 0; i < 33; i++) {
                             if (p.poseidon_veto == 1 && strcmp(database[i].god, "Poseidon") == 0) continue;
 
-                            // 2. Tanrı statlarının karesini al
-                            double d_i = (double)(database[i].intel * database[i].intel);
-                            double d_m = (double)(database[i].might * database[i].might);
-                            double d_h = (double)(database[i].honor * database[i].honor);
-                            double d_s = (double)(database[i].skill * database[i].skill);
-                            double d_f = (double)(database[i].faith * database[i].faith);
+                            double dot = (p.intel * database[i].intel) + (p.might * database[i].might) +
+                                         (p.honor * database[i].honor) + (p.skill * database[i].skill) + (p.faith * database[i].faith);
+                            double mag_A = sqrt(pow(p.intel, 2) + pow(p.might, 2) + pow(p.honor, 2) + pow(p.skill, 2) + pow(p.faith, 2));
+                            double mag_B = sqrt(pow(database[i].intel, 2) + pow(database[i].might, 2) + pow(database[i].honor, 2) + pow(database[i].skill, 2) + pow(database[i].faith, 2));
 
-                            // 3. Karesel Dot Product ve Büyüklük (Magnitude) hesapla
-                            double sq_dot = (p_i * d_i) + (p_m * d_m) + (p_h * d_h) + (p_s * d_s) + (p_f * d_f);
-                            double sq_mag_A = sqrt((p_i * p_i) + (p_m * p_m) + (p_h * p_h) + (p_s * p_s) + (p_f * p_f));
-                            double sq_mag_B = sqrt((d_i * d_i) + (d_m * d_m) + (d_h * d_h) + (d_s * d_s) + (d_f * d_f));
-                            double sq_cos_sim = (sq_mag_A > 0 && sq_mag_B > 0) ? (sq_dot / (sq_mag_A * sq_mag_B)) : 0.0;
-
-                            if (sq_cos_sim > max_squared_cosine) {
-                                max_squared_cosine = sq_cos_sim;
-                                best_match_idx = i;
-
-                                // Ekrana %98 gibi normal bir sayı basmak için standart hesabı arkada tut
-                                double norm_dot = (p.intel * database[i].intel) + (p.might * database[i].might) + (p.honor * database[i].honor) + (p.skill * database[i].skill) + (p.faith * database[i].faith);
-                                double norm_mag_A = sqrt(pow(p.intel, 2) + pow(p.might, 2) + pow(p.honor, 2) + pow(p.skill, 2) + pow(p.faith, 2));
-                                double norm_mag_B = sqrt(pow(database[i].intel, 2) + pow(database[i].might, 2) + pow(database[i].honor, 2) + pow(database[i].skill, 2) + pow(database[i].faith, 2));
-                                raw_display_cosine = (norm_mag_A > 0 && norm_mag_B > 0) ? (norm_dot / (norm_mag_A * norm_mag_B)) : 0.0;
-                            }
+                            double cos_sim = (mag_A > 0 && mag_B > 0) ? (dot / (mag_A * mag_B)) : 0.0;
+                            if (cos_sim > max_cosine) { max_cosine = cos_sim; best_match_idx = i; }
                         }
 
                         if (archetype_counts[best_match_idx] == 0) {
@@ -472,7 +455,7 @@ void test_matrix_simulation(CharacterProfile* dummy_profile) {
                             first_stats[best_match_idx][3] = p.skill;
                             first_stats[best_match_idx][4] = p.faith;
 
-                            first_affinity[best_match_idx] = (int)(raw_display_cosine * 100.0);
+                            first_affinity[best_match_idx] = (int)(max_cosine * 100.0);
                             unique_results++;
                         }
                         archetype_counts[best_match_idx]++;
