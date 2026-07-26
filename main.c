@@ -144,67 +144,70 @@ bool load_game(CharacterProfile* profile) {
 typedef struct {
     char god[30];
     char archetype[50];
-    char archetype_tr[50]; // Turkish Translation added
-    char faction[20];      // YENİ: İngilizce Sınıf
-    char faction_tr[20];   // YENİ: Türkçe Sınıf
+    char archetype_tr[50];
+    char faction[20];
+    char faction_tr[20];
     int intel, might, honor, skill, faith;
 } ArchetypeMatrix;
 
 ArchetypeMatrix database[33] = {
     // ZEUS (Odak: Zeka, Güç, Onur | Zayıflık: Yetenek, İnanç)
-    {"Zeus", "The Thunder Wrath", "Yıldırım Öfkesi", "SUN", "GÜNEŞ", 7, 10, 7, 2, 2},
-    {"Zeus", "The Cloud Arbiter", "Bulutların Hakemi", "OCEAN", "OKYANUS", 10, 7, 7, 3, 2},
-    {"Zeus", "The Absolute Sovereign", "Mutlak Hükümdar", "EARTH", "TOPRAK", 7, 7, 10, 2, 2},
+    {"Zeus", "The Thunder Wrath", "Yıldırım Öfkesi", "SUN", "GÜNEŞ", 5, 10, 7, 3, 1},
+    {"Zeus", "The Cloud Arbiter", "Bulutların Hakemi", "OCEAN", "OKYANUS", 10, 7, 5, 1, 3},
+    {"Zeus", "The Absolute Sovereign", "Mutlak Hükümdar", "EARTH", "TOPRAK", 5, 7, 10, 1, 3},
 
     // POSEIDON (Odak: Güç, Yetenek | Zayıflık: Zeka, Onur)
-    {"Poseidon", "The Tidal Ravager", "Gelgit Yıkıcısı", "SUN", "GÜNEŞ", 1, 10, 3, 8, 3},
-    {"Poseidon", "The Abyssal Master", "Uçurumun Efendisi", "OCEAN", "OKYANUS", 3, 8, 3, 10, 4},
-    {"Poseidon", "The Earth-Shaker", "Yeryüzü Titreten", "EARTH", "TOPRAK", 2, 9, 8, 7, 2},
+    {"Poseidon", "The Tidal Ravager", "Gelgit Yıkıcısı", "SUN", "GÜNEŞ", 1, 10, 3, 7, 5},
+    {"Poseidon", "The Abyssal Master", "Uçurumun Efendisi", "OCEAN", "OKYANUS", 3, 7, 1, 10, 5},
+    {"Poseidon", "The Earth-Shaker", "Yeryüzü Titreten", "EARTH", "TOPRAK", 1, 7, 10, 5, 3},
 
     // HADES (Odak: Zeka, Onur | Zayıflık: Güç, İnanç)
-    {"Hades", "The Relentless Executioner", "Amansız İnfazcı", "SUN", "GÜNEŞ", 8, 7, 8, 3, 1},
-    {"Hades", "The Soul Collector", "Ruh Toplayıcı", "OCEAN", "OKYANUS", 10, 3, 7, 6, 1},
-    {"Hades", "The Underworld Autocrat", "Yeraltı Otokratı", "EARTH", "TOPRAK", 9, 4, 10, 2, 1},
+    {"Hades", "The Relentless Executioner", "Amansız İnfazcı", "SUN", "GÜNEŞ", 5, 10, 7, 1, 3},
+    {"Hades", "The Soul Collector", "Ruh Toplayıcı", "OCEAN", "OKYANUS", 10, 1, 5, 7, 3},
+    {"Hades", "The Underworld Autocrat", "Yeraltı Otokratı", "EARTH", "TOPRAK", 7, 3, 10, 1, 5},
 
-    // DEMETER (Dengeli Doğa/Hayatta Kalma)
-    {"Demeter", "The Winter Famine", "Kış Kıtlığı", "SUN", "GÜNEŞ", 4, 7, 4, 4, 6},
-    {"Demeter", "The Harvest Cycle", "Hasat Döngüsü", "OCEAN", "OKYANUS", 6, 3, 5, 6, 5},
-    {"Demeter", "The Earth Mother", "Toprak Ana", "EARTH", "TOPRAK", 5, 5, 8, 3, 4},
+    // DEMETER (Odak: Onur, İnanç, Hayatta Kalma | Zayıflık: Kaba Güç)
+    // ESKİ SUN  : [3, 7, 5, 1, 10] -> YENİ SUN  : [1, 5, 7, 3, 10] (Kış kaba kuvvet değil, dondurucu bir sabırdır)
+    // ESKİ OCEAN: [7, 1, 5, 3, 10] -> YENİ OCEAN: [5, 1, 7, 3, 10] (Hasat döngüsü zeka değil, sadakat ve onurdur)
+    // ESKİ EARTH: [1, 5, 10, 3, 7] -> YENİ EARTH: [3, 1, 10, 5, 7] (Toprak ana kaba güç değil, yaratım yeteneğidir)
+    {"Demeter", "The Winter Famine", "Kış Kıtlığı", "SUN", "GÜNEŞ", 3, 5, 7, 1, 10},
+    {"Demeter", "The Harvest Cycle", "Hasat Döngüsü", "OCEAN", "OKYANUS", 5, 1, 7, 3, 10},
+    {"Demeter", "The Earth Mother", "Toprak Ana", "EARTH", "TOPRAK", 3, 1, 10, 5, 7},
 
     // ATHENA (Odak: Zeka, Onur, Yetenek | Zayıflık: Güç)
-    {"Athena", "The War Vanguard", "Savaş Öncüsü", "SUN", "GÜNEŞ", 8, 6, 8, 7, 3},
-    {"Athena", "The Supreme Tactician", "Yüce Taktisyen", "OCEAN", "OKYANUS", 10, 2, 7, 9, 3},
-    {"Athena", "The Citadel Protector", "Hisar Koruyucusu", "EARTH", "TOPRAK", 9, 4, 10, 6, 4},
+    {"Athena", "The War Vanguard", "Savaş Öncüsü", "SUN", "GÜNEŞ", 7, 5, 3, 10, 1},
+    {"Athena", "The Supreme Tactician", "Yüce Taktisyen", "OCEAN", "OKYANUS", 10, 3, 5, 7, 1},
+    {"Athena", "The Citadel Protector", "Hisar Koruyucusu", "EARTH", "TOPRAK", 7, 1, 10, 5, 3},
 
     // APOLLO (Dengeli Sanat/Kehanet)
-    {"Apollo", "The Radiant Bowman", "Parlak Okçu", "SUN", "GÜNEŞ", 4, 6, 4, 7, 4},
-    {"Apollo", "The Golden Maestro", "Altın Maestro", "OCEAN", "OKYANUS", 6, 3, 4, 6, 6},
-    {"Apollo", "The Oracle of Truth", "Hakikat Kahini", "EARTH", "TOPRAK", 6, 4, 6, 3, 6},
+    {"Apollo", "The Radiant Bowman", "Parlak Okçu", "SUN", "GÜNEŞ", 3, 5, 1, 10, 7},
+    {"Apollo", "The Golden Maestro", "Altın Maestro", "OCEAN", "OKYANUS", 7, 1, 3, 5, 10},
+    {"Apollo", "The Oracle of Truth", "Hakikat Kahini", "EARTH", "TOPRAK", 5, 3, 1, 7, 10},
 
     // APHRODITE (Dengeli Tutku/İllüzyon)
-    {"Aphrodite", "The Flame of Passion", "İhtiras Alevi", "SUN", "GÜNEŞ", 4, 6, 3, 7, 5},
-    {"Aphrodite", "The Siren Puppetmaster", "Siren Kukla Ustası", "OCEAN", "OKYANUS", 7, 2, 3, 8, 5},
-    {"Aphrodite", "The Flawless Form", "Kusursuz Form", "EARTH", "TOPRAK", 5, 4, 6, 6, 4},
+    {"Aphrodite", "The Flame of Passion", "İhtiras Alevi", "SUN", "GÜNEŞ", 1, 5, 3, 7, 10},
+    {"Aphrodite", "The Siren Puppetmaster", "Siren Kukla Ustası", "OCEAN", "OKYANUS", 5, 1, 3, 10, 7},
+    {"Aphrodite", "The Flawless Form", "Kusursuz Form", "EARTH", "TOPRAK", 3, 1, 7, 10, 5},
 
     // ARES (Odak: Güç, Yetenek | Zayıflık: Zeka, Onur)
-    {"Ares", "The Blind Berserker", "Kör Savaşçı", "SUN", "GÜNEŞ", 1, 10, 1, 7, 2},
-    {"Ares", "The Blood Tactician", "Kanlı Taktisyen", "OCEAN", "OKYANUS", 3, 8, 2, 10, 1},
-    {"Ares", "The Dread Champion", "Dehşet Şampiyonu", "EARTH", "TOPRAK", 1, 9, 5, 6, 2},
+    {"Ares", "The Blind Berserker", "Kör Savaşçı", "SUN", "GÜNEŞ", 1, 10, 3, 5, 7},
+    {"Ares", "The Blood Tactician", "Kanlı Taktisyen", "OCEAN", "OKYANUS", 5, 7, 1, 10, 3},
+    {"Ares", "The Dread Champion", "Dehşet Şampiyonu", "EARTH", "TOPRAK", 1, 10, 7, 5, 3},
 
-    // HERMES (Dengeli Hız/Kurnazlık)
-    {"Hermes", "The Hurricane Herald", "Kasırga Haberci", "SUN", "GÜNEŞ", 4, 5, 3, 9, 4},
-    {"Hermes", "The Phantom Thief", "Hayalet Hırsız", "OCEAN", "OKYANUS", 7, 2, 3, 9, 4},
-    {"Hermes", "The Crossroads Guide", "Kavşak Rehberi", "EARTH", "TOPRAK", 6, 4, 6, 6, 3},
+    // HERMES (Odak: Hız/Yetenek, Zeka)
+    {"Hermes", "The Hurricane Herald", "Kasırga Haberci", "SUN", "GÜNEŞ", 7, 5, 1, 10, 3}, // <- DÜZELTİLDİ
+    {"Hermes", "The Phantom Thief", "Hayalet Hırsız", "OCEAN", "OKYANUS", 7, 3, 1, 10, 5},
+    {"Hermes", "The Crossroads Guide", "Kavşak Rehberi", "EARTH", "TOPRAK", 10, 3, 5, 1, 7},
 
     // HEPHAESTUS (Dengeli Zanaat/Dayanıklılık)
-    {"Hephaestus", "The Volcanic Juggernaut", "Volkanik Dev", "SUN", "GÜNEŞ", 4, 8, 4, 6, 3},
-    {"Hephaestus", "The Outcast Innovator", "Dışlanmış Yenilikçi", "OCEAN", "OKYANUS", 8, 3, 4, 8, 2},
-    {"Hephaestus", "The Forgemaster", "Usta Demirci", "EARTH", "TOPRAK", 6, 6, 7, 5, 1},
+    {"Hephaestus", "The Volcanic Juggernaut", "Volkanik Dev", "SUN", "GÜNEŞ", 3, 10, 5, 7, 1},
+    {"Hephaestus", "The Outcast Innovator", "Dışlanmış Yenilikçi", "OCEAN", "OKYANUS", 7, 3, 5, 10, 1}, // <- DÜZELTİLDİ
+    {"Hephaestus", "The Forgemaster", "Usta Demirci", "EARTH", "TOPRAK", 5, 7, 10, 3, 1},
 
     // DIONYSUS (Dengeli Kaos/Kült)
-    {"Dionysus", "The Madness Bringer", "Delilik Getiren", "SUN", "GÜNEŞ", 3, 6, 2, 6, 8},
-    {"Dionysus", "The Illusionist Vagabond", "İllüzyonist Serseri", "OCEAN", "OKYANUS", 6, 3, 2, 7, 7},
-    {"Dionysus", "The Cult Leader", "Kült Lideri", "EARTH", "TOPRAK", 5, 4, 6, 4, 6}
+    {"Dionysus", "The Madness Bringer", "Delilik Getiren", "SUN", "GÜNEŞ", 1, 7, 3, 5, 10},
+    {"Dionysus", "The Illusionist Vagabond", "İllüzyonist Serseri", "OCEAN", "OKYANUS", 10, 1, 3, 5, 7},
+    {"Dionysus", "The Cult Leader", "Kült Lideri", "EARTH", "TOPRAK", 1, 5, 7, 3, 10}
 };
 
 // ============================================================================
@@ -308,16 +311,15 @@ void update_stat(CharacterProfile* p, StatType stat, int amount) {
 }
 
 // ============================================================================
-// STAT UYGULAYICI (BASİT VE DENGELİ)
+// STAT UYGULAYICI (KUSURSUZ SİMETRİ İÇİN BASİTLEŞTİRİLMİŞTİR)
 // ============================================================================
-// Şelale sistemi iptal edildi. Statlar minimum 1'e kadar düşer, başka statı yemez.
 void apply_stat(int* stat, int amount) {
     *stat += amount;
     if (*stat < 1) *stat = 1;
 }
 
 // ============================================================================
-// HIZLI MATRİS TEST MODU (ZEKA BUFF'LI VE DENGELİ EKONOMİ)
+// HIZLI MATRİS TEST MODU (KOZMİK SİMETRİ VE ALTIN DİZİ VERİTABANI İLE)
 // ============================================================================
 void test_matrix_simulation(CharacterProfile* dummy_profile) {
     clear_screen();
@@ -325,7 +327,7 @@ void test_matrix_simulation(CharacterProfile* dummy_profile) {
 
     printf(COLOR_GOLD " === KOZMİK MATRİS OTOMATİK TARAMA ===\n\n" COLOR_RESET);
     printf(COLOR_DARK " Sistem tüm ihtimalleri hesaplıyor...\n");
-    printf(" Lütfen bekleyin, 'Zeka Buff'lı Doğrusal Dağılım' devrede...\n\n" COLOR_RESET);
+    printf(" Lütfen bekleyin, 'Kusursuz Simetri' devrede...\n\n" COLOR_RESET);
 
     int archetype_counts[33] = {0};
     int first_path[33][5] = {0};
@@ -344,31 +346,35 @@ void test_matrix_simulation(CharacterProfile* dummy_profile) {
                         CharacterProfile p;
                         memset(&p, 0, sizeof(CharacterProfile));
 
-                        // Merkezcil (Çekirdek) Başlangıç
+                        // Herkes tam merkezde, nötr başlar
                         p.intel = 3; p.might = 3; p.honor = 3; p.skill = 3; p.faith = 3;
                         p.poseidon_veto = 0;
 
-                        // --- 1. SINAV ---
+                        // ====================================================================
+                        // KUSURSUZ 40'LI MATRİS (Her stat tam 8 kez +, 8 kez - alır)
+                        // ====================================================================
+
+                        // --- 1. SINAV (Blok 1-3) ---
                         if (c1 == 1) { apply_stat(&p.might, 3); apply_stat(&p.intel, -1); }
-                        else if (c1 == 2) { apply_stat(&p.intel, 4); } // ZEKA BUFF: +4 / Ceza Yok
+                        else if (c1 == 2) { apply_stat(&p.intel, 3); apply_stat(&p.honor, -1); }
                         else if (c1 == 3) { apply_stat(&p.faith, 3); apply_stat(&p.might, -1); }
 
-                        // --- 2. SINAV ---
+                        // --- 2. SINAV (Blok 4-12) ---
                         if (c1 == 1) {
                             if (c2 == 1) { apply_stat(&p.honor, 3); apply_stat(&p.skill, -1); }
                             else if (c2 == 2) { apply_stat(&p.skill, 3); apply_stat(&p.faith, -1); }
                             else if (c2 == 3) { apply_stat(&p.faith, 3); apply_stat(&p.intel, -1); }
                         } else if (c1 == 2) {
-                            if (c2 == 1) { apply_stat(&p.skill, 3); apply_stat(&p.intel, -1); }
-                            else if (c2 == 2) { apply_stat(&p.intel, 4); } // ZEKA BUFF
-                            else if (c2 == 3) { apply_stat(&p.might, 3); apply_stat(&p.skill, -1); }
+                            if (c2 == 1) { apply_stat(&p.skill, 3); apply_stat(&p.might, -1); }
+                            else if (c2 == 2) { apply_stat(&p.intel, 3); apply_stat(&p.might, -1); }
+                            else if (c2 == 3) { apply_stat(&p.honor, 3); apply_stat(&p.skill, -1); }
                         } else if (c1 == 3) {
                             if (c2 == 1) { apply_stat(&p.skill, 3); apply_stat(&p.honor, -1); }
-                            else if (c2 == 2) { apply_stat(&p.honor, 3); apply_stat(&p.intel, -1); }
-                            else if (c2 == 3) { apply_stat(&p.faith, 3); apply_stat(&p.might, -1); }
+                            else if (c2 == 2) { apply_stat(&p.honor, 3); apply_stat(&p.might, -1); }
+                            else if (c2 == 3) { apply_stat(&p.faith, 3); apply_stat(&p.skill, -1); }
                         }
 
-                        // --- 3. SINAV REAKSİYONU ---
+                        // --- 3. SINAV REAKSİYONU (Blok 13-27) ---
                         if (c1 == 1 && c2 == 1) {
                             if (c3 == 1) { apply_stat(&p.faith, 3); apply_stat(&p.honor, -1); }
                             else if (c3 == 2) { apply_stat(&p.might, 3); apply_stat(&p.faith, -1); }
@@ -376,10 +382,10 @@ void test_matrix_simulation(CharacterProfile* dummy_profile) {
                         } else if (c1 == 1 && c2 == 2) {
                             if (c3 == 1) { apply_stat(&p.might, 3); apply_stat(&p.intel, -1); }
                             else if (c3 == 2) { apply_stat(&p.faith, 3); apply_stat(&p.honor, -1); }
-                            else if (c3 == 3) { apply_stat(&p.intel, 4); } // ZEKA BUFF
+                            else if (c3 == 3) { apply_stat(&p.intel, 3); apply_stat(&p.faith, -1); }
                         } else if (c1 == 2) {
                             if (c3 == 1) { apply_stat(&p.honor, 3); apply_stat(&p.intel, -1); }
-                            else if (c3 == 2) { apply_stat(&p.intel, 4); } // ZEKA BUFF
+                            else if (c3 == 2) { apply_stat(&p.intel, 3); apply_stat(&p.skill, -1); }
                             else if (c3 == 3) { apply_stat(&p.skill, 3); apply_stat(&p.honor, -1); }
                         } else if (c1 == 3 && c2 == 1) {
                             if (c3 == 1) { apply_stat(&p.skill, 3); apply_stat(&p.faith, -1); }
@@ -387,46 +393,42 @@ void test_matrix_simulation(CharacterProfile* dummy_profile) {
                             else if (c3 == 3) { apply_stat(&p.might, 3); apply_stat(&p.intel, -1); }
                         } else {
                             if (c3 == 1) { apply_stat(&p.might, 3); apply_stat(&p.honor, -1); }
-                            else if (c3 == 2) { apply_stat(&p.intel, 4); } // ZEKA BUFF
-                            else if (c3 == 3) { apply_stat(&p.faith, 3); apply_stat(&p.skill, -1); }
+                            else if (c3 == 2) { apply_stat(&p.intel, 3); apply_stat(&p.faith, -1); }
+                            else if (c3 == 3) { apply_stat(&p.honor, 3); apply_stat(&p.skill, -1); }
                         }
 
+                        // Hikaye Mantığı Tespiti
                         bool helios_path = false;
                         if ((c1 == 1 && c2 == 1 && (c3 == 1 || c3 == 2)) || (c1 == 1 && c2 == 3) || (c1 == 3 && (c2 == 2 || c2 == 3))) helios_path = true;
                         if (c1 == 3 && c2 == 1 && c3 == 2) helios_path = true;
                         if (c1 == 3 && c2 == 1 && c3 == 3) helios_path = true;
                         if (c1 == 1 && c2 == 1 && c3 == 3) p.poseidon_veto = 1;
 
-                        // --- 4. SAHNE VI (HELIOS veya DROWNER) ---
+                        // --- 4. SAHNE VI (Blok 28-33) ---
                         if (helios_path) {
                             if (c4 == 1) continue;
                             else if (c4 == 2) { apply_stat(&p.might, 3); apply_stat(&p.intel, -1); }
                             else if (c4 == 3) { apply_stat(&p.faith, 3); apply_stat(&p.skill, -1); }
-                            else if (c4 == 4) { apply_stat(&p.intel, 4); } // ZEKA BUFF
+                            else if (c4 == 4) { apply_stat(&p.intel, 3); apply_stat(&p.honor, -1); }
                         } else {
                             if (c4 == 3) continue;
-                            if (c4 == 1) { apply_stat(&p.intel, 4); } // ZEKA BUFF
-                            else if (c4 == 2) { apply_stat(&p.might, 3); apply_stat(&p.intel, -1); }
-                            else if (c4 == 4) {
-                                apply_stat(&p.faith, 3); apply_stat(&p.might, -1);
-                                if (c1 == 2 && c3 == 3) {
-                                    apply_stat(&p.honor, 3); apply_stat(&p.skill, -1);
-                                }
-                            }
+                            if (c4 == 1) { apply_stat(&p.intel, 3); apply_stat(&p.faith, -1); }
+                            else if (c4 == 2) { apply_stat(&p.might, 3); apply_stat(&p.faith, -1); }
+                            else if (c4 == 4) { apply_stat(&p.skill, 3); apply_stat(&p.might, -1); }
                         }
 
-                        // --- 5. ALTIN VURUŞ (NİHAİ KARAR) ---
+                        // --- 5. ALTIN VURUŞ (Blok 34-40) ---
                         if (final_ans == 1) { apply_stat(&p.might, 5); apply_stat(&p.faith, -2); }
-                        else if (final_ans == 2) { apply_stat(&p.honor, 5); apply_stat(&p.intel, -1); }
-                        else if (final_ans == 3) { apply_stat(&p.might, 5); apply_stat(&p.honor, -2); }
-                        else if (final_ans == 4) { apply_stat(&p.intel, 6); } // ZEKA BUFF: Mükemmel Zeka +6
-                        else if (final_ans == 5) { apply_stat(&p.skill, 5); apply_stat(&p.faith, -2); }
+                        else if (final_ans == 2) { apply_stat(&p.honor, 5); apply_stat(&p.intel, -2); }
+                        else if (final_ans == 3) { apply_stat(&p.skill, 5); apply_stat(&p.honor, -2); }
+                        else if (final_ans == 4) { apply_stat(&p.intel, 5); apply_stat(&p.might, -2); }
+                        else if (final_ans == 5) { apply_stat(&p.faith, 5); apply_stat(&p.skill, -2); }
                         else if (final_ans == 6) { apply_stat(&p.honor, 5); apply_stat(&p.might, -2); }
-                        else if (final_ans == 7) { apply_stat(&p.faith, 5); apply_stat(&p.skill, -2); }
+                        else if (final_ans == 7) { apply_stat(&p.skill, 5); apply_stat(&p.intel, -2); }
 
                         total_combinations_tested++;
 
-                        // --- STANDART KOSİNÜS MATEMATİĞİ (ORİJİNAL) ---
+                        // --- STANDART KOSİNÜS MATEMATİĞİ ---
                         double max_cosine = -2.0;
                         int best_match_idx = 0;
 
@@ -848,41 +850,49 @@ void print_dynamic_trial(int trial_num, const char* title_en, const char* title_
 
 void execute_parametric_test(CharacterProfile* profile) {
     int choice;
-    int prev_choice; // Memorizes Trial 1
-    int choice_2;    // Memorizes Trial 2
-    int choice_3 = 0; // Memorizes Trial 4 reaction
+    int prev_choice;  // c1'i tutar (Sahne 1)
+    int choice_2;     // c2'yi tutar (Sahne 2)
+    int choice_3 = 0; // c3'ü tutar (Sahne 3 ve 4 reaksiyonları)
 
     clear_screen();
 
     // ========================================================================
-    // TRIAL 1: THE AWAKENING IN CHAOS
+    // SAHNE I: KAOSUN İÇİNDE UYANIŞ (c1)
     // ========================================================================
     const char* q1_en[] = {
-        "Grab the thick ropes of the main mast and brace against the impact.",
-        "Use the ship's tilt to quickly slide into the lower hatch.",
-        "Open your arms to the wave, accepting the chaotic flow."
+        "Grab the thick ropes of the main mast, brace my muscles, and face the impact head-on.",
+        "Use the ship's violent tilt to slide directly into the pitch-black lower hatch.",
+        "Drop to my knees, open my arms wide, and surrender to the chaotic will of the ocean."
     };
     const char* q1_tr[] = {
-        "Ana direğin kalın halatlarına sıkıca sarılıp çarpışmayı olduğum yerde karşılarım.",
-        "Geminin eğiminden faydalanıp saniyeler içinde alt ambar kapağının boşluğuna kayarım.",
-        "Kollarımı dalgaya doğru açarak suyun beni sürükleyeceği o kaotik akışı kabullenirim."
+        "Ana direğin kalın halatlarına kilitlenip, kaslarımı olanca gücümle sıkarak dalgayı göğüslerim.",
+        "Geminin şiddetli devrilme açısından faydalanıp, alt ambarın zifiri karanlığına doğru hızla kayarım.",
+        "Dizlerimin üzerine çöküp kollarımı iki yana açar, okyanusun bu kaotik iradesine kendimi tamamen teslim ederim."
     };
 
     if (current_lang == 1) {
         printf(COLOR_GOLD "\n [SAHNE I] Uyanış\n\n" COLOR_RESET);
-        printf(COLOR_WHITE " Yüzüne şiddetle çarpan tuzlu suyla gözlerini açıyorsun. Çatırdayan ahşap bir güvertedesin.\n");
-        printf(" Ufku tamamen kaplayan, etrafındaki tüm ışığı yutan kapkara devasa bir yaratık denizin ortasında dikiliyor.\n");
-        printf(" Tepesinde ise göğü yırtarak inen, altın ışıklar saçan efsanevi bir figür var.\n\n");
-        printf(" Ancak bunu idrak etmeye vaktin yok. Devasa, kapkara bir dalga tam üzerine kırılmak üzere!\n\n" COLOR_RESET);
+        printf(COLOR_WHITE " Yüzüne şarapnel gibi çarpan dondurucu, tuzlu suyla gözlerini açıyorsun. Ciğerlerin yanıyor.\n");
+        printf(" Çatırdıyan, her an ikiye bölünmek üzere olan devasa bir ahşap güvertedesin.\n\n");
+        printf(COLOR_DARK " Denizin tam ortasında, gök kubbeyi paramparça eden kapkara bir silüet dikiliyor.\n");
+        printf(" Bu sadece bir canavar değil; etrafındaki tüm ışığı yutan, suları kaynatan antik bir dehşet.\n");
+        printf(" Tepesinde ise göğü yırtarak inen, kör edici altın ışıklar saçan efsanevi bir figür...\n");
+        printf(" Apollon. Güneşin kudretiyle karanlığın üzerine mermi gibi dalıyor.\n\n" COLOR_RESET);
+        printf(COLOR_WHITE " Ancak bu ilahi savaşı idrak etmeye vaktin yok. Titanların varlığı okyanusu yerinden oynatıyor.\n");
+        printf(" Dağ büyüklüğünde, kapkara bir dalga gemiyi tek lokmada yutmak, tam üzerine kırılmak üzere!\n\n" COLOR_RESET);
 
         for (int i = 0; i < 3; i++) printf("  [" COLOR_CYAN "%d" COLOR_RESET "] %s\n", i + 1, q1_tr[i]);
         printf(COLOR_CYAN "\n  İlk içgüdün nedir? (1-3): " COLOR_RESET);
     } else {
         printf(COLOR_GOLD "\n [SCENE I] The Awakening\n\n" COLOR_RESET);
-        printf(COLOR_WHITE " You open your eyes to freezing saltwater striking your face. You are on a creaking wooden deck.\n");
-        printf(" A colossal, pitch-black creature that swallows all light dominates the horizon.\n");
-        printf(" Above it, a legendary figure radiating golden light descends, tearing through the sky.\n\n");
-        printf(" But you have no time to comprehend this. A massive, dark wave is about to crash right on top of you!\n\n" COLOR_RESET);
+        printf(COLOR_WHITE " You open your eyes to freezing saltwater striking your face like shrapnel. Your lungs burn.\n");
+        printf(" You are on a violently creaking wooden deck, on the verge of splitting in half.\n\n");
+        printf(COLOR_DARK " In the middle of the sea stands a pitch-black silhouette shattering the sky vault.\n");
+        printf(" This is not just a monster; it is an ancient terror that swallows all light around it.\n");
+        printf(" Above it, a legendary figure radiating blinding golden light descends, tearing through the sky...\n");
+        printf(" Apollo. He dives like a missile onto the darkness with the might of the sun.\n\n" COLOR_RESET);
+        printf(COLOR_WHITE " But you have no time to comprehend this divine war. The titans' presence displaces the ocean.\n");
+        printf(" A mountain-sized, pitch-black wave is about to swallow the ship, crashing right on top of you!\n\n" COLOR_RESET);
 
         for (int i = 0; i < 3; i++) printf("  [" COLOR_CYAN "%d" COLOR_RESET "] %s\n", i + 1, q1_en[i]);
         printf(COLOR_CYAN "\n  What is your first instinct? (1-3): " COLOR_RESET);
@@ -896,19 +906,19 @@ void execute_parametric_test(CharacterProfile* profile) {
         Sleep(20);
     }
 
-    // Trial 1 Stat Application (Cascade Sistemi: +2 / -1)
+    // Sahne 1 Stat Uygulaması (+3 / -1)
     if (choice == 1) {
-        update_stat(profile, STAT_MIGHT, 2);
+        update_stat(profile, STAT_MIGHT, 3);
         update_stat(profile, STAT_INTEL, -1);
-    } // Kaba kuvvet, Zekayı vurur -> Yoksa Yeteneği
+    }
     else if (choice == 2) {
-        update_stat(profile, STAT_INTEL, 2);
+        update_stat(profile, STAT_INTEL, 3);
         update_stat(profile, STAT_HONOR, -1);
-    } // Zeka, Onuru vurur -> Yoksa İnancı
+    }
     else if (choice == 3) {
-        update_stat(profile, STAT_FAITH, 2);
+        update_stat(profile, STAT_FAITH, 3);
         update_stat(profile, STAT_MIGHT, -1);
-    } // İnanç, Gücü vurur -> Yoksa Onuru
+    }
     prev_choice = choice;
 
     // ========================================================================
@@ -917,59 +927,70 @@ void execute_parametric_test(CharacterProfile* profile) {
     clear_screen();
 
     const char* q2_set1_en[] = {
-        "Quickly move behind the mast, leaning my entire weight against the trunk to secure myself.",
-        "Grab a thick sail rope nearby and swing myself away milliseconds before the arrow strikes.",
-        "Stare directly into the blinding light, believing this stray cosmic bullet will miss me entirely."
+        "Quickly move behind the mast, lean my back against the wood, and brace my feet for the incoming shockwave.",
+        "Grab a loose, thick sail rope nearby and jump away from the mast milliseconds before the arrow strikes.",
+        "Stare directly into the blinding divine light, believing this stray cosmic bullet will not hit me, and stand my ground."
     };
     const char* q2_set1_tr[] = {
-        "Direğin arkasına hızla geçip, tüm ağırlığımla kütüğe abanarak kendimi sağlama alırım.",
-        "Yakınımdaki kalın bir yelken halatını kapıp, ok çarpmadan milisaniyeler önce kendimi savururum.",
-        "Gözlerimi kamaştıran ışığa dimdik bakıp, tanrısal savaşın bu kör kurşununun beni teğet geçeceğine inanarak beklerim."
+        "Direğin arkasına hızla geçip sırtımı ahşaba dayar, ayaklarımı güverteye çivileyerek yaklaşan sarsıntıyı beklerim.",
+        "Yakınımdaki boşta sallanan kalın bir yelken halatını kapıp, ok direğe çarpmadan milisaniyeler önce direkten uzağa atlarım.",
+        "Gözlerimi kamaştıran o ilahi ışığa dimdik bakıp, tanrıların bu kör kurşununun bana çarpmayacağına inanarak olduğum yerde kalırım."
     };
 
     const char* q2_set2_en[] = {
-        "Hearing the wood splinter, I instinctively and blindly dive and roll to the side in panic.",
-        "Focus my hearing, pinpointing exactly where the ceiling burst, and crawl in the opposite direction.",
-        "Drop to my knees, shield my head tightly with my arms, and brace for the debris to collapse on me."
+        "Hearing the wood shatter, I succumb to an instinctive panic reflex, blindly diving and rolling to the side in the dark.",
+        "Focusing purely on my hearing, I pinpoint exactly where the ceiling burst and crawl in the opposite direction with calculated precision.",
+        "Dropping to my knees, I shield my head tightly with my arms, bracing rigidly for the massive deck debris to collapse on me."
     };
     const char* q2_set2_tr[] = {
-        "Ahşabın kırıldığını duyduğum an içgüdüsel bir panikle körlemesine yana doğru atılıp yuvarlanırım.",
-        "Kulaklarıma odaklanıp, tavanın tam olarak nereden patladığını sesinden tespit ederek zıt yöne doğru sürünürüm.",
-        "Diz çöküp kollarımı başıma sıkıca siper eder, enkazın üzerime çökmesini kaskatı beklerim."
+        "Ahşabın kırıldığını duyduğum an içgüdüsel bir panik refleksine kapılır, karanlıkta körlemesine yana doğru atılıp yuvarlanırım.",
+        "Kulaklarıma odaklanıp, tavanın tam olarak nereden patladığını sesinden tespit ederek milimetrik bir hesapla zıt yöne doğru sürünürüm.",
+        "Diz çöküp kollarımı başıma sıkıca siper eder, parçalanan güvertenin devasa enkazının üzerime çökmesini kaskatı beklerim."
     };
 
     const char* q2_set3_en[] = {
-        "Use my low center of gravity to quickly slide across the wet deck and out of the danger zone.",
-        "Proclaim, 'If death descends from the sky, it must be met head-on,' and wait with my chest puffed out.",
-        "Let the divine light blind me, trusting that this cosmic arrow will simply graze past a mere mortal like me."
+        "Using my low center of gravity, I rapidly slide across the soaked wood, throwing myself out of the deadly blast zone.",
+        "Proclaiming, 'If death descends from the sky, it must be met head-on,' I wait sitting perfectly upright and rigid.",
+        "Letting the divine light blind me, I remain completely motionless, trusting that this cosmic arrow will ignore a mere mortal like me."
     };
     const char* q2_set3_tr[] = {
-        "Düşük ağırlık merkezimi kullanıp, ıslak zemin üzerinde hızla kayarak tehlike alanının dışına çıkarım.",
-        "\"Ölüm gökten iniyorsa saklanarak değil, yüzleşerek karşılanmalı,\" diyerek oturduğum yerde başım dik beklerim.",
-        "İlahi ışığın gözümü almasına izin verip, bu kozmik okun beni teğet geçeceğine inanarak yerimden hiç kıpırdamam."
+        "Düşük ağırlık merkezimi kullanıp, sırılsıklam ahşap üzerinde hızla kayarak kendimi o ölümcül patlama alanının dışına atarım.",
+        "\"Ölüm gökten iniyorsa saklanarak değil, yüzleşerek karşılanmalı,\" diyerek oturduğum yerde başım dik, kaskatı beklerim.",
+        "İlahi ışığın gözümü almasına izin verip, bu kozmik okun benim gibi basit bir faniyi umursamayacağına inancımla yerimden hiç kıpırdamam."
     };
 
     if (current_lang == 1) {
         printf(COLOR_GOLD "\n [SAHNE II] Işığın Şarapneli\n\n" COLOR_RESET);
         if (prev_choice == 1) {
-            printf(COLOR_WHITE " Fırtınanın vahşetine ucu ucuna dayandın. Sırılsıklamsın. Kaslarındaki gerilimi ufak bir\n");
-            printf(" esnemeyle atıp solundaki kozmik savaşa bakıyorsun.\n\n");
-            printf(COLOR_DARK " Apollon, yaratığa ardı ardına altından oklar yağdırıyor. Oklar denize mermi gibi düşüp suları\n");
-            printf(" GÜM GÜM patlatıyor. O sırada seken kör edici oklardan birinin tam direğe doğru geldiğini görüyorsun!\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Dalganın o ezici ağırlığı bedeninden sıyrılıp okyanusa geri dökülürken, kollarındaki\n");
+            printf(" kasların yırtılacak noktaya geldiğini hissediyorsun. Avuçlarından sızan kan tuzlu suya karışıyor.\n\n");
+            printf(COLOR_DARK " Zar zor başını kaldırıp solundaki cehenneme bakıyorsun. Apollon, karanlık anomaliye ardı ardına\n");
+            printf(" altından oklar kusuyor. Ancak bu oklar canavarın derisinden mermi gibi sekip denize çakılıyor ve\n");
+            printf(" suları sağır edici patlamalarla göğe fırlatıyor.\n\n");
+            printf(COLOR_WHITE " Ve o an... Havayı cızırdatan o ilahi oklardan birinin canavardan sekerek doğrudan sana,\n");
+            printf(" tutunduğun direğe doğru uçtuğunu fark ediyorsun. Zaman adeta yavaşlıyor...\n\n" COLOR_RESET);
             for (int i = 0; i < 3; i++) printf("  [" COLOR_CYAN "%d" COLOR_RESET "] %s\n", i + 1, q2_set1_tr[i]);
         }
         else if (prev_choice == 2) {
-            printf(COLOR_WHITE " Ambarın içine son anda girdin ama dalganın çarpmasıyla içeride sağa sola savruldun.\n");
-            printf(" Ufaktan sersemlemiş bir halde, karanlıkta doğrulmaya çalışıyorsun.\n\n");
-            printf(COLOR_DARK " Yukarıda kıyamet kopuyor. Suları sarsan, sağır edici GÜM GÜM patlama sesleri duyuyorsun.\n");
-            printf(" Aniden kör edici altın rengi bir ışık, karanlık ambarın tavanını paramparça ediyor!\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Devasa dalga gemiye çarptığında, ambar kapağının aralığından içeriye şelale gibi dondurucu\n");
+            printf(" sular boşalıyor. Dalganın amansız şiddeti gemiyi bir beşik gibi savururken, zifiri karanlık\n");
+            printf(" ambarın içinde oradan oraya sürüklenip ahşap sandıklara çarpıyorsun.\n\n");
+            printf(COLOR_DARK " Sersemlemiş, ciğerleri su dolmuş bir halde kapkaranlık ve sırılsıklam zeminde zar zor doğruluyorsun.\n");
+            printf(" Yukarıda kıyamet kopuyor. Suları sarsan, kemiklerini titreten sağır edici patlama sesleri adeta kafanın\n");
+            printf(" içinde yankılanıyor. Geminin devasa ahşap gövdesi, sonunu hisseden bir canavar gibi acı içinde inliyor.\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Aniden... Karanlığı bıçak gibi kesen kör edici, yakıcı altın rengi bir ışık hüzmesi ambarın\n");
+            printf(" kalın tavanını paramparça ediyor! Apollon'un seken ilahi oku, doğrudan senin bulunduğun karanlık\n");
+            printf(" mahzene, tam tependen içeri giriyor!\n\n" COLOR_RESET);
             for (int i = 0; i < 3; i++) printf("  [" COLOR_CYAN "%d" COLOR_RESET "] %s\n", i + 1, q2_set2_tr[i]);
         }
         else if (prev_choice == 3) {
-            printf(COLOR_WHITE " Dalganın şiddeti seni güvertede sürükledi ve sırtını ana direğe çarptın. Oturduğun\n");
-            printf(" yerden, nefes nefese solundaki savaşı izlemeye başlıyorsun.\n\n");
-            printf(COLOR_DARK " Apollon'un attığı oklar canavardan sekmeye başlıyor! Seken oklar denize düşüp suları patlatıyor.\n");
-            printf(" O sırada seken kör edici oklardan birinin tam bulunduğun yere, ana yelkene geldiğini görüyorsun!\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Dalganın amansız şiddeti seni ahşap güvertede bir bez bebek gibi acımasızca sürükledi\n");
+            printf(" ve sırtını ana direğe sertçe çarptın. Omurganın sızladığını hissediyorsun. Oturduğun yerden,\n");
+            printf(" nefes nefese ve çaresiz bir halde solundaki titanların savaşını izliyorsun.\n\n");
+            printf(COLOR_DARK " Apollon'un öfkeyle fırlattığı oklar canavardan sekmeye başlıyor! Altın oklar okyanusa düştükçe\n");
+            printf(" suları nükleer bir bomba gibi patlatıp gökyüzüne devasa su sütunları fırlatıyor.\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " O sırada seken kör edici oklardan birinin, havayı yakarak ve etrafındaki yağmur damlalarını\n");
+            printf(" buharlaştırarak tam bulunduğun yere, arkana yaslandığın direğe doğru geldiğini görüyorsun!\n\n" COLOR_RESET);
             for (int i = 0; i < 3; i++) printf("  [" COLOR_CYAN "%d" COLOR_RESET "] %s\n", i + 1, q2_set3_tr[i]);
         }
         printf(COLOR_CYAN "\n  İkinci içgüdün nedir? (1-3): " COLOR_RESET);
@@ -1029,81 +1050,91 @@ void execute_parametric_test(CharacterProfile* profile) {
     clear_screen();
 
     // ------------------------------------------------------------------------
-    // PATH 1.1: Stand strong at mast -> Lean into it again
+    // PATH 1.1: İLAHİ KİLİTLENME (Direkte direnenlerin kaderi)
     // ------------------------------------------------------------------------
     if (prev_choice == 1 && choice_2 == 1) {
         if (current_lang == 1) {
             printf(COLOR_GOLD "\n [SAHNE III] İlahi Kilitlenme\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " Kaba kuvvetin işe yaradı! Kozmik ok gövdeye değil, tam üstündeki ana yelkene saplanıp direği parçalıyor.\n\n");
-            printf(" Devasa yelkenin devrilmesini ve küpeşteyi parçalayarak denize çakılmasını izliyorsun.\n");
-            printf(" Bu çarpışmanın sarsıntısıyla ayakların yerden kesiliyor, hafifçe havalanıyorsun.\n");
-            printf(" Tam o an, okyanusun derinliklerinden fırlayan parlayan devasa bir mızrak (Trident)\n");
-            printf(" suları yararak hemen üzerinden mermi gibi göğe uçuyor!\n\n");
-            printf(" Sarsıntıyla dizlerinin üzerine sertçe düştüğün o saniyede, devasa bir figür (Poseidon)\n");
-            printf(" suları yararak geminin hemen yanından yükseliyor. Devasa yüzü güverte hizasından geçerken\n");
-            printf(" göz göze geliyorsunuz. O ilahi bakışmanın ağırlığı altında tamamen kilitleniyorsun...\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Kaba kuvvetin işe yaradı! O sarsıntıya rağmen ayakların güverteye kenetlendi.\n");
+            printf(" Kozmik ok gövdeye değil, tam üstündeki devasa ana yelkene saplanıp direği ortadan ikiye yarıyor.\n\n");
+            printf(COLOR_DARK " Tonlarca ağırlıktaki yelkenin ağır çekimde devrilmesini, küpeşteyi paramparça ederek\n");
+            printf(" denize çakılmasını izliyorsun. Bu dehşet verici çarpışmanın sarsıntısıyla ayakların\n");
+            printf(" yerden kesiliyor, havaya savruluyorsun.\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Tam o an, okyanusun karanlık derinliklerinden fırlayan, güneş kadar parlak devasa\n");
+            printf(" bir mızrak (Trident) suları ortadan ikiye yararak hemen üzerinden mermi gibi göğe uçuyor!\n\n");
+            printf(COLOR_CYAN " Sarsıntıyla dizlerinin üzerine sertçe düştüğün o saniyede, okyanus kabarıyor.\n");
+            printf(" Devasa bir figür (Poseidon) suları yararak geminin hemen yanından usulca yükseliyor.\n");
+            printf(" O muazzam, kayıtsız yüzü güverte hizasından geçerken aniden yavaşlıyor ve göz göze\n");
+            printf(" geliyorsunuz. O ilahi bakışmanın ezici ağırlığı altında tamamen felç oluyorsun...\n\n" COLOR_RESET);
             printf(COLOR_CYAN " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
         } else {
             printf(COLOR_GOLD "\n [SCENE III] Divine Paralysis\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " Your brute force worked! The cosmic arrow strikes the main sail above you, shattering the mast.\n\n");
-            printf(" You watch as the massive sail topples over, crashing into the sea.\n");
-            printf(" The impact lifts your feet off the deck, sending you slightly airborne.\n");
-            printf(" At that exact moment, a colossal glowing spear (Trident) shoots from the depths\n");
-            printf(" tearing through the water and flying right over you like a missile into the sky!\n\n");
-            printf(" As you land hard on your knees, a colossal figure (Poseidon) rises\n");
-            printf(" from the waters right beside the ship. As his massive face passes the deck level,\n");
-            printf(" your eyes lock. You are completely paralyzed under the weight of that divine gaze...\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Your brute force worked! Despite the shockwave, your feet remain glued to the deck.\n");
+            printf(" The cosmic arrow strikes the massive main sail above you, splitting the mast in half.\n\n");
+            printf(COLOR_DARK " You watch the multi-ton sail topple in slow motion, shattering the railing and\n");
+            printf(" crashing into the sea. The terrifying impact of this collision lifts your feet\n");
+            printf(" off the ground, launching you into the air.\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " At that exact moment, a colossal spear (Trident) as bright as the sun shoots from\n");
+            printf(" the dark depths, tearing the ocean in half and flying right over you like a missile!\n\n");
+            printf(COLOR_CYAN " As you land hard on your knees, the ocean swells. A colossal figure (Poseidon)\n");
+            printf(" rises smoothly right beside the ship. As his massive, indifferent face passes the\n");
+            printf(" deck level, he slows down. Your eyes lock. You are completely paralyzed under the\n");
+            printf(" crushing weight of that divine gaze...\n\n" COLOR_RESET);
             printf(COLOR_CYAN " [Press ANY KEY to continue]\n" COLOR_RESET);
         }
-        _getch();
-        clear_screen();
+        _getch(); clear_screen();
 
         if (current_lang == 1) {
             printf(COLOR_GOLD "\n [SAHNE IV] İlahi Yargı\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " Sular durulmuyor. Dizlerinin üzerindesin. Okyanusun hakimi, devasa gözleriyle sana \n");
-            printf(" tepeden bakıyor. Seni kurtarmak için hiçbir hamle yapmadı, sadece yıkımı izliyor.\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Sular çıldırmışçasına çalkalanıyor. Dizlerinin üzerindesin. Okyanusun hakimi, dipsiz kuyu\n");
+            printf(" gibi gözleriyle sana tepeden bakıyor. Seni kurtarmak için parmağını bile kıpırdatmıyor,\n");
+            printf(" sadece bu fani karıncanın yaklaşan ölümünü izliyor.\n\n" COLOR_RESET);
 
-            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Bu muazzam ihtişam ve güç karşısında istemsizce titrerim. (İnanç)\n");
-            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Bir tanrı olmasına rağmen yardıma gelmediği için içimde saf bir nefret büyür. (Güç)\n");
-            printf("  [" COLOR_CYAN "3" COLOR_RESET "] İlahi felci kendi irademle kırar, ona dik dik bakarak ayağa kalkarım. (Onur)\n\n");
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Bu devasa ihtişam ve okyanusun ezici gücü karşısında istemsizce dizlerimin üzerine çöker, başımı eğerim.\n");
+            printf("  [" COLOR_CYAN "2" COLOR_RESET "] İliklerime kadar donarken, tanrıların bu kibirli umursamazlığına karşı içimde saf, yakıcı bir öfke büyür.\n");
+            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Bedenimi kilitleyen bu ilahi baskıyı irademle parçalar, ayağa kalkıp o devasa gözlerin içine dimdik bakarım.\n\n");
             printf(COLOR_CYAN "  Tepkin nedir? (1-3): " COLOR_RESET);
         } else {
             printf(COLOR_GOLD "\n [SCENE IV] Divine Judgment\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " The waters do not calm. You are on your knees. The lord of the ocean looks down upon you.\n");
-            printf(" He made no move to save you; he merely watches the destruction.\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " The waters churn madly. You are on your knees. The lord of the ocean looks down upon you\n");
+            printf(" with eyes like bottomless wells. He doesn't lift a finger to save you, merely watching\n");
+            printf(" the impending death of a mortal ant.\n\n" COLOR_RESET);
 
-            printf("  [" COLOR_CYAN "1" COLOR_RESET "] I involuntarily tremble before this overwhelming majesty and power.\n");
-            printf("  [" COLOR_CYAN "2" COLOR_RESET "] A pure hatred grows within me because, despite being a god, he offered no help.\n");
-            printf("  [" COLOR_CYAN "3" COLOR_RESET "] I break the divine paralysis with my own will, stand up, and stare right back at him.\n\n");
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] I involuntarily drop to my knees and bow my head before this colossal majesty and crushing power.\n");
+            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Freezing to my core, a pure, burning rage grows within me against this arrogant divine indifference.\n");
+            printf("  [" COLOR_CYAN "3" COLOR_RESET "] I shatter this divine paralysis with my own will, stand up, and stare directly into those massive eyes.\n\n");
             printf(COLOR_CYAN "  What is your reaction? (1-3): " COLOR_RESET);
         }
         while (1) {
             if (_kbhit()) {
                 char ch = _getch();
-                if (ch == '1') { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_HONOR, -1); choice_3 = 1; break; }
-                else if (ch == '2') { update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_FAITH, -1); choice_3 = 2; break; }
-                else if (ch == '3') { update_stat(profile, STAT_HONOR, 2); update_stat(profile, STAT_SKILL, -1); choice_3 = 3; break; }
+                if (ch == '1') { update_stat(profile, STAT_FAITH, 3); update_stat(profile, STAT_HONOR, -1); choice_3 = 1; break; }
+                else if (ch == '2') { update_stat(profile, STAT_MIGHT, 3); update_stat(profile, STAT_FAITH, -1); choice_3 = 2; break; }
+                else if (ch == '3') { update_stat(profile, STAT_HONOR, 3); update_stat(profile, STAT_SKILL, -1); choice_3 = 3; break; }
             }
             Sleep(20);
         }
     }
     // ------------------------------------------------------------------------
-    // PATH 1.2: Drowning Mini-Game + Mindscape
+    // PATH 1.2: DİPSİZ UÇURUM (Mini-Game ve Boğulanların kaderi)
     // ------------------------------------------------------------------------
     else if (prev_choice == 1 && choice_2 == 2) {
         if (current_lang == 1) {
              printf(COLOR_GOLD "\n [SAHNE III] Dipsiz Uçurum\n\n" COLOR_RESET);
-             printf(COLOR_WHITE " Halatla savrulmayı planlıyordun, ancak kozmik ok ana yelkeni parçalayıp gemiyi şiddetle\n");
-             printf(" yana yatırınca momentumunu kaybettin. Havada hızını alamayıp doğrudan okyanusun\n");
-             printf(" dondurucu sularına uçtun!\n\n");
-             printf(COLOR_DARK " Suyun altına gömülüyorsun... Derine... Daha derine...\n\n" COLOR_RESET);
+             printf(COLOR_WHITE " Halatla güvenli bir yere savrulmayı planlıyordun, ancak kozmik ok ana yelkeni\n");
+             printf(" paramparça edip gemiyi ölümcül bir açıyla yana yatırınca momentumunu kaybettin.\n");
+             printf(" Havada hızını alamayıp, tutunamadan doğrudan okyanusun dondurucu sularına uçtun!\n\n");
+             printf(COLOR_DARK " Suyun altına gömülüyorsun... Derine... Daha derine...\n");
+             printf(" Yüzeydeki savaşın sesleri uğultuya dönüşüyor...\n\n" COLOR_RESET);
              printf(COLOR_RED " [HAYATTA KALMAK İÇİN BOŞLUK (SPACE) TUŞUNA ART ARDA BAS!]\n");
              printf(" Başlamak için Space'e bas...\n" COLOR_RESET);
         } else {
              printf(COLOR_GOLD "\n [SCENE III] The Abyssal Chasm\n\n" COLOR_RESET);
-             printf(COLOR_WHITE " You planned to swing, but the cosmic arrow shattered the main sail, violently tilting the ship.\n");
-             printf(" You lost your momentum and flew straight into the freezing ocean waters!\n\n");
-             printf(COLOR_DARK " You are sinking... Deeper... And deeper...\n\n" COLOR_RESET);
+             printf(COLOR_WHITE " You planned to swing to safety, but the cosmic arrow shattered the main sail,\n");
+             printf(" violently tilting the ship at a fatal angle. You lost your momentum.\n");
+             printf(" Unable to hold on, you flew straight into the freezing ocean waters!\n\n");
+             printf(COLOR_DARK " You are sinking... Deeper... And deeper...\n");
+             printf(" The sounds of the surface war turn into a muffled hum...\n\n" COLOR_RESET);
              printf(COLOR_RED " [MASH THE SPACEBAR TO STAY ALIVE!]\n");
              printf(" Press Space to begin...\n" COLOR_RESET);
         }
@@ -1138,998 +1169,565 @@ void execute_parametric_test(CharacterProfile* profile) {
         }
 
         clear_screen();
-        float time_survived = (ticks * 50) / 1000.0f;
-        if (time_survived < 9.0f) {
-            profile->intel -= 2;
-            profile->skill -= 2;
-        }
+        // Mini game stat cezaları KALDIRILDI! Saf hikaye deneyimi.
 
         if (current_lang == 1) {
             printf(COLOR_DARK "\n\n  Oksijenin tamamen tükendi...\n");
-            printf("  Su basıncı ciğerlerini eziyor, bilincin kapanıyor.\n\n");
+            printf("  Su basıncı ciğerlerini eziyor, bilincin yavaşça kapanıyor.\n\n");
             printf("  Gözlerin karanlığa teslim olmadan hemen önce, uzaklardan kan donduran bir ciyaklama sesi\n");
             printf("  duyuyorsun. Okyanusun dibinden devasa, parlayan bir mızrak (Trident) yanından mermi gibi\n");
-            printf("  geçip gökyüzüne fırlıyor. Arkasından Poseidon'un devasa silüeti yanından geçerek yükseliyor...\n");
+            printf("  geçip gökyüzüne fırlıyor. Arkasından Poseidon'un devasa silüeti umursamazca yanından geçerek\n");
+            printf("  yüzeye doğru yükseliyor...\n");
             printf("  Ve sonra her şey zifiri karanlığa bürünüyor...\n\n" COLOR_RESET);
             Sleep(2500);
-            printf(COLOR_CYAN "  [ Zihninin derinliklerinde, suların altından gelen, yankılı, kadim bir ses duyuluyor ]\n\n" COLOR_RESET);
+            printf(COLOR_CYAN "  [ Zihninin derinliklerinde, suların çok altından gelen, yankılı, kadim bir ses duyuluyor ]\n\n" COLOR_RESET);
             printf(COLOR_WHITE "  \"Boğuluyorsun galiba...\"\n\n" COLOR_RESET);
             printf(COLOR_DARK " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
         } else {
             printf(COLOR_DARK "\n\n  Your oxygen is completely depleted...\n");
-            printf("  Water pressure crushes your lungs, your consciousness fades.\n\n");
+            printf("  Water pressure crushes your lungs, your consciousness slowly fades.\n\n");
             printf("  Right before your eyes surrender to the darkness, you hear a bloodcurdling screech from afar.\n");
             printf("  From the ocean floor, a colossal, glowing spear (Trident) shoots past you like a missile\n");
-            printf("  towards the sky. Poseidon's massive silhouette rises past you right after it...\n");
+            printf("  towards the sky. Poseidon's massive silhouette rises past you carelessly towards the surface...\n");
             printf("  And then, everything fades to pitch black...\n\n" COLOR_RESET);
             Sleep(2500);
             printf(COLOR_CYAN "  [ Deep within your mind, an echoing, ancient voice from beneath the waters resonates ]\n\n" COLOR_RESET);
             printf(COLOR_WHITE "  \"You seem to be drowning...\"\n\n" COLOR_RESET);
             printf(COLOR_DARK " [Press ANY KEY to continue]\n" COLOR_RESET);
         }
-        _getch();
-        clear_screen();
+        _getch(); clear_screen();
 
         if (current_lang == 1) {
             printf(COLOR_GOLD "\n [SAHNE IV] Hiçliğin Kıyısı\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " Zihnin karanlığa gömülmek üzere. Bedenini hissetmiyorsun, sadece o yankılı sesi duyuyorsun.\n");
-            printf(" Hiçliğe karışmadan saniyeler önceki son düşüncen nedir?\n\n" COLOR_RESET);
-            printf("  [" COLOR_CYAN "1" COLOR_RESET "] \"Burada ölmeyi reddediyorum!\" (İradeni zorla - Güç)\n");
-            printf("  [" COLOR_CYAN "2" COLOR_RESET "] \"Beni kurtar, ruhum senindir.\" (Boyun eğ - İnanç)\n");
-            printf("  [" COLOR_CYAN "3" COLOR_RESET "] \"Sen kimsin?\" (Mantığını son ana kadar koru - Zeka)\n\n");
+            printf(COLOR_WHITE " Zihnin karanlığa gömülmek üzere. Bedenini hissetmiyorsun, sadece o yankılı, kadim sesi duyuyorsun.\n");
+            printf(" Dipsiz hiçliğe karışmadan saniyeler önceki son düşüncen nedir?\n\n" COLOR_RESET);
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Karanlığın içinde yankılanan sese, \"Burada ölmeyi reddediyorum!\" diye haykırırım.\n");
+            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Zihnimi serbest bırakır, \"Beni bu karanlıktan çıkar, ruhum senindir...\" diye fısıldarım.\n");
+            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Son nefesimi tüketirken bile mantığımı korumaya çalışır, sese \"Sen kimsin?\" diye sorarım.\n\n");
             printf(COLOR_CYAN "  Son düşüncen (1-3): " COLOR_RESET);
         } else {
             printf(COLOR_GOLD "\n [SCENE IV] Edge of the Void\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " Your mind is fading into darkness. What is your final thought before the abyss?\n\n" COLOR_RESET);
-            printf("  [" COLOR_CYAN "1" COLOR_RESET "] \"I refuse to die here!\" (Might)\n");
-            printf("  [" COLOR_CYAN "2" COLOR_RESET "] \"Save me, and my soul is yours.\" (Faith)\n");
-            printf("  [" COLOR_CYAN "3" COLOR_RESET "] \"Who are you?\" (Intel)\n\n");
+            printf(COLOR_WHITE " Your mind is about to sink into darkness. You can't feel your body, only that echoing voice.\n");
+            printf(" What is your final thought seconds before blending into the bottomless void?\n\n" COLOR_RESET);
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] I roar at the voice echoing in the dark, \"I refuse to die here!\"\n");
+            printf("  [" COLOR_CYAN "2" COLOR_RESET "] I release my mind, whispering, \"Pull me from this dark, my soul is yours...\"\n");
+            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Maintaining my logic even as I consume my last breath, I ask the voice, \"Who are you?\"\n\n");
             printf(COLOR_CYAN "  Final thought (1-3): " COLOR_RESET);
         }
         while (1) {
             if (_kbhit()) {
                 char ch = _getch();
-                if (ch == '1') { update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_INTEL, -1); choice_3 = 1; break; }
-                else if (ch == '2') { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_HONOR, -1); choice_3 = 2; break; }
-                else if (ch == '3') { update_stat(profile, STAT_INTEL, 2); update_stat(profile, STAT_FAITH, -1); choice_3 = 3; break; }
+                if (ch == '1') { update_stat(profile, STAT_MIGHT, 3); update_stat(profile, STAT_INTEL, -1); choice_3 = 1; break; }
+                else if (ch == '2') { update_stat(profile, STAT_FAITH, 3); update_stat(profile, STAT_HONOR, -1); choice_3 = 2; break; }
+                else if (ch == '3') { update_stat(profile, STAT_INTEL, 3); update_stat(profile, STAT_FAITH, -1); choice_3 = 3; break; }
             }
             Sleep(20);
         }
     }
     // ------------------------------------------------------------------------
-    // PATH 2.X: The Hold Survivors
+    // PATH 2.X: KARANLIKTAKİ YANKI (Ambarda hayatta kalanların kaderi)
     // ------------------------------------------------------------------------
     else if (prev_choice == 2) {
         if (current_lang == 1) {
             printf(COLOR_GOLD "\n [SAHNE III] Karanlıktaki Yankı\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " Çatırdama sesleriyle beklediğin o yıkıcı son ambarın alt katına ulaşmıyor.\n");
-            printf(" Karanlık ambarın içinde güvendesin ancak yukarıdaki savaş giderek şiddetleniyor.\n");
-            printf(" Suları yaran devasa bir gürleme ve birbirine çarpan ilahi silahların sağır edici\n");
-            printf(" yankısı geminin ahşap gövdesinde çınlıyor.\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " O sağır edici çatırdama sesleriyle beklediğin yıkıcı son, ambarın alt katına ulaşmıyor.\n");
+            printf(" Mucizevi bir şekilde tavan senin olduğun bölgeye çökmedi. Zifiri karanlık ambarın\n");
+            printf(" sularla kaplı zemininde, etrafında kraliyet ganimetleriyle dolu kapalı ahşap\n");
+            printf(" sandıkların arasında güvendesin.\n\n");
+            printf(COLOR_DARK " Ancak yukarıdaki savaş giderek şiddetleniyor. Suları yaran devasa bir gürleme\n");
+            printf(" ve birbirine çarpan ilahi silahların yarattığı şok dalgası, geminin ahşap gövdesini\n");
+            printf(" bir tabut gibi titretiyor.\n\n" COLOR_RESET);
             printf(COLOR_CYAN " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
         } else {
             printf(COLOR_GOLD "\n [SCENE III] Echoes in the Dark\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " The devastating impact you braced for never reaches the lower hold.\n");
-            printf(" You are safe in the dark, but the battle above is escalating wildly.\n");
-            printf(" A deafening roar that splits the waters and the clash of divine weapons\n");
-            printf(" echo terrifyingly through the ship's wooden hull.\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " The devastating end you braced for never reaches the lower hold.\n");
+            printf(" Miraculously, the ceiling did not collapse on your section. You are safe in the\n");
+            printf(" pitch-black, water-covered hold, surrounded by sealed royal loot crates.\n\n");
+            printf(COLOR_DARK " But the battle above is escalating wildly. A deafening roar that splits the waters\n");
+            printf(" and the shockwave of clashing divine weapons rattle the ship's wooden hull like a coffin.\n\n" COLOR_RESET);
             printf(COLOR_CYAN " [Press ANY KEY to continue]\n" COLOR_RESET);
         }
-        _getch();
-        clear_screen();
+        _getch(); clear_screen();
 
         if (current_lang == 1) {
             printf(COLOR_GOLD "\n [SAHNE IV] Tabuttaki Karar\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " Gemi adeta yüzen bir tabuta dönüştü. Savaş güvertede tüm dehşetiyle sürüyor.\n");
-            printf(" Karanlığın içinde, etrafında kraliyet ganimetleriyle dolu kapalı ahşap sandıklar var.\n\n" COLOR_RESET);
-            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Ambar kapağını tekmeyle kırıp kıyametle yüzleşmek için güverteye çıkarım. (Onur)\n");
-            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Kaos tamamen geçene kadar karanlıkta sessizce bekler, hayatta kalmayı garantilerim. (Zeka)\n");
-            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Bu kaosu fırsat bilip, karanlıkta sandıkları kırarak kutsal/büyülü bir silah ararım. (Yetenek)\n\n");
+            printf(COLOR_WHITE " Gemi adeta sulara gömülmeyi bekleyen yüzen bir tabuta dönüştü. Savaş yukarıda tüm\n");
+            printf(" dehşetiyle, gökleri yararak sürüyor.\n\n" COLOR_RESET);
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Ambar kapağını tekmeyle parçalar, bu korkakça bekleyişe son verip kıyametle yüzleşmek için güverteye çıkarım.\n");
+            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Yukarıdaki kaos tamamen dinene kadar nefesimi bile kontrol ederek karanlıkta, güvenli bir şekilde beklerim.\n");
+            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Bu kaosu bir fırsat bilip, zifiri karanlıkta sandıkları parçalayarak kutsal veya büyülü bir emanet ararım.\n\n");
             printf(COLOR_CYAN "  Kararın nedir? (1-3): " COLOR_RESET);
         } else {
             printf(COLOR_GOLD "\n [SCENE IV] Decision in the Coffin\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " The ship is now a floating coffin. The war continues above in all its terror.\n");
-            printf(" In the dark, you are surrounded by sealed wooden crates full of royal loot.\n\n" COLOR_RESET);
-            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Kick the hatch open and go to the deck to face the apocalypse head-on. (Honor)\n");
-            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Stay perfectly still in the dark until the chaos passes, ensuring survival. (Intel)\n");
-            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Use the chaos to blindly smash the crates, searching for a divine artifact or weapon. (Skill)\n\n");
+            printf(COLOR_WHITE " The ship has become a floating coffin waiting to sink. The war rages above in all\n");
+            printf(" its terror, tearing the skies apart.\n\n" COLOR_RESET);
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] I kick the hatch open, ending this cowardly wait, and go to the deck to face the apocalypse.\n");
+            printf("  [" COLOR_CYAN "2" COLOR_RESET "] I wait securely in the dark, controlling even my breath, until the chaos above completely subsides.\n");
+            printf("  [" COLOR_CYAN "3" COLOR_RESET "] I use this chaos as an opportunity, blindly smashing crates in the dark to search for a divine artifact.\n\n");
             printf(COLOR_CYAN "  What is your decision? (1-3): " COLOR_RESET);
         }
         while (1) {
             if (_kbhit()) {
                 char ch = _getch();
-                if (ch == '1') { update_stat(profile, STAT_HONOR, 2); update_stat(profile, STAT_INTEL, -1); choice_3 = 1; break; }
-                else if (ch == '2') { update_stat(profile, STAT_INTEL, 2); update_stat(profile, STAT_MIGHT, -1); choice_3 = 2; break; }
-                else if (ch == '3') { update_stat(profile, STAT_SKILL, 2); update_stat(profile, STAT_HONOR, -1); choice_3 = 3; break; }
+                if (ch == '1') { update_stat(profile, STAT_HONOR, 3); update_stat(profile, STAT_INTEL, -1); choice_3 = 1; break; }
+                else if (ch == '2') { update_stat(profile, STAT_INTEL, 3); update_stat(profile, STAT_MIGHT, -1); choice_3 = 2; break; }
+                else if (ch == '3') { update_stat(profile, STAT_SKILL, 3); update_stat(profile, STAT_HONOR, -1); choice_3 = 3; break; }
             }
             Sleep(20);
         }
     }
     // ------------------------------------------------------------------------
-    // PATH 3.1: The Airborne Survivor
+    // PATH 3.1: UÇURUMUN ÇEKİMİ (Havaya fırlayanların kaderi)
     // ------------------------------------------------------------------------
     else if (prev_choice == 3 && choice_2 == 1) {
         if (current_lang == 1) {
             printf(COLOR_GOLD "\n [SAHNE III] Uçurumun Çekimi\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " Islak güvertede kayarken kozmik ok ana yelkeni parçalıyor ve gemi şiddetle yana yatıyor.\n");
-            printf(" Kayışını kontrollü bir şekilde sürdürüp geminin köşesine çarpıyor ve tırabzanlara tutunuyorsun.\n");
-            printf(" Tam o saniyede, okyanusun derinliklerinden fırlayan parlayan devasa bir mızrak (Trident)\n");
-            printf(" suları yararak hemen arkandan mermi gibi göğe uçuyor!\n\n");
-            printf(" Bu fırlayışın yarattığı devasa şok dalgası seni yerinden söküyor ve metrelerce havaya fırlatıyor.\n");
-            printf(" Havadayken Poseidon'un devasa, ihtişamlı silüetini hemen altında, savaşı izlerken görüyorsun.\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Islak güvertede kontrollü bir şekilde kayarken kozmik ok ana yelkeni parçalıyor\n");
+            printf(" ve gemi şiddetle yana yatıyor. Kayışını mükemmel sürdürüp geminin köşesine çarpıyor\n");
+            printf(" ve kırık tırabzanlara tutunmayı başarıyorsun.\n\n");
+            printf(COLOR_DARK " Ancak tam o saniyede, okyanusun karanlık derinliklerinden fırlayan devasa, parlayan\n");
+            printf(" bir mızrak (Trident) suları yararak hemen arkandan mermi gibi göğe uçuyor!\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Bu fırlayışın yarattığı devasa, sonik şok dalgası seni yerinden söküyor ve bir paçavra\n");
+            printf(" gibi metrelerce havaya fırlatıyor! Havadayken dönerek süzüldüğün o birkaç saniyede,\n");
+            printf(" Poseidon'un devasa, ihtişamlı silüetini hemen altında, okyanustan yükselirken görüyorsun.\n\n" COLOR_RESET);
             printf(COLOR_CYAN " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
         } else {
             printf(COLOR_GOLD "\n [SCENE III] Pull of the Abyss\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " As you slide, the arrow shatters the sail and the ship violently tilts.\n");
-            printf(" You control your slide, slam into the ship's corner, and grab the railing tightly.\n");
-            printf(" At that exact second, a colossal glowing spear (Trident) shoots from the depths\n");
-            printf(" tearing through the water right behind you like a missile!\n\n");
-            printf(" The massive shockwave from its launch rips you from the ship, launching you meters into the air.\n");
-            printf(" Suspended in mid-air, you see Poseidon's majestic silhouette directly below you.\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " As you slide on the wet deck, the arrow shatters the sail and the ship violently tilts.\n");
+            printf(" You execute your slide perfectly, slamming into the corner and gripping the broken railing.\n\n");
+            printf(COLOR_DARK " But at that exact second, a colossal glowing spear (Trident) shoots from the dark depths,\n");
+            printf(" tearing through the water right behind you like a missile!\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " The massive sonic shockwave from its launch rips you from your spot, launching you\n");
+            printf(" meters into the air like a ragdoll! Suspended in mid-air for those few seconds,\n");
+            printf(" you see Poseidon's majestic silhouette rising from the ocean directly below you.\n\n" COLOR_RESET);
             printf(COLOR_CYAN " [Press ANY KEY to continue]\n" COLOR_RESET);
         }
-        _getch();
-        clear_screen();
+        _getch(); clear_screen();
 
         if (current_lang == 1) {
             printf(COLOR_GOLD "\n [SAHNE IV] Havada Asılı\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " Saniyeler içinde ölümcül sulara doğru düşeceksin. Altında bir tanrı,\n");
-            printf(" arkanda ise parçalanan bir gemi var.\n\n" COLOR_RESET);
-            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Havadayken vücudumu çevirip, suya düşmemek için tekrar geminin tırabzanlarına atlarım. (Yetenek)\n");
-            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Gözlerimi kapatıp düşüşü kabullenir, kendimi Poseidon'un merhametine bırakırım. (İnanç)\n");
-            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Düşerken dikkatini çekmek için var gücümle Poseidon'a doğru bağırırım! (Güç/Onur)\n\n");
+            printf(COLOR_WHITE " Saniyeler içinde metrelerce yüksekten o ölümcül sulara doğru düşeceksin. Altında bir\n");
+            printf(" tanrı, arkanda ise yavaş çekimde paramparça olan bir gemi var.\n\n" COLOR_RESET);
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Havadayken vücudumu inanılmaz bir esneklikle çevirip, suya çakılmamak için tekrar geminin kırık tırabzanlarına atlarım.\n");
+            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Gözlerimi kapatıp yerçekiminin beni çekmesini kabullenir, kaderimi Poseidon'un merhametine bırakırım.\n");
+            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Ölümcül düşüşe geçerken korkmak yerine, var gücümle altımdaki o devasa tanrıya doğru kükrerim!\n\n");
             printf(COLOR_CYAN "  Hamlen nedir? (1-3): " COLOR_RESET);
         } else {
             printf(COLOR_GOLD "\n [SCENE IV] Suspended in Air\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " You will hit the deadly waters in seconds. A god is below you, a shattered ship behind you.\n\n" COLOR_RESET);
-            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Twist my body mid-air to frantically grab the broken railing before hitting the water. (Skill)\n");
-            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Close my eyes, accept the fall, and surrender myself to Poseidon's mercy. (Faith)\n");
-            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Roar at the top of my lungs at Poseidon to demand his attention as I fall! (Might)\n\n");
+            printf(COLOR_WHITE " You will hit the deadly waters from meters high in seconds. A god is below you,\n");
+            printf(" a shattering ship in slow motion is behind you.\n\n" COLOR_RESET);
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] I twist my body mid-air with incredible flexibility to frantically grab the broken railing before hitting the water.\n");
+            printf("  [" COLOR_CYAN "2" COLOR_RESET "] I close my eyes, accepting the pull of gravity, and leave my fate to Poseidon's mercy.\n");
+            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Instead of fearing the fatal fall, I roar with all my might at the colossal god below me!\n\n");
             printf(COLOR_CYAN "  What is your move? (1-3): " COLOR_RESET);
         }
         while (1) {
             if (_kbhit()) {
                 char ch = _getch();
-                if (ch == '1') { update_stat(profile, STAT_SKILL, 2); update_stat(profile, STAT_FAITH, -1); choice_3 = 1; break; }
-                else if (ch == '2') { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_MIGHT, -1); choice_3 = 2; break; }
-                else if (ch == '3') { update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_INTEL, -1); choice_3 = 3; break; }
+                if (ch == '1') { update_stat(profile, STAT_SKILL, 3); update_stat(profile, STAT_FAITH, -1); choice_3 = 1; break; }
+                else if (ch == '2') { update_stat(profile, STAT_FAITH, 3); update_stat(profile, STAT_MIGHT, -1); choice_3 = 2; break; }
+                else if (ch == '3') { update_stat(profile, STAT_MIGHT, 3); update_stat(profile, STAT_INTEL, -1); choice_3 = 3; break; }
             }
             Sleep(20);
         }
     }
     // ------------------------------------------------------------------------
-    // PATH 1.3, 3.2, 3.3: The Watchers
+    // PATH 1.3, 3.2, 3.3: TANRILARIN ÇARPIŞMASI (İzleyicilerin kaderi)
     // ------------------------------------------------------------------------
     else if ((prev_choice == 1 && choice_2 == 3) || (prev_choice == 3 && (choice_2 == 2 || choice_2 == 3))) {
         if (current_lang == 1) {
             printf(COLOR_GOLD "\n [SAHNE III] Tanrıların Çarpışması\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " Kozmik ok gövdeye değil, tam üstündeki ana yelkene saplanıp direği parçalıyor.\n");
+            printf(COLOR_WHITE " İraden o kadar kesindi ki, ilahi ok sana veya tutunduğun direğe değil, tam üstündeki\n");
+            printf(" ana yelkene saplanıp direği ortadan ikiye yarıyor.\n\n");
             if (prev_choice == 1) {
-                printf(" Direğe tutunan ellerin kayıyor ve sarsıntıyla dizlerinin üzerine çöküyorsun.\n");
+                printf(COLOR_DARK " Direğe tutunan ellerin kayıyor ve sarsıntının devasa şiddetiyle dizlerinin üzerine çöküyorsun.\n\n" COLOR_RESET);
             } else {
-                printf(" Oturduğun yerden kıpırdamıyorsun. Zaten güvendesin, sadece izliyorsun.\n");
+                printf(COLOR_DARK " O büyük sarsıntıya rağmen oturduğun yerden kıpırdamıyorsun. Güvendesin, sadece izliyorsun.\n\n" COLOR_RESET);
             }
-            printf(" Devasa yelkenin ağır çekimde devrilip denize çakılmasını izlerken,\n");
-            printf(" okyanusun derinliklerinden fırlayan devasa bir mızrak (Trident) suları yararak göğe uçuyor.\n");
-            printf(" Ardından Poseidon'un muazzam silüeti okyanustan yükselip gökyüzündeki Apollon'a bakıyor.\n");
-            printf(" Sen, bu iki ilahi gücün savaşının ortasında, sadece bir izleyicisin.\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Devasa yelkenin ağır çekimde devrilip denize çakılmasını izlerken,\n");
+            printf(" okyanusun derinliklerinden fırlayan güneş kadar parlak bir mızrak (Trident)\n");
+            printf(" suları yararak mermi gibi göğe uçuyor.\n\n");
+            printf(COLOR_CYAN " Ardından Poseidon'un muazzam silüeti okyanustan usulca yükselip gökyüzündeki Apollon'a bakıyor.\n");
+            printf(" Sen, dünyayı yok edebilecek bu iki ilahi gücün savaşının ortasında, sadece bir izleyicisin.\n\n" COLOR_RESET);
             printf(COLOR_CYAN " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
         } else {
             printf(COLOR_GOLD "\n [SCENE III] Clash of Gods\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " The cosmic arrow strikes the main sail above you, shattering the mast.\n");
+            printf(COLOR_WHITE " Your resolve was so absolute that the divine arrow doesn't hit you, but strikes the\n");
+            printf(" main sail above you, shattering the mast in half.\n\n");
             if (prev_choice == 1) {
-                printf(" Your hands slip from the mast and the shockwave drops you to your knees.\n");
+                printf(COLOR_DARK " Your hands slip from the mast and the massive shockwave drops you to your knees.\n\n" COLOR_RESET);
             } else {
-                printf(" You do not move from your seated position. You are safe, merely watching.\n");
+                printf(COLOR_DARK " Despite the shockwave, you do not move from your seated position. You are watching.\n\n" COLOR_RESET);
             }
-            printf(" As you watch the massive sail topple into the sea in slow motion,\n");
-            printf(" a colossal spear (Trident) shoots from the depths, tearing into the sky.\n");
-            printf(" Then, Poseidon's magnificent silhouette rises from the ocean, glaring up at Apollo.\n");
-            printf(" In the midst of this clash of divine powers, you are just a spectator.\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " As you watch the massive sail topple into the sea in slow motion,\n");
+            printf(" a colossal spear (Trident) bright as the sun shoots from the depths, tearing into the sky.\n\n");
+            printf(COLOR_CYAN " Then, Poseidon's magnificent silhouette smoothly rises from the ocean, glaring up at Apollo.\n");
+            printf(" In the midst of this clash of divine powers that could end the world, you are just a spectator.\n\n" COLOR_RESET);
             printf(COLOR_CYAN " [Press ANY KEY to continue]\n" COLOR_RESET);
         }
-        _getch();
-        clear_screen();
+        _getch(); clear_screen();
 
         if (current_lang == 1) {
             printf(COLOR_GOLD "\n [SAHNE IV] Karıncanın Bakışı\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " Güvertede hareketsiz kaldın. Apollon gökyüzünden dalışa geçiyor, Poseidon suları yükseltiyor.\n");
-            printf(" Bu muazzam kozmik savaşı izleyen basit bir ölümlü olarak aklından geçen ilk düşünce nedir?\n\n" COLOR_RESET);
-            printf("  [" COLOR_CYAN "1" COLOR_RESET "] \"Bir gün ben de gökleri ve denizleri sarsacak bu güce ulaşacağım.\" (Hırs/Güç)\n");
-            printf("  [" COLOR_CYAN "2" COLOR_RESET "] \"Sadece hayatta kalıp bu destanı torunlarıma anlatmalıyım.\" (Zeka/Gerçekçilik)\n");
-            printf("  [" COLOR_CYAN "3" COLOR_RESET "] \"Kim kazanırsa kazansın, iradesine boyun eğeceğim.\" (İnanç/Teslimiyet)\n\n");
+            printf(COLOR_WHITE " Güvertede hareketsiz kaldın. Apollon gökyüzünden alevler içinde dalışa geçiyor,\n");
+            printf(" Poseidon ise tüm okyanusu göğe doğru yükseltiyor.\n");
+            printf(" Bu muazzam kozmik savaşı izleyen basit bir fani olarak aklından geçen ilk düşünce nedir?\n\n" COLOR_RESET);
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Gözlerimi kısmadan izlerken, \"Bir gün ben de gökleri ve denizleri sarsacak bu güce ulaşacağım,\" diye yemin ederim.\n");
+            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Tanrıların savaşında bir karınca olduğumu kabullenir, \"Sadece hayatta kalıp bu destanı anlatmalıyım,\" diye düşünürüm.\n");
+            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Bu kozmik terazi karşısında küçülür, \"Kim kazanırsa kazansın, onun iradesine boyun eğeceğim,\" derim.\n\n");
             printf(COLOR_CYAN "  Düşüncen nedir? (1-3): " COLOR_RESET);
         } else {
             printf(COLOR_GOLD "\n [SCENE IV] Gaze of the Ant\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " You remain motionless on the deck. Apollo dives from the sky, Poseidon raises the seas.\n");
+            printf(COLOR_WHITE " You remain motionless on the deck. Apollo dives in flames from the sky,\n");
+            printf(" while Poseidon raises the entire ocean towards the heavens.\n");
             printf(" As a mere mortal watching this cosmic war, what is your primary thought?\n\n" COLOR_RESET);
-            printf("  [" COLOR_CYAN "1" COLOR_RESET "] \"One day, I too will attain this power to shake the heavens and seas.\" (Ambition/Might)\n");
-            printf("  [" COLOR_CYAN "2" COLOR_RESET "] \"I just need to survive so I can tell this epic tale to my grandchildren.\" (Intel/Realism)\n");
-            printf("  [" COLOR_CYAN "3" COLOR_RESET "] \"Whoever wins, I shall bow to their will.\" (Faith/Submission)\n\n");
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Staring unblinking, I vow, \"One day, I too will attain this power to shake the heavens and seas.\"\n");
+            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Accepting I am an ant in a war of gods, I think, \"I just need to survive so I can tell this epic tale.\"\n");
+            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Shrinking before this cosmic scale, I say, \"Whoever wins, I shall bow to their will.\"\n\n");
             printf(COLOR_CYAN "  What is your thought? (1-3): " COLOR_RESET);
         }
         while (1) {
             if (_kbhit()) {
                 char ch = _getch();
-                if (ch == '1') { update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_HONOR, -1); choice_3 = 1; break; }
-                else if (ch == '2') { update_stat(profile, STAT_INTEL, 2); update_stat(profile, STAT_FAITH, -1); choice_3 = 2; break; }
-                else if (ch == '3') { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_SKILL, -1); choice_3 = 3; break; }
+                if (ch == '1') { update_stat(profile, STAT_MIGHT, 3); update_stat(profile, STAT_HONOR, -1); choice_3 = 1; break; }
+                else if (ch == '2') { update_stat(profile, STAT_INTEL, 3); update_stat(profile, STAT_FAITH, -1); choice_3 = 2; break; }
+                else if (ch == '3') { update_stat(profile, STAT_FAITH, 3); update_stat(profile, STAT_SKILL, -1); choice_3 = 3; break; }
             }
             Sleep(20);
         }
     }
 
     // ========================================================================
-    // TRIAL 5: THE GRAND FINALE (CINEMATICS & MICRO-BRANCHES)
+    // SAHNE V: KIYAMETİN ZİRVESİ (SİNEMATİKLER VE KADERİN KIRILMASI)
     // ========================================================================
     clear_screen();
 
-    // Grouping Spectators
-    bool is_spectator = false;
-    if (prev_choice == 1 && choice_2 == 1 && (choice_3 == 1 || choice_3 == 2)) is_spectator = true;
-    if (prev_choice == 1 && choice_2 == 3) is_spectator = true;
-    if (prev_choice == 3 && (choice_2 == 2 || choice_2 == 3)) is_spectator = true;
+    // KUSURSUZ MATRİS KADER KİLİTLERİ
+    bool helios_path = false;
 
-    // A - WHIRLPOOL VICTIM (Only 1.1.3: Standing up to Poseidon)
-    if (prev_choice == 1 && choice_2 == 1 && choice_3 == 3) {
+    // İzleyici ve Direnenlerin Helios Yolu (1.1, 1.3, 3.2, 3.3)
+    if ((prev_choice == 1 && choice_2 == 1 && (choice_3 == 1 || choice_3 == 2)) ||
+        (prev_choice == 1 && choice_2 == 3) ||
+        (prev_choice == 3 && (choice_2 == 2 || choice_2 == 3))) {
+        helios_path = true;
+    }
+    // Havada asılı kalanların Helios Yolu (3.1.2 ve 3.1.3)
+    if (prev_choice == 3 && choice_2 == 1 && choice_3 == 2) helios_path = true;
+    if (prev_choice == 3 && choice_2 == 1 && choice_3 == 3) helios_path = true;
+
+    // Poseidon'un Girdabı (1.1.3 - Tanrıya diklenenlerin Vetosu)
+    if (prev_choice == 1 && choice_2 == 1 && choice_3 == 3) profile->poseidon_veto = 1;
+
+    // ------------------------------------------------------------------------
+    // A - POSEIDON'UN GİRDABI (Veto Yiyenler)
+    // ------------------------------------------------------------------------
+    if (profile->poseidon_veto == 1) {
         if (current_lang == 1) {
             printf(COLOR_GOLD "\n [SAHNE V] Kibrin Bedeli\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " Poseidon'un gözlerinin içine dik dik baktığın an, denizler tanrısı savaşla ilgilenmeden\n");
-            printf(" önce sana doğru sadece ufak bir parmak hareketi yapıyor.\n\n");
-            printf(" Aniden, altındaki güverte tahtaları paramparça olup yok oluyor!\n");
-            printf(" Ne olduğunu bile anlayamadan, suların altında ansızın açılan devasa, kapkara bir\n");
-            printf(" girdabın (whirlpool) içine çekiliyorsun.\n\n");
-            printf(COLOR_DARK " Gökyüzündeki savaşı göremeden karanlık suların derinliklerine yutuluyorsun.\n");
-            printf(" Girdabın amansız gücü seni dibe çekerken ciğerlerin tuzlu suyla doluyor\n");
-            printf(" ve karanlık okyanusun dibinde çaresizce boğuluyorsun...\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Poseidon'un o devasa, ruhsuz gözlerinin içine dimdik baktığın an, denizlerin hakimi\n");
+            printf(" yukarıdaki kozmik savaşla ilgilenmeden önce sadece sana doğru bakıyor. Öfkelenmiyor bile.\n");
+            printf(" Sadece rahatsız edici bir sineği kovar gibi, parmağıyla ufak, umursamaz bir hareket yapıyor.\n\n");
+            printf(COLOR_DARK " Aniden, üzerinde durduğun güverte tahtaları un ufak olup hiçliğe karışıyor!\n" COLOR_RESET);
+            printf(COLOR_WHITE " Sen ne olduğunu bile anlayamadan, suların tam altında ansızın açılan devasa, kapkara\n");
+            printf(" bir girdabın (whirlpool) ölü merkezine çekiliyorsun. Suyun dönüş hızı o kadar şiddetli ki,\n");
+            printf(" etrafındaki okyanus adeta beton bir duvara dönüşüyor.\n\n");
+            printf(COLOR_DARK " Gökyüzündeki savaşı bir daha asla göremeden, ışığın ulaşamadığı o zifiri karanlığa yutuluyorsun.\n");
+            printf(" Girdabın amansız, kemik kıran basıncı seni dibe çekerken, ciğerlerin tuzlu suyla dolup taşıyor\n");
+            printf(" ve okyanusun dibinde ezilerek bilincini tamamen kaybediyorsun...\n\n" COLOR_RESET);
             printf(COLOR_CYAN " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
         } else {
             printf(COLOR_GOLD "\n [SCENE V] Price of Hubris\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " The moment you stare directly into Poseidon's eyes, the god of the seas makes\n");
-            printf(" a tiny, dismissive finger movement towards you before returning to the war.\n\n");
-            printf(" Suddenly, the deck planks beneath your feet shatter and vanish completely!\n");
-            printf(" Before you can even comprehend it, you are sucked into a colossal, pitch-black\n");
-            printf(" whirlpool that opens instantly beneath the waves.\n\n");
-            printf(COLOR_DARK " Swallowed by the dark depths, you will never witness the battle in the sky.\n");
-            printf(" As the relentless force of the whirlpool drags you down, saltwater fills your lungs,\n");
-            printf(" and you helplessly drown at the bottom of the dark ocean...\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " The moment you stare directly into Poseidon's massive, soulless eyes, the lord of the seas\n");
+            printf(" looks down at you before returning to the cosmic war. He isn't even angry.\n");
+            printf(" Like swatting a mildly annoying fly, he makes a tiny, dismissive finger movement.\n\n");
+            printf(COLOR_DARK " Suddenly, the solid deck planks beneath your feet turn to dust and vanish!\n" COLOR_RESET);
+            printf(COLOR_WHITE " Before you can even comprehend it, you are sucked into the dead center of a colossal,\n");
+            printf(" pitch-black whirlpool that opens instantly beneath the waves. The water's rotation is so\n");
+            printf(" violent that the ocean around you turns into a concrete wall.\n\n");
+            printf(COLOR_DARK " Swallowed by the absolute dark where no light reaches, you will never see the sky again.\n");
+            printf(" As the bone-crushing pressure drags you down, your lungs overflow with saltwater,\n");
+            printf(" and you are crushed at the bottom of the ocean, losing consciousness entirely...\n\n" COLOR_RESET);
             printf(COLOR_CYAN " [Press ANY KEY to continue]\n" COLOR_RESET);
         }
         _getch();
     }
-    // B - SPECTATORS' FATE (Tsunami & Helios Mini-Game)
-    else if (is_spectator) {
+    // ------------------------------------------------------------------------
+    // B - TSUNAMİ VE GÜNEŞ ARABASI (Helios Yolundakiler)
+    // ------------------------------------------------------------------------
+    else if (helios_path) {
         if (current_lang == 1) {
             printf(COLOR_GOLD "\n [SAHNE V] Kıyametin Kırılma Anı\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " Savaşın zirvesi... Poseidon aniden elini uzatıyor ve mermi gibi göğe uçan Trident'i geri çağırıyor.\n");
-            printf(" Tam o sırada gökyüzü yarılıyor! Helios, tüm kibriyle bulutların arasından saf, kör edici\n");
-            printf(" ilahi bir enerji ışını yolluyor. Ancak karanlık canavar, bu devasa gücü bir karadelik gibi soğuruyor!\n\n");
-            printf(COLOR_DARK " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
-            _getch(); clear_screen();
+            printf(COLOR_WHITE " Savaşın zirvesi... Poseidon aniden elini uzatıyor ve okyanusu yaran Trident'i geri çağırıyor.\n");
+            printf(" Tam o sırada gökyüzü, sanki bir kumaşmış gibi ortadan ikiye yırtılıyor! Güneşin Titanı\n");
+            printf(" Helios, tüm kibriyle bulutların arasından saf, kör edici ilahi bir enerji ışını yolluyor.\n");
+            printf(" Ancak denizdeki karanlık canavar, bu devasa gücü adeta bir karadelik gibi soğuruyor!\n\n");
 
-            printf(COLOR_GOLD "\n [SAHNE V] Tsunami\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " Poseidon okyanusu dalgalandırıp canavarı devasa bir su sütunuyla havaya kaldırıyor\n");
-            printf(" ve Trident'iyle alttan 3 ölümcül çizik atıyor!\n\n");
-            printf(" Bunu fırsat bilen Apollon, güneş gibi parlayan o devasa bitirici okunu hışımla fırlatıyor.\n");
-            printf(" Ancak ok canavara saplanacakken, yaratık Helios'tan soğurduğu tüm enerjiyi dışarı kusuyor!\n");
-            printf(" İki muazzam ilahi güç çarpışıyor. Ok sekiyor ve okyanusa çakılarak denizi ortadan ikiye yaran,\n");
-            printf(" gökyüzüne kadar uzanan devasa bir TSUNAMİ yaratıyor!\n\n" COLOR_RESET);
-            printf(COLOR_DARK " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
-            _getch(); clear_screen();
+            printf(COLOR_RED " TSUNAMİ!\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Apollon, güneş kadar parlak bitirici okunu fırlatırken, yaratık soğurduğu tüm enerjiyi\n");
+            printf(" tek seferde göğe doğru kusuyor. İki muazzam ilahi güç, tam senin üzerinde çarpışıyor!\n");
+            printf(" Ok sekiyor ve okyanusa çakılarak denizi ortadan ikiye yaran, gökyüzüne uzanan devasa bir\n");
+            printf(" TSUNAMİ yaratıyor!\n\n" COLOR_RESET);
 
-            printf(COLOR_RED "\n GÜÜÜÜMMMM!\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " Tsunami gemiyi kürdan gibi yutuyor. Suyun devasa gücüyle metrelerce havaya fırlatılıyorsun!\n");
-            printf(" Şu an gökyüzündesin. Şaşkınlık içinde etrafına bakıyorsun.\n\n" COLOR_RESET);
+            printf(COLOR_DARK " Tsunami gemiyi bir kibrit çöpü gibi yutuyor. Suyun devasa, ezici gücüyle metrelerce\n");
+            printf(" havaya, fırtına bulutlarının içine doğru fırlatılıyorsun!\n\n" COLOR_RESET);
+            printf(COLOR_CYAN " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
         } else {
             printf(COLOR_GOLD "\n [SCENE V] The Breaking Point\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " The climax of war... Poseidon suddenly extends his hand, calling back the Trident like a missile.\n");
-            printf(" At that moment, the sky tears open! Helios sends down a pure, blinding ray of divine energy\n");
-            printf(" through the clouds. But the dark monster absorbs this colossal power like a black hole!\n\n");
-            printf(COLOR_DARK " [Press ANY KEY to continue]\n" COLOR_RESET);
-            _getch(); clear_screen();
+            printf(COLOR_WHITE " The climax of war... Poseidon suddenly extends his hand, calling back his Trident.\n");
+            printf(" At that moment, the sky tears in half like fabric! Helios, the Titan of the Sun, sends\n");
+            printf(" down a pure, blinding ray of divine energy through the clouds. But the dark monster in\n");
+            printf(" the sea absorbs this colossal power like a black hole!\n\n");
 
-            printf(COLOR_GOLD "\n [SCENE V] Tsunami\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " Poseidon churns the ocean, lifting the beast with a massive water pillar\n");
-            printf(" and delivers 3 deadly slashes from below with his Trident!\n\n");
-            printf(" Seizing the opportunity, Apollo fiercely fires his sun-bright finishing arrow.\n");
-            printf(" But just as the arrow is about to strike, the creature violently expels all the energy it absorbed!\n");
-            printf(" Two immense divine forces collide. The arrow ricochets and crashes into the ocean,\n");
-            printf(" splitting the sea in half and creating a colossal TSUNAMI that reaches the heavens!\n\n" COLOR_RESET);
-            printf(COLOR_DARK " [Press ANY KEY to continue]\n" COLOR_RESET);
-            _getch(); clear_screen();
+            printf(COLOR_RED " TSUNAMI!\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " As Apollo fires his finishing arrow bright as the sun, the creature violently expels\n");
+            printf(" all the absorbed energy. Two immense divine forces collide right above you!\n");
+            printf(" The arrow ricochets and crashes into the ocean, splitting the sea in half and creating\n");
+            printf(" a colossal TSUNAMI that reaches the heavens!\n\n" COLOR_RESET);
 
-            printf(COLOR_RED "\n BOOOOOM!\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " The Tsunami swallows the ship like a toothpick. The massive force launches you meters into the air!\n");
-            printf(" You are now in the sky, looking around in utter bewilderment.\n\n" COLOR_RESET);
+            printf(COLOR_DARK " The Tsunami swallows the ship like a matchstick. With the massive, crushing force of the\n");
+            printf(" water, you are launched meters into the sky, straight into the storm clouds!\n\n" COLOR_RESET);
+            printf(COLOR_CYAN " [Press ANY KEY to continue]\n" COLOR_RESET);
         }
+        _getch(); clear_screen();
 
-        // --- HIDDEN FAITH DICE (HELIOS MASHING MINI-GAME) ---
-        if (profile->faith >= 7) {
-            if (current_lang == 1) {
-                printf(COLOR_CYAN " [ GİZLİ ZAR BAŞARILI: İNANCIN (>=7) İLAHİ BİR FIRSAT YARATTI ]\n" COLOR_RESET);
-                printf(COLOR_RED " Havadan düşüyorsun! Debelenmek ve dikkat çekmek için SPACE tuşuna ABAN!\n\n" COLOR_RESET);
-            } else {
-                printf(COLOR_CYAN " [ HIDDEN DICE SUCCESS: YOUR FAITH (>=7) CREATED A DIVINE OPPORTUNITY ]\n" COLOR_RESET);
-                printf(COLOR_RED " You are falling! Mash SPACE to struggle and draw attention!\n\n" COLOR_RESET);
-            }
-
-            int struggle_hits = 0;
-            for (int i = 0; i < 70; i++) {
-                if (_kbhit()) {
-                    if (_getch() == ' ') {
-                        struggle_hits++;
-                        shake_console(15, 30);
-                        if (current_lang == 1) printf("\r" COLOR_CYAN " Debelenme Gücü: [%d / 15] " COLOR_RESET, struggle_hits);
-                        else printf("\r" COLOR_CYAN " Struggle Power: [%d / 15] " COLOR_RESET, struggle_hits);
-                    }
-                }
-                Sleep(50);
-            }
-
-            clear_screen();
-            if (struggle_hits >= 15) {
-                if (current_lang == 1) {
-                    printf(COLOR_GOLD "\n [SAHNE V] Helios'un Lütfu\n\n" COLOR_RESET);
-                    printf(COLOR_WHITE " Muazzam çırpınışın gökyüzünde parlayan güneş tanrısının dikkatini çekti!\n");
-                    printf(" Helios, alev alev yanan arabasıyla yanından geçerken seni ensenden yakaladığı gibi\n");
-                    printf(" arabanın arkasına fırlatıyor. Okyanusun ölümcül soğuğundan kurtuldun!\n\n" COLOR_RESET);
-                } else {
-                    printf(COLOR_GOLD "\n [SCENE V] Grace of Helios\n\n" COLOR_RESET);
-                    printf(COLOR_WHITE " Your fierce struggle caught the eye of the shining sun god in the sky!\n");
-                    printf(" As Helios blazes past in his fiery chariot, he grabs you by the scruff of your neck\n");
-                    printf(" and throws you into the back. You are saved from the deadly freezing ocean!\n\n" COLOR_RESET);
-                }
-                set_badge(profile, BADGE_BLESSING_HELIOS, 1);
-            } else {
-                if (current_lang == 1) {
-                    printf(COLOR_DARK "\n [SAHNE V] Düşüş\n\n" COLOR_RESET);
-                    printf(COLOR_WHITE " Çırpınışların yetersiz kaldı... Tanrıların gözünde bir hiçsin.\n");
-                    printf(" Son sürat denize çakılıyor ve muazzam çarpmanın etkisiyle anında sersemliyorsun.\n");
-                    printf(" Bilincin yavaşça kapanırken, fırtınanın içinde dibe gömülmeye başlıyorsun...\n\n" COLOR_RESET);
-                } else {
-                    printf(COLOR_DARK "\n [SCENE V] The Fall\n\n" COLOR_RESET);
-                    printf(COLOR_WHITE " Your struggles were in vain... You are nothing in the eyes of the gods.\n");
-                    printf(" You plunge into the sea at terminal velocity, instantly stunned by the massive impact.\n");
-                    printf(" As your consciousness slowly fades, you begin to sink into the dark storm...\n\n" COLOR_RESET);
-                }
-            }
-            if (current_lang == 1) printf(COLOR_CYAN " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
-            else printf(COLOR_CYAN " [Press ANY KEY to continue]\n" COLOR_RESET);
-            _getch();
-        } else {
-            // Low Faith -> No chance for Helios
-            if (current_lang == 1) {
-                printf(COLOR_DARK "\n [SAHNE V] Kaçınılmaz Düşüş\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " Havada çaresizce süzülüyorsun. Hiçbir ilahi varlık seni fark etmiyor bile.\n");
-                printf(" Son sürat denize çakılıyor ve muazzam çarpmanın etkisiyle anında sersemliyorsun.\n");
-                printf(" Bilincin yavaşça kapanırken, fırtınanın karanlık dibine gömülmeye başlıyorsun...\n\n" COLOR_RESET);
-                printf(COLOR_CYAN " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
-            } else {
-                printf(COLOR_DARK "\n [SCENE V] The Inevitable Fall\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " You drift helplessly in the air. No divine being even notices you.\n");
-                printf(" You plunge into the sea at terminal velocity, instantly stunned by the massive impact.\n");
-                printf(" As your consciousness slowly fades, you sink into the dark abyss of the storm...\n\n" COLOR_RESET);
-                printf(COLOR_CYAN " [Press ANY KEY to continue]\n" COLOR_RESET);
-            }
-            _getch();
-        }
-    }
-    // C - DROWNERS FROM PREVIOUS CHOICES
-    else if (prev_choice == 1 && choice_2 == 2) {
+        // MİNİ OYUN (Hikayesel Yansıma)
+        int attack_dir = rand() % 2;
         if (current_lang == 1) {
-            printf(COLOR_GOLD "\n [SAHNE V] Sessizliğin Dibi\n\n" COLOR_RESET);
-            if (choice_3 == 2) {
-                printf(COLOR_WHITE " Zihnindeki o karanlık varlığa değil, yukarıda suları yaran denizler tanrısına\n");
-                printf(" yakarıyorsun. Ancak tanrıların kulakları fani karıncaların çığlıklarına sağırdır.\n");
-                printf(" Zihnindeki ses soğuk ve alaycı bir tonda fısıldar:\n\n" COLOR_RESET);
-                printf(COLOR_CYAN " \"Sen bilirsin...\"\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " Sonra zihnindeki ses tamamen susar. Poseidon'un devasa silüeti umursamazca\n");
-                printf(" yukarıda kaybolurken, dondurucu soğuk bedenini ele geçirir. Hiçbir ilahi el sana uzanmaz.\n");
-                printf(" Mutlak karanlığın içine doğru yavaşça batmaya devam edersin...\n\n" COLOR_RESET);
-            }
-            else if (choice_3 == 3) {
-                printf(COLOR_WHITE " Son nefesinde bile mantığını korumaya, karşındaki bilinmezi çözmeye çalışıyorsun.\n");
-                printf(" \"Sen kimsin?\" diye yankılanır düşüncelerin suların altında.\n\n");
-                printf(" Cevap, sadece sağır edici bir sessizliktir.\n\n");
-                printf(" Ne okyanus, ne de o kadim varlık senin fani merakını gidermeye tenezzül etmez.\n");
-                printf(" Suyun amansız basıncı son düşüncelerini de ezerken, bilincin tamamen kapanır\n");
-                printf(" ve zifiri karanlığa, hiçliğe doğru batarsın...\n\n" COLOR_RESET);
-            }
-            else {
-                printf(COLOR_WHITE " Son bir can havliyle çırpınmaya, hayatta kalmaya çalışıyorsun. Adalelerindeki\n");
-                printf(" son oksijeni de bu isyanla yakıyorsun. O yankılı, kadim ses bu kez zihnini\n");
-                printf(" uyuşturan bir ninni gibi, sakinleştirici bir tonda fısıldar:\n\n" COLOR_RESET);
-                printf(COLOR_CYAN " \"Debelenmeyi bırak fani... Acı çekiyorsun. O etten kabuğu,\n");
-                printf(" fani bedenini serbest bırak... Sulara karış ve sadece rahatla...\"\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " Sesin manipülatif ağırlığı iradeni kırar. Kaslarındaki gerilim boşalır,\n");
-                printf(" kolların iki yana düşer ve karanlığın soğuk kucaklamasıyla yavaşça batmaya devam edersin...\n\n" COLOR_RESET);
-            }
-            printf(COLOR_DARK " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
+            printf(COLOR_GOLD "\n [SAHNE V] Göklerde Hayatta Kalma\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Havada çaresizce, bulutların arasında savrulurken, savaş ortamından alev alev yanan\n");
+            printf(" arabasıyla hızla uzaklaşan Helios seni fark ediyor. Hiç düşünmeden arabasını üstüne\n");
+            printf(" doğru kırıyor! Tam arabanın sıcak zeminine sertçe düştüğün saniyede, fırtınanın kopardığı\n");
+            printf(" devasa bir ahşap gemi direği, mermi hızında arabaya doğru savruluyor!\n\n" COLOR_RESET);
+            if (attack_dir == 0) printf(COLOR_RED "  >>> SOL TARAFTAN ENKAZ GELİYOR! (KAÇINMAK İÇİN SAĞ OK TUŞUNA BAS) >>>\n\n" COLOR_RESET);
+            else printf(COLOR_RED "  <<< SAĞ TARAFTAN ENKAZ GELİYOR! (KAÇINMAK İÇİN SOL OK TUŞUNA BAS) <<<\n\n" COLOR_RESET);
         } else {
-            printf(COLOR_GOLD "\n [SCENE V] Depth of Silence\n\n" COLOR_RESET);
-            if (choice_3 == 2) {
-                printf(COLOR_WHITE " You plead not to the dark entity in your mind, but to the god of the seas tearing\n");
-                printf(" through the waters above. Yet, the ears of gods are deaf to the screams of mortal ants.\n");
-                printf(" The voice in your mind whispers in a cold, mocking tone:\n\n" COLOR_RESET);
-                printf(COLOR_CYAN " \"Have it your way...\"\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " Then, the voice goes completely silent. As Poseidon's colossal silhouette carelessly\n");
-                printf(" disappears above, the freezing cold claims your body. No divine hand reaches out to you.\n");
-                printf(" You continue to sink slowly into absolute darkness...\n\n" COLOR_RESET);
-            }
-            else if (choice_3 == 3) {
-                printf(COLOR_WHITE " Even with your last breath, you try to maintain your logic, to solve the unknown.\n");
-                printf(" \"Who are you?\" your thoughts echo beneath the waters.\n\n");
-                printf(" The only answer is deafening silence.\n\n");
-                printf(" Neither the ocean nor that ancient entity deigns to satisfy your mortal curiosity.\n");
-                printf(" As the relentless water pressure crushes your final thoughts, your consciousness\n");
-                printf(" fades completely, and you sink into the pitch black void...\n\n" COLOR_RESET);
-            }
-            else {
-                printf(COLOR_WHITE " You struggle with your last ounce of strength, desperately trying to survive. You burn\n");
-                printf(" the last oxygen in your muscles with this rebellion. The echoing, ancient voice now\n");
-                printf(" whispers in a soothing tone, like a mind-numbing lullaby:\n\n" COLOR_RESET);
-                printf(COLOR_CYAN " \"Cease your struggling, mortal... You are in pain. Release that shell of flesh,\n");
-                printf(" your mortal body... Blend with the waters, and just relax...\"\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " The manipulative weight of the voice breaks your will. The tension in your muscles\n");
-                printf(" vanishes, your arms fall to your sides, and embraced by the dark cold, you continue to sink...\n\n" COLOR_RESET);
-            }
-            printf(COLOR_DARK " [Press ANY KEY to continue]\n" COLOR_RESET);
-        }
-        _getch();
-    }
-    // D - HOLD SURVIVORS (2.1, 2.2, 2.3)
-    else if (prev_choice == 2) {
-        if (choice_3 == 1) {
-            if (current_lang == 1) {
-                printf(COLOR_GOLD "\n [SAHNE V] Kıyamete Adım\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " Ambar kapağını tekmeyle kırıp güverteye adımını attığın an, gökyüzünün yarıldığını görüyorsun.\n");
-                printf(" Savaşın zirvesi... Helios'un kör edici ilahi ışını ve Poseidon'un Trident'i canavarla çarpışıyor.\n");
-                printf(" Apollon'un devasa oku sekerek denize çakılıyor ve gökyüzüne uzanan devasa bir TSUNAMİ yaratıyor!\n\n");
-                printf(" Kaçacak hiçbir yerin yok. Devasa su kütlesi gemiyi bir kibrit çöpü gibi yutuyor.\n");
-                printf(" Suların şiddeti seni anında eziyor ve karanlık okyanusun dibinde boğuluyorsun...\n\n" COLOR_RESET);
-                printf(COLOR_CYAN " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
-            } else {
-                printf(COLOR_GOLD "\n [SCENE V] Step into the Apocalypse\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " The moment you kick the hatch open and step on deck, you see the sky tear apart.\n");
-                printf(" The climax of war... Helios's blinding divine ray and Poseidon's Trident clash with the beast.\n");
-                printf(" Apollo's massive arrow ricochets, crashing into the sea to create a colossal TSUNAMI!\n\n");
-                printf(" You have nowhere to run. The massive wall of water swallows the ship like a matchstick.\n");
-                printf(" The violence of the waters instantly crushes you, and you drown at the bottom of the dark ocean...\n\n" COLOR_RESET);
-                printf(COLOR_CYAN " [Press ANY KEY to continue]\n" COLOR_RESET);
-            }
-            _getch();
-        }
-        else if (choice_3 == 2) {
-            set_badge(profile, BADGE_BROKEN_BONES, 5);
-            if (current_lang == 1) {
-                printf(COLOR_GOLD "\n [SAHNE V] Hiçliğin Baskısı\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " Karanlıkta güvende olduğunu sanarak sessizce beklerken, zihninin içinde\n");
-                printf(" yankılanan kadim ve ürpertici bir ses konuşuyor:\n\n");
-                printf(COLOR_DARK " \"Çok... Yanlış... Bir karar...\"\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " Ses kesildiği an, gemi birden hiçliğin dibine doğru inanılmaz bir hızla batmaya başlıyor.\n");
-                printf(" Devasa su basıncı saniyeler içinde geminin gövdesini kağıt gibi eziyor!\n");
-                printf(" Bütün kemiklerinin aynı anda kırıldığını hissediyorsun. Ambar saniyeler içinde suyla doluyor.\n");
-                printf(" Kırık bedenini kıpırdatamadan, karanlık ve dondurucu suların içinde boğuluyorsun...\n\n" COLOR_RESET);
-                printf(COLOR_CYAN " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
-            } else {
-                printf(COLOR_GOLD "\n [SCENE V] Pressure of the Void\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " Thinking you are safe, an ancient, chilling voice echoes directly inside your mind:\n\n");
-                printf(COLOR_DARK " \"A very... wrong... decision...\"\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " The ship suddenly begins sinking to the bottom of the abyss at incredible speed.\n");
-                printf(" Massive water pressure crushes the ship's hull like paper in seconds!\n");
-                printf(" You feel all your bones shatter simultaneously. The hold fills with water instantly.\n");
-                printf(" Unable to move your broken body, you drown in the dark, freezing waters...\n\n" COLOR_RESET);
-                printf(COLOR_CYAN " [Press ANY KEY to continue]\n" COLOR_RESET);
-            }
-            _getch();
-        }
-        else if (choice_3 == 3) {
-            set_badge(profile, BADGE_CURSE_OF_THANATOS, 1);
-            if (current_lang == 1) {
-                printf(COLOR_GOLD "\n [SAHNE V] Thanatos'un Dokunuşu\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " Kaosun içinde karanlıkta sandıkları parçalarken, eline ağır, soğuk bir cisim geliyor.\n");
-                printf(" Bu bronz bir kılıç... Ancak kılıç aniden elinden kurtulup havaya kalkıyor!\n\n");
-                printf(" Kılıcın bronz yüzeyinden Ölüm Tanrısı Thanatos'un kapkara silüeti dışarı süzülüyor.\n");
-                printf(" Silüet yavaşça yaklaşıp soğuk parmaklarıyla alnına dokunuyor.\n");
-                printf(" Kafanın içinde aniden, seni delirtecek kadar paranoyak bir lanet sesi çınlıyor!\n\n");
-                printf(COLOR_DARK " Kılıç bir anda hiçliğe karışıp kayboluyor.\n" COLOR_RESET);
-                printf(COLOR_WHITE " Sen ne olduğunu bile anlayamadan, gemi devasa bir şiddetle parçalanıyor\n");
-                printf(" ve enkazla birlikte suyun karanlık dibine doğru hızla çekilmeye başlıyorsun...\n\n" COLOR_RESET);
-                printf(COLOR_CYAN " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
-            } else {
-                printf(COLOR_GOLD "\n [SCENE V] Touch of Thanatos\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " Smashing crates in the dark amidst the chaos, your hand grasps a heavy, cold object.\n");
-                printf(" It is a bronze sword... But suddenly, it slips from your grip and levitates!\n\n");
-                printf(" From its bronze surface, the pitch-black silhouette of Thanatos, God of Death, emerges.\n");
-                printf(" The silhouette glides closer and touches your forehead with its freezing fingers.\n");
-                printf(" Suddenly, a paranoid curse echoes violently inside your head, enough to drive you mad!\n\n");
-                printf(COLOR_DARK " The sword vanishes into nothingness in an instant.\n" COLOR_RESET);
-                printf(COLOR_WHITE " Before you can even process what happened, the ship violently shatters\n");
-                printf(" and you are rapidly dragged down to the dark bottom of the water with the debris...\n\n" COLOR_RESET);
-                printf(COLOR_CYAN " [Press ANY KEY to continue]\n" COLOR_RESET);
-            }
-            _getch();
-        }
-    }
-    // E - THE AIRBORNE SURVIVOR (3.1: Jumped/Slide out)
-    else if (prev_choice == 3 && choice_2 == 1) {
-        if (choice_3 == 1) {
-            if (current_lang == 1) {
-                printf(COLOR_GOLD "\n [SAHNE V] Denizin Dibine\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " Tırabzanlara tutunduğun an, Poseidon mermi gibi göğe uçan Trident'ini geri çağırıyor.\n\n");
-                printf(" Devasa mızrak okyanustan çıkıp efendisine dönerken yarattığı muazzam şok dalgası,\n");
-                printf(" tutunduğun gemi enkazını tuzla buz ediyor!\n");
-                printf(" Tırabzan parçalanıyor... Suların muazzam şiddeti seni okyanusun derinliklerine gömerken,\n");
-                printf(" yukarı çıkamıyor ve karanlık suların içinde ciğerlerin patlayarak boğuluyorsun...\n\n" COLOR_RESET);
-                printf(COLOR_CYAN " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
-            } else {
-                printf(COLOR_GOLD "\n [SCENE V] To the Bottom\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " The moment you grab the railing, Poseidon recalls his Trident like a missile.\n\n");
-                printf(" As the colossal spear rips out of the ocean, the massive shockwave shatters\n");
-                printf(" the wreckage you are holding onto into dust!\n");
-                printf(" The railing splinters... The massive force of the waters buries you deep in the ocean.\n");
-                printf(" Unable to surface, your lungs burst and you drown in the dark waters...\n\n" COLOR_RESET);
-                printf(COLOR_CYAN " [Press ANY KEY to continue]\n" COLOR_RESET);
-            }
-            _getch();
-        }
-        else if (choice_3 == 2) {
-            set_badge(profile, BADGE_BLESSING_POSEIDON, 1);
-            if (current_lang == 1) {
-                printf(COLOR_GOLD "\n [SAHNE V] Tanrıların Avucunda\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " Gözlerini kapatıp düşüşü kabulleniyorsun. Sulara çakılmadan milisaniyeler önce,\n");
-                printf(" devasa, buz gibi bir el seni havada yakalıyor!\n\n");
-                printf(" Poseidon'un muazzam avucunun içindesin. Savaşı bizzat onun göz hizasından izliyorsun.\n");
-                printf(" Ancak Apollon'un devasa oku sekip okyanusta patladığında, Poseidon şiddetle yalpalıyor.\n");
-                printf(" Parmakları aralanıyor ve boşluğa, ölüme doğru düşmeye başlıyorsun!\n\n");
-                printf(" Tam okyanusa çakılacakken, alev alev yanan bir savaş arabası yanından geçiyor\n");
-                printf(" ve Helios seni ensenden yakaladığı gibi arabasının arkasına fırlatıyor!\n\n" COLOR_RESET);
-                printf(COLOR_DARK " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
-            } else {
-                printf(COLOR_GOLD "\n [SCENE V] In the Palm of Gods\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " You close your eyes and accept the fall. Milliseconds before hitting the water,\n");
-                printf(" a colossal, freezing hand catches you mid-air!\n\n");
-                printf(" You are in the palm of Poseidon. You watch the war from his exact POV.\n");
-                printf(" But when Apollo's massive arrow ricochets and explodes in the ocean, Poseidon violently stumbles.\n");
-                printf(" His fingers part, and you begin falling into the void towards certain death!\n\n");
-                printf(" Just as you are about to crash into the ocean, a blazing chariot streaks past\n");
-                printf(" and Helios grabs you by the scruff, throwing you into the back of his chariot!\n\n" COLOR_RESET);
-                printf(COLOR_DARK " [Press ANY KEY to continue]\n" COLOR_RESET);
-            }
-            _getch(); clear_screen();
-
-            // PARRY MINI-GAME
-            int attack_dir = rand() % 2; // 0 = Left, 1 = Right
-            if (current_lang == 1) {
-                printf(COLOR_GOLD "\n [SAHNE V] Göklerde Hayatta Kalma\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " Güneş arabasıyla savaşın merkezinden inanılmaz bir hızla uzaklaşıyorsunuz.\n");
-                printf(" Fırtınanın kopardığı devasa bir gemi direği hızla üzerine doğru savruluyor!\n\n" COLOR_RESET);
-                if (attack_dir == 0) printf(COLOR_RED "  >>> SOL TARAFTAN ENKAZ GELİYOR! (PARRY İÇİN SAĞ OK TUŞUNA BAS) >>>\n\n" COLOR_RESET);
-                else printf(COLOR_RED "  <<< SAĞ TARAFTAN ENKAZ GELİYOR! (PARRY İÇİN SOL OK TUŞUNA BAS) <<<\n\n" COLOR_RESET);
-            } else {
-                printf(COLOR_GOLD "\n [SCENE V] Survival in the Skies\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " You are moving at terrifying speed away from the battlefield.\n");
-                printf(" A massive ship mast torn by the storm hurtles towards you!\n\n" COLOR_RESET);
-                if (attack_dir == 0) printf(COLOR_RED "  >>> DEBRIS INCOMING FROM LEFT! (PRESS RIGHT ARROW TO PARRY) >>>\n\n" COLOR_RESET);
-                else printf(COLOR_RED "  <<< DEBRIS INCOMING FROM RIGHT! (PRESS LEFT ARROW TO PARRY) <<<\n\n" COLOR_RESET);
-            }
-
-            int required_key = (attack_dir == 0) ? 77 : 75;
-            int parry_success = 0;
-            long start_time = clock();
-
-            // SÜRE 2 SANİYEDEN 3.5 SANİYEYE ÇIKARILDI (Klavye gecikmesi toleransı)
-            while ((clock() - start_time) * 1000 / CLOCKS_PER_SEC < 3500) {
-                if (_kbhit()) {
-                    int ch = _getch();
-                    if (ch == 0 || ch == 224) { // Yön tuşları
-                        ch = _getch();
-                        if (ch == required_key) { parry_success = 1; break; }
-                        else if (ch == 75 || ch == 77 || ch == 72 || ch == 80) { parry_success = -1; break; }
-                    } else {
-                        parry_success = -1; break; // Panik yapıp harflere basarsa da başarısız olur
-                    }
-                }
-                Sleep(10);
-            }
-
-            clear_screen();
-            if (parry_success == 1) {
-                set_badge(profile, BADGE_BLESSING_HELIOS, 1);
-                if (current_lang == 1) {
-                    printf(COLOR_CYAN " [ PARRY BAŞARILI! ]\n\n" COLOR_RESET);
-                    printf(COLOR_WHITE " Vücudunu mükemmel bir refleksle zıt yöne savuruyorsun!\n");
-                    printf(" Devasa enkaz arabayı sıyırıp geçiyor. Helios arabasını göğe doğru sürerken\n");
-                    printf(" hayatta kalmayı başarıyorsun...\n\n" COLOR_RESET);
-                } else {
-                    printf(COLOR_CYAN " [ PARRY SUCCESSFUL! ]\n\n" COLOR_RESET);
-                    printf(COLOR_WHITE " You throw your body in the opposite direction with perfect reflex!\n");
-                    printf(" The massive debris grazes past the chariot. As Helios drives his chariot\n");
-                    printf(" towards the heavens, you manage to survive...\n\n" COLOR_RESET);
-                }
-                update_stat(profile, STAT_SKILL, 2); update_stat(profile, STAT_MIGHT, -1); // Success Bonus
-            }
-            else {
-                if (current_lang == 1) {
-                    printf(COLOR_RED " [ PARRY BAŞARISIZ! ]\n\n" COLOR_RESET);
-                } else {
-                    printf(COLOR_RED " [ PARRY FAILED! ]\n\n" COLOR_RESET);
-                }
-
-                if (profile->faith >= 7) {
-                    set_badge(profile, BADGE_BLESSING_HELIOS, 1);
-                    if (current_lang == 1) {
-                        printf(COLOR_WHITE " Devasa enkaz tam seni biçecekken...\n\n" COLOR_RESET);
-                        printf(COLOR_CYAN " [ GİZLİ İNANÇ ZARI BAŞARILI: İNANCIN (>=7) BİR MUCİZE YARATTI ]\n\n" COLOR_RESET);
-                        printf(COLOR_GOLD " Helios son anda arabayı sertçe kırıyor!\n");
-                        printf(" Enkaz sadece omzunu sıyırıp geçiyor. Arabanın zeminine yığılıyorsun ama hayattasın.\n\n" COLOR_RESET);
-                    } else {
-                        printf(COLOR_WHITE " Just as the debris is about to rip you apart...\n\n" COLOR_RESET);
-                        printf(COLOR_CYAN " [ HIDDEN FAITH DICE SUCCESS: YOUR FAITH (>=7) CREATES A MIRACLE ]\n\n" COLOR_RESET);
-                        printf(COLOR_GOLD " Helios swerves the chariot sharply at the last second!\n");
-                        printf(" The debris only grazes your shoulder. You collapse on the floor, but you are alive.\n\n" COLOR_RESET);
-                    }
-                } else {
-                    if (current_lang == 1) {
-                        printf(COLOR_WHITE " Yanlış hamle yaptın! Devasa enkaz sana şiddetle çarpıyor.\n");
-                        printf(" Arabadan sökülüp gökyüzünden okyanusa doğru ölümcül bir düşüşe geçiyorsun!\n\n" COLOR_RESET);
-                        printf(COLOR_DARK " [ GİZLİ İNANÇ ZARI BAŞARISIZ ]\n\n" COLOR_RESET);
-                        printf(COLOR_WHITE " Havada çaresizce süzülüyorsun. Tanrılar artık seninle ilgilenmiyor.\n");
-                        printf(" Son sürat denize çakılıyor ve boğularak karanlık sulara gömülüyorsun...\n\n" COLOR_RESET);
-                    } else {
-                        printf(COLOR_WHITE " Wrong move! The massive debris violently crashes into you.\n");
-                        printf(" You are ripped from the chariot, entering a fatal freefall towards the ocean!\n\n" COLOR_RESET);
-                        printf(COLOR_DARK " [ HIDDEN FAITH DICE FAILED ]\n\n" COLOR_RESET);
-                        printf(COLOR_WHITE " You drift helplessly in the air. The gods no longer care for you.\n");
-                        printf(" You plunge into the sea at terminal velocity, drowning in the dark waters...\n\n" COLOR_RESET);
-                    }
-                }
-            }
-            if (current_lang == 1) printf(COLOR_CYAN " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
-            else printf(COLOR_CYAN " [Press ANY KEY to continue]\n" COLOR_RESET);
-            _getch();
-        }
-        else if (choice_3 == 3) {
-            set_badge(profile, BADGE_BROKEN_BONES, 5);
-            if (current_lang == 1) {
-                printf(COLOR_GOLD "\n [SAHNE V] Karıncanın Düşüşü\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " Bütün gücünle Poseidon'a bağırıyorsun! Ama okyanusların efendisi,\n");
-                printf(" senin gibi bir karıncayı umursamıyor bile.\n\n");
-                printf(" Havada savrulup, onun devasa, kayadan sert omuzlarına şiddetle çarpıyorsun!\n");
-                printf(" Kaburgalarının ve kollarının aynı anda kırılma sesini duyuyorsun.\n");
-                printf(" Sersemlemiş, acıdan çıldıracak bir halde, metrelerce yüksekten tekrar\n");
-                printf(" geminin ahşap güvertesine çakılıyorsun. Bedenin paramparça...\n\n" COLOR_RESET);
-
-                printf("  [" COLOR_CYAN "1" COLOR_RESET "] Kırık kemiklerime rağmen inatla güvenli bir yere doğru sürünmeye çalışırım.\n");
-                printf("  [" COLOR_CYAN "2" COLOR_RESET "] Olduğum yerde kanlar içinde yatarak, ölümcül kaderimi sessizce kabullenirim.\n\n");
-                printf(COLOR_CYAN "  Hamlen nedir? (1-2): " COLOR_RESET);
-            } else {
-                printf(COLOR_GOLD "\n [SCENE V] Fall of the Ant\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " You roar at Poseidon with all your might! But the lord of the oceans\n");
-                printf(" does not even care about an ant like you.\n\n");
-                printf(" You are tossed through the air, violently crashing into his massive, rock-hard shoulder!\n");
-                printf(" You hear the sickening snap of your ribs and arms breaking simultaneously.\n");
-                printf(" Dazed and mad with pain, you plummet from meters high, crashing back down\n");
-                printf(" onto the ship's wooden deck. Your body is shattered...\n\n" COLOR_RESET);
-
-                printf("  [" COLOR_CYAN "1" COLOR_RESET "] Despite my broken bones, I stubbornly try to crawl to a safe spot.\n");
-                printf("  [" COLOR_CYAN "2" COLOR_RESET "] I lie there covered in blood, silently accepting my fatal destiny.\n\n");
-                printf(COLOR_CYAN "  What is your move? (1-2): " COLOR_RESET);
-            }
-
-            int crawl_choice = 0;
-            while (1) {
-                if (_kbhit()) {
-                    char ch = _getch();
-                    if (ch == '1') { update_stat(profile, STAT_HONOR, 2); update_stat(profile, STAT_INTEL, -1); crawl_choice = 1; break; }
-                    else if (ch == '2') { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_MIGHT, -1); crawl_choice = 2; break; }
-                }
-                Sleep(20);
-            }
-
-            clear_screen();
-
-            if (crawl_choice == 1) {
-                set_badge(profile, BADGE_BLESSING_HELIOS, 1);
-                if (current_lang == 1) {
-                    printf(COLOR_GOLD "\n [SAHNE V] Yaşama İnadı\n\n" COLOR_RESET);
-                    printf(COLOR_WHITE " Kanlar içinde güvertede sürünürken gökyüzünü izliyorsun.\n");
-                    printf(" Apollon'un o devasa oku canavara çarpıyor ve denizi yaran Tsunami göklere yükseliyor.\n");
-                    printf(" Savaşın kaosundan iğrenip ortamı terk etmeye hazırlanan Helios, güneş arabasını\n");
-                    printf(" ufka doğru çeviriyor...\n\n");
-                    printf(" Ancak tam o an, alev alev yanan gözleri, kıyametin ortasında paramparça bir halde\n");
-                    printf(" inatla sürünmeye devam eden senin kanlı silüetine takılıyor.\n\n");
-                    printf(COLOR_CYAN " Tanrıları bile şaşırtan bu saf yaşama arzusu karşısında, Helios arabasını\n");
-                    printf(" inanılmaz bir hızla aşağı kırıyor!\n\n" COLOR_RESET);
-                    printf(COLOR_WHITE " Tsunami seni yutmadan milisaniyeler önce arabasıyla yanından geçerek seni\n");
-                    printf(" ensenden yakaladığı gibi o cehennemden çıkarıp göklere yükseltiyor!\n\n" COLOR_RESET);
-                    printf(COLOR_DARK " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
-                } else {
-                    printf(COLOR_GOLD "\n [SCENE V] Defiance of Death\n\n" COLOR_RESET);
-                    printf(COLOR_WHITE " Crawling in blood, you watch the sky. Apollo's massive arrow strikes the beast,\n");
-                    printf(" and the sea-splitting Tsunami rises to the heavens. Helios, disgusted by the chaos,\n");
-                    printf(" turns his sun chariot to leave the realm...\n\n");
-                    printf(" But at that exact moment, his burning eyes catch your bloody silhouette,\n");
-                    printf(" stubbornly crawling on the deck amidst the apocalypse.\n\n");
-                    printf(COLOR_CYAN " Astonished by this pure mortal will to live, Helios dives his chariot\n");
-                    printf(" down at blinding speed!\n\n" COLOR_RESET);
-                    printf(COLOR_WHITE " Milliseconds before the Tsunami swallows you, he streaks past, grabs you by\n");
-                    printf(" the scruff, and rips you out of that hell, soaring into the heavens!\n\n" COLOR_RESET);
-                    printf(COLOR_DARK " [Press ANY KEY to continue]\n" COLOR_RESET);
-                }
-            }
-            else {
-                if (current_lang == 1) {
-                    printf(COLOR_DARK "\n [SAHNE V] Kaçınılmaz Son\n\n" COLOR_RESET);
-                    printf(COLOR_WHITE " Yerde kanlar içinde yatarken, savaşın zirvesinde iki ilahi gücün çarpıştığını görüyorsun.\n");
-                    printf(" Apollon'un oku sekiyor ve göklere uzanan devasa TSUNAMİ üzerine doğru kapanıyor.\n");
-                    printf(" Artık kaçacak hiçbir yerin yok.\n\n");
-                    printf(" Devasa su kütlesi gemiyi yuttuğu an, okyanusun karanlık derinliklerine gömülüyorsun.\n");
-                    printf(" Kemiklerin kırık olduğu için çırpınamıyorsun bile... Ciğerlerine dolan soğuk sularla\n");
-                    printf(" yavaşça boğularak hiçliğe karışıyorsun...\n\n" COLOR_RESET);
-                    printf(COLOR_CYAN " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
-                } else {
-                    printf(COLOR_DARK "\n [SCENE V] The Inevitable End\n\n" COLOR_RESET);
-                    printf(COLOR_WHITE " Lying in blood, you see two divine forces clash at the climax of the battle.\n");
-                    printf(" Apollo's arrow ricochets, and a colossal TSUNAMI crashes down upon you.\n");
-                    printf(" You have nowhere left to run.\n\n");
-                    printf(" The moment the massive wall of water swallows the ship, you are buried in the dark depths.\n");
-                    printf(" With shattered bones, you cannot even struggle... You slowly drown as the freezing waters\n");
-                    printf(" fill your lungs, fading into the void...\n\n" COLOR_RESET);
-                    printf(COLOR_CYAN " [Press ANY KEY to continue]\n" COLOR_RESET);
-                }
-            }
-            _getch();
-        }
-    }
-
-    // ========================================================================
-    // SCENE VI: THE SUN CHARIOT OR THE ABYSS
-    // ========================================================================
-    int helios_choice = 0;
-    int drown_choice = 0;
-
-    // --- HELIOS PATH ---
-    if (profile->badges[BADGE_BLESSING_HELIOS] == 1) {
-        clear_screen();
-        if (current_lang == 1) {
-            printf(COLOR_GOLD "\n [SAHNE VI] Güneşin Merhameti\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " Savaş geride kalıyor. Bulutların arasında hızla yükseliyorsunuz.\n");
-            printf(" Etrafı saran o sağır edici kaos yerini rüzgarın uğultusuna bırakıyor.\n\n");
-            printf(" Helios yavaşça sana dönüyor. Arabasından yayılan güneş ışığının tenini kavurduğunu,\n");
-            printf(" ilahi ve sert bir ısıyla bedenini sardığını hissediyorsun.\n\n" COLOR_RESET);
-
-            if (profile->badges[BADGE_BROKEN_BONES] > 0) {
-                printf(COLOR_CYAN " Güneşin bu saf gücü, kırık kemiklerine nüfuz ediyor. Acı yerini sıcak bir uyuşmaya bırakırken,\n");
-                printf(" paramparça olmuş bedeninin mucizevi bir şekilde saniyeler içinde iyileştiğini hissediyorsun!\n\n" COLOR_RESET);
-                profile->badges[BADGE_BROKEN_BONES] = 0;
-            }
-
-            Sleep(1500);
-            printf(COLOR_DARK " Tam o huzur anında, zihninin derinliklerinden gelen o tanıdık, kadim ses yankılanıyor:\n\n" COLOR_RESET);
-            printf(COLOR_MAG " \"Eğer kaçacaksan... Orası burası...\"\n\n" COLOR_RESET);
-
-            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Bu delilikten tamamen kaçar ve kaderi reddederim. (Oyundan Çık)\n");
-            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Tanrılara güvenilmez! Arabadan aşağı, okyanusa atlarım.\n");
-            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Helios'u takip etmeye devam eder, bu ilahi yolculuğu kabullenirim.\n");
-            printf("  [" COLOR_CYAN "4" COLOR_RESET "] Zihnimdeki sese ardı ardına hızlıca sorular sorar, onunla konuşmaya çalışırım.\n\n");
-            printf(COLOR_CYAN "  Kararın nedir? (1-4): " COLOR_RESET);
-        } else {
-            printf(COLOR_GOLD "\n [SCENE VI] Mercy of the Sun\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " The war is left behind. You ascend rapidly through the clouds.\n");
-            printf(" The deafening chaos that surrounded you gives way to the howl of the wind.\n\n");
-            printf(" Helios slowly turns to you. You feel the sunlight radiating from his chariot scorch your skin,\n");
-            printf(" enveloping your body in a harsh, divine heat.\n\n" COLOR_RESET);
-
-            if (profile->badges[BADGE_BROKEN_BONES] > 0) {
-                printf(COLOR_CYAN " This pure power penetrates your broken bones. Your shattered body heals in seconds!\n\n" COLOR_RESET);
-                profile->badges[BADGE_BROKEN_BONES] = 0;
-            }
-
-            Sleep(1500);
-            printf(COLOR_DARK " At that moment of peace, the familiar, ancient voice echoes:\n\n" COLOR_RESET);
-            printf(COLOR_MAG " \"If you are going to escape... This is the place...\"\n\n" COLOR_RESET);
-
-            printf("  [" COLOR_CYAN "1" COLOR_RESET "] I completely escape this madness and reject destiny. (Quit Game)\n");
-            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Gods cannot be trusted! I jump off the chariot into the ocean.\n");
-            printf("  [" COLOR_CYAN "3" COLOR_RESET "] I continue following Helios, accepting this divine journey.\n");
-            printf("  [" COLOR_CYAN "4" COLOR_RESET "] I rapidly ask the voice questions, trying to communicate with it.\n\n");
-            printf(COLOR_CYAN "  What is your decision? (1-4): " COLOR_RESET);
+            printf(COLOR_GOLD "\n [SCENE V] Survival in the Skies\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Hurled helplessly among the clouds, Helios, speeding away from the battlefield in his\n");
+            printf(" blazing chariot, spots you. He ruthlessly swerves his chariot right at you!\n");
+            printf(" The exact second you crash onto the hot floor of the chariot, a massive wooden ship mast\n");
+            printf(" torn by the storm hurtles towards the chariot at bullet speed!\n\n" COLOR_RESET);
+            if (attack_dir == 0) printf(COLOR_RED "  >>> DEBRIS INCOMING FROM LEFT! (PRESS RIGHT ARROW TO DODGE) >>>\n\n" COLOR_RESET);
+            else printf(COLOR_RED "  <<< DEBRIS INCOMING FROM RIGHT! (PRESS LEFT ARROW TO DODGE) <<<\n\n" COLOR_RESET);
         }
 
-        while (1) {
+        int required_key = (attack_dir == 0) ? 77 : 75;
+        int parry_success = 0;
+        long start_time = clock();
+
+        while ((clock() - start_time) * 1000 / CLOCKS_PER_SEC < 3500) {
             if (_kbhit()) {
-                char ch = _getch();
-                if (ch >= '1' && ch <= '4') { helios_choice = ch - '0'; break; }
+                int ch = _getch();
+                if (ch == 0 || ch == 224) {
+                    ch = _getch();
+                    if (ch == required_key) { parry_success = 1; break; }
+                    else if (ch == 75 || ch == 77 || ch == 72 || ch == 80) { parry_success = -1; break; }
+                } else { parry_success = -1; break; }
             }
-            Sleep(20);
+            Sleep(10);
         }
 
         clear_screen();
-
-        if (helios_choice == 1) {
-            if (current_lang == 1) printf(COLOR_RED "\n  Sistem bağlantısı koparılıyor...\n" COLOR_RESET);
-            else printf(COLOR_RED "\n  System connection severed...\n" COLOR_RESET);
-            Sleep(2500); exit(0);
-        }
-        else if (helios_choice == 2) {
-            profile->badges[BADGE_BLESSING_HELIOS] = 0; // Jumps out -> Becomes a Drowner
-            update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_INTEL, -1); // Arabadan atlamak cesur ama akılsızca
-
+        if (parry_success == 1) {
+            set_badge(profile, BADGE_BLESSING_HELIOS, 1);
             if (current_lang == 1) {
-                printf(COLOR_DARK "\n [SAHNE VI] Düşüş\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " Tanrılara olan güvensizliğin ağır basıyor. Arabanın kenarından kendini boşluğa bırakıyorsun!\n");
-                printf(" Kilometrelerce yüksekten karanlık okyanusa doğru çakılıyorsun.\n");
-                printf(" Suya çarptığın an bütün kemiklerin paramparça oluyor...\n\n" COLOR_RESET);
+                printf(COLOR_CYAN " [ REFLEKS BAŞARILI ]\n\n" COLOR_RESET);
+                printf(COLOR_WHITE " Adrenalinle vücudunu mükemmel bir refleksle zıt yöne savuruyorsun!\n");
+                printf(" Devasa enkaz, saçlarını havalandırarak arabayı sıyırıp geçiyor. Arabanın yanan zemininde,\n");
+                printf(" fırtınadan uzağa, göklere doğru yükseliyorsun...\n\n" COLOR_RESET);
             } else {
-                printf(COLOR_DARK "\n [SCENE VI] The Plunge\n\n" COLOR_RESET);
-                printf(COLOR_WHITE " Your distrust of the gods prevails. You throw yourself off the chariot into the void!\n");
-                printf(" You plummet from kilometers high into the dark ocean.\n");
-                printf(" The moment you hit the water, your bones shatter...\n\n" COLOR_RESET);
+                printf(COLOR_CYAN " [ REFLEX SUCCESSFUL ]\n\n" COLOR_RESET);
+                printf(COLOR_WHITE " Fueled by adrenaline, you throw your body in the opposite direction perfectly!\n");
+                printf(" The massive debris grazes the chariot, ruffling your hair. Safe on the burning floor,\n");
+                printf(" you ascend towards the heavens, far from the storm...\n\n" COLOR_RESET);
             }
-            printf(COLOR_CYAN " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
-            _getch();
-        }
-        else {
-            if (helios_choice == 3) { update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_SKILL, -1); }
-            if (helios_choice == 4) { update_stat(profile, STAT_INTEL, 2); update_stat(profile, STAT_FAITH, -1); }
-
-            if (current_lang == 1) {
-                printf(COLOR_GOLD "\n [SAHNE VI] İlahi Yolculuk\n\n" COLOR_RESET);
-                printf(COLOR_DARK " Güneşin ve ilahi enerjinin o muazzam yoğunluğuna fani bedenin daha fazla\n");
-                printf(" dayanamıyor. Gözlerin kamaşıyor, zihnin uyuşuyor ve arabanın içinde\n");
-                printf(" bilincini tamamen kaybederek karanlığa gömülüyorsun...\n\n" COLOR_RESET);
-            } else {
-                printf(COLOR_GOLD "\n [SCENE VI] Divine Journey\n\n" COLOR_RESET);
-                printf(COLOR_DARK " Your mortal body can no longer withstand the immense density of the sun and\n");
-                printf(" divine energy. Your eyes are blinded, your mind numbs, and you completely\n");
-                printf(" lose consciousness inside the chariot, fading into darkness...\n\n" COLOR_RESET);
-            }
-            printf(COLOR_CYAN " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
-            _getch();
-        }
-    }
-
-    // --- DROWNER PATH (Includes those who jumped off Helios' chariot) ---
-    if (profile->badges[BADGE_BLESSING_HELIOS] == 0) {
-        clear_screen();
-        if (current_lang == 1) {
-            printf(COLOR_GOLD "\n [SAHNE VI] Derinlerdeki Lakayt Ses\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " Okyanusun karanlık ve dondurucu derinliklerine doğru batıyorsun.\n");
-            printf(" Ciğerlerin tuzlu suyla doluyor, bilincin yavaşça karanlığa teslim olmak üzere.\n\n");
-            printf(" Tam o anda, zihninin derinliklerinden gelen o tanıdık, kadim varlık,\n");
-            printf(" etrafınızdaki bu dehşet verici ölüme tamamen zıt, inanılmaz lakayt bir tonda konuşuyor:\n\n" COLOR_RESET);
-            printf(COLOR_MAG " \"Deniz hiç benim tarzım değil ya... Buradan çıkabilir miyiz?\"\n\n" COLOR_RESET);
-
-            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Bu lakayt tavra sinirlenip zihnimden 'Çıkamayız...' diye karşılık veririm.\n");
-            if (profile->badges[BADGE_BROKEN_BONES] > 0) printf(COLOR_DARK "  [2] [ KİLİTLİ - Kemiklerin Kırık ] Sesi umursamayıp debelenerek kurtulmaya çalışmak.\n" COLOR_RESET);
-            else printf("  [" COLOR_CYAN "2" COLOR_RESET "] Sese odaklanmaktansa kurtulmaya odaklanır ve var gücümle debelenirim.\n");
-            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Sessizce ölüme teslim olurum. (Oyundan Çık)\n");
-            printf("  [" COLOR_CYAN "4" COLOR_RESET "] Bedenimi bırakıp sadece beynimin içindeki o sese odaklanırım.\n\n");
-            printf(COLOR_CYAN "  Kararın nedir? (1-4): " COLOR_RESET);
         } else {
-            printf(COLOR_GOLD "\n [SCENE VI] The Casual Voice in the Deep\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " You are sinking into the dark, freezing depths of the ocean.\n");
-            printf(" Your lungs fill with saltwater, your consciousness slowly surrendering to the dark.\n\n");
-            printf(" Just then, that familiar, ancient entity from the depths of your mind speaks\n");
-            printf(" in an incredibly casual tone, completely contrasting the horrifying death around you:\n\n" COLOR_RESET);
-            printf(COLOR_MAG " \"The sea is really not my style... Can we get out of here?\"\n\n" COLOR_RESET);
-
-            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Get tense and reply: 'We can't get out...'\n");
-            if (profile->badges[BADGE_BROKEN_BONES] > 0) printf(COLOR_DARK "  [2] [ LOCKED - Broken Bones ] Struggle with all my might.\n" COLOR_RESET);
-            else printf("  [" COLOR_CYAN "2" COLOR_RESET "] Ignore the voice and struggle with all my might.\n");
-            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Silently surrender to death. (Quit Game)\n");
-            printf("  [" COLOR_CYAN "4" COLOR_RESET "] Focus entirely on the voice in my brain.\n\n");
-            printf(COLOR_CYAN "  What is your decision? (1-4): " COLOR_RESET);
-        }
-
-        while (1) {
-            if (_kbhit()) {
-                char ch = _getch();
-                if (ch == '1') { drown_choice = 1; break; }
-                if (ch == '2' && profile->badges[BADGE_BROKEN_BONES] == 0) { drown_choice = 2; break; }
-                if (ch == '3') { drown_choice = 3; break; }
-                if (ch == '4') { drown_choice = 4; break; }
-            }
-            Sleep(20);
-        }
-
-        if (drown_choice == 3) { exit(0); } // Silently die.
-
-        clear_screen();
-        if (drown_choice == 1) { update_stat(profile, STAT_INTEL, 2); update_stat(profile, STAT_FAITH, -1); }
-        else if (drown_choice == 2) { update_stat(profile, STAT_MIGHT, 2); update_stat(profile, STAT_INTEL, -1); }
-        else if (drown_choice == 4) {
-            update_stat(profile, STAT_FAITH, 2); update_stat(profile, STAT_MIGHT, -1);
-
-            if (profile->badges[BADGE_CURSE_OF_THANATOS] > 0) {
-                if (current_lang == 1) {
-                    printf(COLOR_GOLD "\n [SAHNE VI] Zihnin Kokusu\n\n" COLOR_RESET);
-                    printf(COLOR_MAG " \"Ne yedin sen be? Beyninin içi çok kötü kokuyor... Ölüm gibi kokuyor.\n");
-                    printf(" Hazır buradayken şu lanetini kaldırmamı ister misin?\"\n\n" COLOR_RESET);
-                    printf("  [" COLOR_CYAN "1" COLOR_RESET "] \"Evet, lütfen bu laneti benden al!\"\n");
-                    printf("  [" COLOR_CYAN "2" COLOR_RESET "] \"Hayır, bu lanet benim günahım.\"\n\n");
-                } else {
-                    printf(COLOR_GOLD "\n [SCENE VI] Scent of the Mind\n\n" COLOR_RESET);
-                    printf(COLOR_MAG " \"What did you eat? The inside of your brain smells awful... Like death.\n");
-                    printf(" Want me to lift this curse?\"\n\n" COLOR_RESET);
-                    printf("  [" COLOR_CYAN "1" COLOR_RESET "] \"Yes, take it from me!\"\n");
-                    printf("  [" COLOR_CYAN "2" COLOR_RESET "] \"No, I will die with it.\"\n\n");
-                }
-
-                int curse_choice = 0;
-                while (1) {
-                    if (_kbhit()) {
-                        char ch = _getch();
-                        if (ch == '1') { curse_choice = 1; break; }
-                        if (ch == '2') { curse_choice = 2; break; }
-                    }
-                    Sleep(20);
-                }
-
-                if (curse_choice == 1) { update_stat(profile, STAT_HONOR, 2); update_stat(profile, STAT_SKILL, -1); profile->badges[BADGE_CURSE_OF_THANATOS] = 0; }
-                else { update_stat(profile, STAT_SKILL, 2); update_stat(profile, STAT_HONOR, -1); }
+            set_badge(profile, BADGE_BROKEN_BONES, 3);
+            set_badge(profile, BADGE_BLESSING_HELIOS, 1);
+            if (current_lang == 1) {
+                printf(COLOR_RED " [ REFLEKS BAŞARISIZ! ]\n\n" COLOR_RESET);
+                printf(COLOR_WHITE " Vücudun yeterince hızlı tepki veremiyor! Devasa tahta enkaz omzuna şiddetle çarpıyor.\n");
+                printf(" Kemiklerinin iğrenç bir sesle çatladığını duyuyorsun. Acıdan çığlık atarak arabanın\n");
+                printf(" zeminine yığılıyorsun. Görüşün bulanıklaşıyor ama Helios'un arabasının içindesin, hayattasın.\n\n" COLOR_RESET);
+            } else {
+                printf(COLOR_RED " [ REFLEX FAILED! ]\n\n" COLOR_RESET);
+                printf(COLOR_WHITE " Your body isn't fast enough! The massive wooden debris violently crashes into your shoulder.\n");
+                printf(" You hear the sickening crack of your bones. Screaming in agony, you collapse on the\n");
+                printf(" floor. Your vision blurs, but you are inside Helios's chariot, alive.\n\n" COLOR_RESET);
             }
         }
         if (current_lang == 1) printf(COLOR_CYAN " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
         else printf(COLOR_CYAN " [Press ANY KEY to continue]\n" COLOR_RESET);
         _getch();
     }
+    // ------------------------------------------------------------------------
+    // C - BOĞULANLAR VE AMBARDAKİLER (!helios_path)
+    // ------------------------------------------------------------------------
+    else {
+        if (current_lang == 1) {
+            printf(COLOR_GOLD "\n [SAHNE V] Sessizliğin Dibi\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Gemi göğe uzanan o devasa Tsunami tarafından saniyeler içinde yutulduğunda,\n");
+            printf(" okyanusun ezici, karanlık derinliklerine doğru hızla batmaya başlıyorsun.\n");
+            printf(" Etrafındaki tüm ışık, gök gürültüsü ve savaşın o sağır edici kaosu bir anda yok oluyor.\n");
+            printf(" Geriye sadece derini kesen dondurucu bir soğuk ve mutlak bir karanlık kalıyor...\n\n");
+            printf(COLOR_DARK " Zihnindeki o kadim ses, senin bu çaresizliğine inat soğuk ve alaycı bir tonda fısıldar:\n\n" COLOR_RESET);
+            printf(COLOR_MAG " \"Görünüşe göre fanilerin kaderi hep denizin dibinde son buluyor...\"\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Suların amansız basıncı göğüs kafesini santim santim eziyor. Kurtulmak için\n");
+            printf(" çırpınmaya mecalin kalmadı. Hiçbir ilahi el, karanlığın içinden sana uzanmıyor.\n");
+            printf(" Mutlak karanlığın, o dipsiz hiçliğin içine doğru batarken bilincin tamamen kapanıyor...\n\n" COLOR_RESET);
+            printf(COLOR_CYAN " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
+        } else {
+            printf(COLOR_GOLD "\n [SCENE V] Depth of Silence\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " When the ship is swallowed in seconds by the colossal Tsunami reaching the sky,\n");
+            printf(" you begin to sink rapidly into the crushing, dark depths of the ocean.\n");
+            printf(" All light, thunder, and the deafening chaos of war around you vanish instantly.\n");
+            printf(" Only a skin-piercing freezing cold and absolute darkness remain...\n\n");
+            printf(COLOR_DARK " Mocking your despair, that ancient voice in your mind whispers in a cold tone:\n\n" COLOR_RESET);
+            printf(COLOR_MAG " \"It seems the fate of mortals always ends at the bottom of the sea...\"\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " The relentless pressure of the waters crushes your ribcage inch by inch.\n");
+            printf(" You have no strength left to struggle. No divine hand reaches out from the dark.\n");
+            printf(" Sinking into the absolute darkness, that bottomless void, your consciousness shuts down completely...\n\n" COLOR_RESET);
+            printf(COLOR_CYAN " [Press ANY KEY to continue]\n" COLOR_RESET);
+        }
+        _getch();
+    }
 
     // ========================================================================
-    // SCENE VII: FINAL COSMIC CONFRONTATION (TRIAL 5)
+    // SAHNE VI: İKİLEM (c4) - GÜNEŞİN KAVURUCU ARABASI VEYA HİÇLİK
+    // ========================================================================
+    int choice_4 = 0;
+    clear_screen();
+
+    if (helios_path) {
+        if (current_lang == 1) {
+            printf(COLOR_GOLD "\n [SAHNE VI] Güneşin Merhameti\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Dünyayı yok eden o savaş çok gerilerde kaldı. Bulutların arasından, yerçekimini\n");
+            printf(" parçalayan inanılmaz bir hızla yükseliyorsunuz. Etrafı saran o sağır edici ölüm kaosu,\n");
+            printf(" yerini yüksek irtifadaki rüzgarın huzurlu ama ürkütücü uğultusuna bırakıyor.\n\n");
+            printf(COLOR_DARK " Helios yavaşça sana dönüyor. Arabasından yayılan güneş ışığının tenini kavurduğunu,\n");
+            printf(" kemiklerini eritecek kadar ilahi ve sert bir ısıyla bedenini sardığını hissediyorsun.\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Tam o sahte huzur anında, zihninin derinliklerinden, kanını donduran o tanıdık,\n");
+            printf(" kadim ses fısıldıyor:\n\n" COLOR_RESET);
+            printf(COLOR_MAG " \"Eğer bu delilikten, bu tanrıların kibirli oyunundan kaçacaksan... Tam zamanı... Atla...\"\n\n" COLOR_RESET);
+
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Bu delilikten, tanrılardan ve bana dayatılan bu kaderden tamamen kaçarım. (Oyundan Çık)\n");
+            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Sese kulak verip tanrılara güvenmeyerek, kendimi arabanın kenarından aşağı okyanusa bırakırım.\n");
+            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Zihnimdeki sesi susturup, bu kavurucu ilahi yolculuğu ve kaderimi sessizce kabullenirim.\n");
+            printf("  [" COLOR_CYAN "4" COLOR_RESET "] Zihnimdeki sese ardı ardına mantıklı sorular sorarak bu kozmik karmaşayı çözmeye çalışırım.\n\n");
+            printf(COLOR_CYAN "  Kararın nedir? (1-4): " COLOR_RESET);
+        } else {
+            printf(COLOR_GOLD "\n [SCENE VI] Mercy of the Sun\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " The world-ending war is left far behind. You ascend through the clouds at a speed\n");
+            printf(" that shatters gravity. The deafening chaos of death gives way to the peaceful yet\n");
+            printf(" eerie howl of the high-altitude wind.\n\n");
+            printf(COLOR_DARK " Helios slowly turns to you. You feel the sunlight radiating from his chariot scorch\n");
+            printf(" your skin, enveloping your body in a harsh, divine heat enough to melt your bones.\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " In that moment of false peace, the blood-chilling, familiar ancient voice whispers\n");
+            printf(" from the depths of your mind:\n\n" COLOR_RESET);
+            printf(COLOR_MAG " \"If you are going to escape this madness, this arrogant game of gods... Now is the time... Jump...\"\n\n" COLOR_RESET);
+
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] I completely escape this madness, the gods, and this forced destiny. (Quit Game)\n");
+            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Listening to the voice and distrusting the gods, I throw myself off the chariot into the ocean.\n");
+            printf("  [" COLOR_CYAN "3" COLOR_RESET "] I silence the voice in my mind and quietly accept this scorching divine journey and my fate.\n");
+            printf("  [" COLOR_CYAN "4" COLOR_RESET "] I rapidly ask the voice logical questions, trying to decode this cosmic chaos.\n\n");
+            printf(COLOR_CYAN "  What is your decision? (1-4): " COLOR_RESET);
+        }
+
+        while (1) {
+            if (_kbhit()) {
+                char ch = _getch();
+                if (ch >= '1' && ch <= '4') { choice_4 = ch - '0'; break; }
+            }
+            Sleep(20);
+        }
+
+        if (choice_4 == 1) { exit(0); }
+        else if (choice_4 == 2) { update_stat(profile, STAT_MIGHT, 3); update_stat(profile, STAT_INTEL, -1); }
+        else if (choice_4 == 3) { update_stat(profile, STAT_FAITH, 3); update_stat(profile, STAT_SKILL, -1); }
+        else if (choice_4 == 4) { update_stat(profile, STAT_INTEL, 3); update_stat(profile, STAT_HONOR, -1); }
+    }
+    else {
+        if (current_lang == 1) {
+            printf(COLOR_GOLD "\n [SAHNE VI] Derinlerdeki Lakayt Ses\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Okyanusun karanlık ve dondurucu derinliklerine doğru, bir taş gibi batmaya devam ediyorsun.\n");
+            printf(" Ciğerlerin sızlıyor, bedenin tamamen uyuşmuş ve felç olmuş durumda.\n\n");
+            printf(COLOR_DARK " Tam o anda, zihninin derinliklerinden gelen o tanıdık, kadim varlık,\n");
+            printf(" etrafınızdaki bu ezici ve dehşet verici ölüme tamamen zıt, inanılmaz lakayt bir tonda konuşuyor:\n\n" COLOR_RESET);
+            printf(COLOR_MAG " \"Deniz hiç benim tarzım değil ya... Buralar fazla ıslak. Çıkabilir miyiz artık?\"\n\n" COLOR_RESET);
+
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Bu lakayt tavra sinirlenip, irademi toplayarak zihnimden 'Buradan çıkamayız...' diye kesip atarım.\n");
+            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Zihnimdeki bu deliliği tamamen görmezden gelip, fiziksel olarak hayatta kalmak için son gücümle debelenirim.\n");
+            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Çırpınmayı bırakır, karanlık suların içinde sessizce ve huzurla ölüme teslim olurum. (Oyundan Çık)\n");
+            printf("  [" COLOR_CYAN "4" COLOR_RESET "] Ölmekte olan fani fiziksel bedenimi terk edip, tamamen beynimin içindeki o sese odaklanırım.\n\n");
+            printf(COLOR_CYAN "  Kararın nedir? (1-4): " COLOR_RESET);
+        } else {
+            printf(COLOR_GOLD "\n [SCENE VI] The Casual Voice in the Deep\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " You continue sinking like a stone into the dark, freezing depths of the ocean.\n");
+            printf(" Your lungs ache, your body is completely numb and paralyzed.\n\n");
+            printf(COLOR_DARK " Just then, that familiar, ancient entity from the depths of your mind speaks in an\n");
+            printf(" incredibly casual tone, completely contrasting the crushing, horrifying death around you:\n\n" COLOR_RESET);
+            printf(COLOR_MAG " \"The sea is really not my style... Too wet down here. Can we get out now?\"\n\n" COLOR_RESET);
+
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Angered by this casual attitude, I gather my will and mentally snap back, 'We can't get out...'\n");
+            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Ignoring this madness in my mind completely, I struggle physically with my last ounce of strength.\n");
+            printf("  [" COLOR_CYAN "3" COLOR_RESET "] I stop struggling and silently, peacefully surrender to death in the dark waters. (Quit Game)\n");
+            printf("  [" COLOR_CYAN "4" COLOR_RESET "] I abandon my dying mortal physical body and focus entirely on the voice inside my brain.\n\n");
+            printf(COLOR_CYAN "  What is your decision? (1-4): " COLOR_RESET);
+        }
+
+        while (1) {
+            if (_kbhit()) {
+                char ch = _getch();
+                if (ch >= '1' && ch <= '4') { choice_4 = ch - '0'; break; }
+            }
+            Sleep(20);
+        }
+
+        if (choice_4 == 3) { exit(0); }
+        else if (choice_4 == 1) { update_stat(profile, STAT_INTEL, 3); update_stat(profile, STAT_FAITH, -1); }
+        else if (choice_4 == 2) { update_stat(profile, STAT_MIGHT, 3); update_stat(profile, STAT_FAITH, -1); }
+        else if (choice_4 == 4) { update_stat(profile, STAT_SKILL, 3); update_stat(profile, STAT_MIGHT, -1); }
+    }
+
+    // ========================================================================
+    // SAHNE VII: NİHAİ KOZMİK YÜZLEŞME (Altın Vuruş / Matris Kilitleme)
     // ========================================================================
     clear_screen();
 
-    if (profile->badges[BADGE_BLESSING_HELIOS] == 0) {
-        if (current_lang == 1) {
-            printf(COLOR_WHITE " Suların altında bilincini bir anda kaybediyorsun...\n\n");
-            if (drown_choice == 4) {
-                printf(COLOR_CYAN " Bedenin öldü ama zihnin uyanık. Karşında çok net ve devasa bir silüet beliriyor.\n");
-                printf(" Anlık olarak tüm gökyüzünün ve okyanusun ağırlığı altında ezilirmiş gibi hissediyorsun.\n\n" COLOR_RESET);
-            } else {
-                printf(COLOR_DARK " Bedenin öldü ama zihnin uyanık. Karanlığın içinde belli belirsiz, büyük bir silüet görüyorsun.\n\n" COLOR_RESET);
-            }
-        } else {
-            printf(COLOR_WHITE " Beneath the waters, you suddenly lose consciousness...\n\n");
-            if (drown_choice == 4) printf(COLOR_CYAN " Your body is dead but your mind is awake. A clear, massive silhouette appears. You feel crushed by the sky.\n\n" COLOR_RESET);
-            else printf(COLOR_DARK " You see a vague, massive silhouette in the darkness.\n\n" COLOR_RESET);
-        }
-    } else {
-        if (current_lang == 1) {
-            printf(COLOR_WHITE " Gözlerini ışıktan kör olmuş bir hiçlikte açıyorsun...\n\n" COLOR_RESET);
-            printf(COLOR_CYAN " Bedenin arabada baygın yatıyor ama zihnin uyanık. Karşında çok net ve devasa bir silüet beliriyor.\n");
-            printf(" Anlık olarak tüm gökyüzünün ağırlığı altında ezilirmiş gibi hissediyorsun.\n\n" COLOR_RESET);
-        } else {
-            printf(COLOR_WHITE " You open your eyes in a void blinded by light...\n\n" COLOR_RESET);
-            printf(COLOR_CYAN " Your body lies unconscious in the chariot, but your mind is awake. A massive silhouette appears.\n");
-            printf(" You momentarily feel as if you are being crushed under the weight of the entire sky.\n\n" COLOR_RESET);
-        }
-    }
-
-    Sleep(2000);
-
     if (current_lang == 1) {
-        printf(COLOR_MAG " Ses, kozmik bir yankıyla ve oldukça alaycı bir tonda fısıldıyor:\n\n");
-        printf(" \"Ölmekten korkuyor musun fani? Diyelim ki ölmedin... Ölmesen ne yapacaksın ki?\"\n\n" COLOR_RESET);
-        printf("  [" COLOR_CYAN "1" COLOR_RESET "] Tanrılar seviyesinde mutlak bir güç olacağım. (+Güç, -İnanç)\n");
-        printf("  [" COLOR_CYAN "2" COLOR_RESET "] Olimpos'u yerle bir edecek bir kuvvete gelene kadar çalışacağım. (+Onur, -Zeka)\n");
-        printf("  [" COLOR_CYAN "3" COLOR_RESET "] Önüme çıkan her şeyi acımasızca yok edeceğim. (+Güç, -Onur)\n");
-        printf("  [" COLOR_CYAN "4" COLOR_RESET "] Büyük bir bilge olup, alimler seviyesine ulaşacağım. (+Zeka, -Güç)\n");
-        printf("  [" COLOR_CYAN "5" COLOR_RESET "] Kadere boyun eğmeyip efsanevi bir kahraman olacağım. (+Yetenek, -İnanç)\n");
-        printf("  [" COLOR_CYAN "6" COLOR_RESET "] Zayıpları koruyup dünyaya adaleti getireceğim. (+Onur, -Güç)\n");
-        printf("  [" COLOR_CYAN "7" COLOR_RESET "] Olimpos'un aydınlık yolunu herkese göstereceğim. (+İnanç, -Yetenek)\n\n");
+        printf(COLOR_WHITE " Fani bilincini tamamen kaybediyorsun...\n\n" COLOR_RESET);
+        printf(COLOR_CYAN " Fiziksel bedenin artık tepki vermiyor. Belki Helios'un arabasında sıcaktan kavrularak bayıldın,\n");
+        printf(" belki de okyanusun dibinde ciğerlerin su dolarak öldün. Ancak zihnin amansızca uyanık.\n\n");
+        printf(COLOR_DARK " Karşında, fani gözlerinle algılayamayacağın, sınırları uzaya taşan devasa bir silüet beliriyor.\n");
+        printf(" Anlık olarak tüm evrenin, zamanın ve kaderin ağırlığı altında bir kum tanesi gibi eziliyorsun.\n\n" COLOR_RESET);
+        Sleep(2500);
+        printf(COLOR_MAG " O kozmik varlık, zihninde yıldızları titreten ağır ve yargılayıcı bir yankıyla fısıldıyor:\n\n");
+        printf(" \"Fani etten kabuğun parçalandı... Şimdi bana söyle... İçinden çıkacak olan ilahi özün nedir?\"\n\n" COLOR_RESET);
+
+        printf("  [" COLOR_CYAN "1" COLOR_RESET "] Karşı konulamaz, dağları un ufak edecek mutlak bir kudret.\n");
+        printf("  [" COLOR_CYAN "2" COLOR_RESET "] Sarsılmaz bir onur ve tanrıları bile yargılayacak bir adalet.\n");
+        printf("  [" COLOR_CYAN "3" COLOR_RESET "] Kusursuz bir ustalık ve kıyaslanamaz, ölümcül bir yetenek.\n");
+        printf("  [" COLOR_CYAN "4" COLOR_RESET "] Evrenin en karanlık sırlarını bile çözecek sonsuz bir zeka.\n");
+        printf("  [" COLOR_CYAN "5" COLOR_RESET "] Karanlığı aydınlatan ve ruhları titreten mutlak, ilahi bir inanç.\n");
+        printf("  [" COLOR_CYAN "6" COLOR_RESET "] Kendimi dünyalar için feda edecek kadar büyük bir merhamet.\n");
+        printf("  [" COLOR_CYAN "7" COLOR_RESET "] Ölümü bile kandırabilecek keskin, gölgelerde gizlenen bir kurnazlık.\n\n");
         printf(COLOR_CYAN "  Nihai cevabın nedir? (1-7): " COLOR_RESET);
     } else {
-        printf(COLOR_MAG " The voice whispers with a cosmic echo in a mocking tone:\n\n");
-        printf(" \"Are you afraid of dying, mortal? Say you didn't die... What would you even do?\"\n\n" COLOR_RESET);
-        printf("  [" COLOR_CYAN "1" COLOR_RESET "] Become an absolute god-level power. (+Might, -Faith)\n");
-        printf("  [" COLOR_CYAN "2" COLOR_RESET "] Work until I can tear down Olympus. (+Honor, -Intel)\n");
-        printf("  [" COLOR_CYAN "3" COLOR_RESET "] Destroy everything in my path. (+Might, -Honor)\n");
-        printf("  [" COLOR_CYAN "4" COLOR_RESET "] Become a great sage reaching the scholars' level. (+Intel, -Might)\n");
-        printf("  [" COLOR_CYAN "5" COLOR_RESET "] Not bow to fate and become a legendary hero. (+Skill, -Faith)\n");
-        printf("  [" COLOR_CYAN "6" COLOR_RESET "] Protect the weak and bring justice. (+Honor, -Might)\n");
-        printf("  [" COLOR_CYAN "7" COLOR_RESET "] Show the path of Olympus to everyone. (+Faith, -Skill)\n\n");
+        printf(COLOR_WHITE " You lose your mortal consciousness completely...\n\n" COLOR_RESET);
+        printf(COLOR_CYAN " Your physical body no longer responds. Perhaps you fainted from the scorching heat in Helios's\n");
+        printf(" chariot, or perhaps you died drowning at the bottom of the ocean. But your mind is relentlessly awake.\n\n");
+        printf(COLOR_DARK " A massive silhouette, incomprehensible to mortal eyes and overflowing into space, appears before you.\n");
+        printf(" You momentarily feel crushed like a grain of sand under the weight of the entire universe, time, and fate.\n\n" COLOR_RESET);
+        Sleep(2500);
+        printf(COLOR_MAG " That cosmic entity whispers with a heavy, judging echo that makes the stars tremble:\n\n");
+        printf(" \"Your mortal shell of flesh has crumbled... Now tell me... What is the divine essence that emerges from within?\"\n\n" COLOR_RESET);
+
+        printf("  [" COLOR_CYAN "1" COLOR_RESET "] Irresistible, absolute might that could grind mountains to dust.\n");
+        printf("  [" COLOR_CYAN "2" COLOR_RESET "] Unshakable honor and justice that could judge even the gods.\n");
+        printf("  [" COLOR_CYAN "3" COLOR_RESET "] Flawless mastery and incomparable, lethal skill.\n");
+        printf("  [" COLOR_CYAN "4" COLOR_RESET "] Infinite intellect that will decode even the darkest secrets of the universe.\n");
+        printf("  [" COLOR_CYAN "5" COLOR_RESET "] Absolute, divine faith that illuminates darkness and trembles souls.\n");
+        printf("  [" COLOR_CYAN "6" COLOR_RESET "] Mercy and honor great enough to sacrifice myself for the worlds.\n");
+        printf("  [" COLOR_CYAN "7" COLOR_RESET "] Sharp cunning hidden in shadows, capable of cheating death itself.\n\n");
         printf(COLOR_CYAN "  What is your final answer? (1-7): " COLOR_RESET);
     }
 
@@ -2138,14 +1736,14 @@ void execute_parametric_test(CharacterProfile* profile) {
             char ch = _getch();
             if (ch >= '1' && ch <= '7') {
                 int final_ans = ch - '0';
-                // Altın Vuruş: +4 / -2 ile matrisi kilitler
-                if (final_ans == 1) { update_stat(profile, STAT_MIGHT, 4); update_stat(profile, STAT_FAITH, -2); }
-                if (final_ans == 2) { update_stat(profile, STAT_HONOR, 4); update_stat(profile, STAT_INTEL, -2); }
-                if (final_ans == 3) { update_stat(profile, STAT_MIGHT, 4); update_stat(profile, STAT_HONOR, -2); }
-                if (final_ans == 4) { update_stat(profile, STAT_INTEL, 4); update_stat(profile, STAT_MIGHT, -2); }
-                if (final_ans == 5) { update_stat(profile, STAT_SKILL, 4); update_stat(profile, STAT_FAITH, -2); }
-                if (final_ans == 6) { update_stat(profile, STAT_HONOR, 4); update_stat(profile, STAT_MIGHT, -2); }
-                if (final_ans == 7) { update_stat(profile, STAT_FAITH, 4); update_stat(profile, STAT_SKILL, -2); }
+                // Altın Vuruş Matrisi: +5 / -2 (Test Modülü ile Birebir)
+                if (final_ans == 1) { update_stat(profile, STAT_MIGHT, 5); update_stat(profile, STAT_FAITH, -2); }
+                if (final_ans == 2) { update_stat(profile, STAT_HONOR, 5); update_stat(profile, STAT_INTEL, -2); }
+                if (final_ans == 3) { update_stat(profile, STAT_SKILL, 5); update_stat(profile, STAT_HONOR, -2); }
+                if (final_ans == 4) { update_stat(profile, STAT_INTEL, 5); update_stat(profile, STAT_MIGHT, -2); }
+                if (final_ans == 5) { update_stat(profile, STAT_FAITH, 5); update_stat(profile, STAT_SKILL, -2); }
+                if (final_ans == 6) { update_stat(profile, STAT_HONOR, 5); update_stat(profile, STAT_MIGHT, -2); }
+                if (final_ans == 7) { update_stat(profile, STAT_SKILL, 5); update_stat(profile, STAT_INTEL, -2); }
                 break;
             }
         }
@@ -2154,19 +1752,20 @@ void execute_parametric_test(CharacterProfile* profile) {
 
     clear_screen();
     if (current_lang == 1) {
-        printf(COLOR_CYAN "\n\n  [ KOZMİK MATRİS MÜHÜRLENİYOR... ]\n" COLOR_RESET);
+        printf(COLOR_CYAN "\n\n  [ KOZMİK MATRİS MÜHÜRLENİYOR... KADERİN AĞLARI ÖRÜLÜYOR... ]\n" COLOR_RESET);
     } else {
-        printf(COLOR_CYAN "\n\n  [ SEALING COSMIC MATRIX... ]\n" COLOR_RESET);
+        printf(COLOR_CYAN "\n\n  [ SEALING COSMIC MATRIX... WEAVING THE THREADS OF DESTINY... ]\n" COLOR_RESET);
     }
-    Sleep(2000);
+    Sleep(2500);
 
     // ========================================================================
-    // SILENT COSMIC MATRIX CALCULATION
+    // SESSİZ KOZMİK MATRİS HESAPLAMASI (Kusursuz Simetri)
     // ========================================================================
     double max_cosine = -2.0;
     int best_match_idx = 0;
 
     for (int i = 0; i < 33; i++) {
+        // Veto yediyse o tanrıyı (Poseidon) eşleştirmeye alma
         if (profile->poseidon_veto == 1 && strcmp(database[i].god, "Poseidon") == 0) continue;
 
         double dot = (profile->intel * database[i].intel) + (profile->might * database[i].might) +
@@ -2185,6 +1784,7 @@ void execute_parametric_test(CharacterProfile* profile) {
     strcpy(profile->faction_class, database[best_match_idx].faction);
     strcpy(profile->faction_class_tr, database[best_match_idx].faction_tr);
 
+    
     // ========================================================================
     // SCENE VIII: THE AWAKENING
     // ========================================================================
