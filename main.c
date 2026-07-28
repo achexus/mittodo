@@ -118,15 +118,41 @@ typedef struct {
 
     int badges[MAX_BADGES];
 
+    // --- 7. ÇOKLU KAYIT SİSTEMİ (Yeni) ---
+    int save_slot; // Karakterin 0-9 arasındaki dosya numarası
+
 } CharacterProfile;
 
-// Basit ve Saf C Veritabanı (I/O) İşlemleri
-void save_game(CharacterProfile* profile) {
-    FILE *outfile = fopen("mythic_save.dat", "wb");
+#define MAX_SAVES 10
+
+// Tüm kozmik hafızayı diskten okur
+bool load_all_saves(CharacterProfile saves[MAX_SAVES]) {
+    FILE *infile = fopen("mythic_saves_v2.dat", "rb");
+    if (infile != NULL) {
+        fread(saves, sizeof(CharacterProfile), MAX_SAVES, infile);
+        fclose(infile);
+        return true;
+    }
+    // Dosya yoksa hepsini sıfırla (Boş slotlar)
+    memset(saves, 0, sizeof(CharacterProfile) * MAX_SAVES);
+    return false;
+}
+
+// Tüm kozmik hafızayı diske yazar
+void save_all_saves(CharacterProfile saves[MAX_SAVES]) {
+    FILE *outfile = fopen("mythic_saves_v2.dat", "wb");
     if (outfile != NULL) {
-        fwrite(profile, sizeof(CharacterProfile), 1, outfile);
+        fwrite(saves, sizeof(CharacterProfile), MAX_SAVES, outfile);
         fclose(outfile);
     }
+}
+
+// Sadece aktif oynanan karakteri kendi slotuna kaydeder
+void save_game(CharacterProfile* profile) {
+    CharacterProfile saves[MAX_SAVES];
+    load_all_saves(saves); // Önce tüm hafızayı al
+    saves[profile->save_slot] = *profile; // Oyuncunun slotunu güncelle
+    save_all_saves(saves); // Geri yaz
 }
 
 bool load_game(CharacterProfile* profile) {
@@ -226,7 +252,7 @@ void evaluate_cosmic_alignment(CharacterProfile* profile);
 void get_god_affinity_data(const char* god_name, Nature* nature, int* r, int* s, int* a, int* d, int* m);
 int get_parametric_input(void);
 void print_permanent_choices(void);
-void scene_continue_journey(CharacterProfile* profile);
+bool scene_continue_journey(CharacterProfile* profile);
 void scene_language_options(void);
 void scene_system_status(CharacterProfile* profile);
 void display_character_sheet(CharacterProfile* profile);
@@ -526,32 +552,58 @@ int main(void) {
         if (_kbhit()) {
             char input_char = _getch();
             switch (input_char) {
-                case '1':
+                case '1': { // YOLCULUĞA BAŞLA
                     set_cursor_visibility(true);
 
-                    // Reset stats for a new session
+                    // Boş slot kontrolü yap
+                    CharacterProfile saves[MAX_SAVES];
+                    load_all_saves(saves);
+                    int empty_slot = -1;
+                    for(int i = 0; i < MAX_SAVES; i++) {
+                        if(strlen(saves[i].player_name) == 0) {
+                            empty_slot = i;
+                            break;
+                        }
+                    }
+
+                    if(empty_slot == -1) {
+                        clear_screen();
+                        if(current_lang == 1) {
+                            printf(COLOR_RED "\n  [!] Tüm kader iplikleri (10/10) dolu.\n");
+                            printf("  Yeni bir ruhun uyanabilmesi için 'Yolculuğa Devam Et' menüsünden eski bir kaydı silmelisin.\n" COLOR_RESET);
+                            printf(COLOR_DARK "  [Menüye dönmek için HERHANGİ BİR TUŞA bas]\n" COLOR_RESET);
+                        } else {
+                            printf(COLOR_RED "\n  [!] All threads of destiny (10/10) are full.\n");
+                            printf("  To awaken a new soul, you must delete an old save from the 'Continue Journey' menu.\n" COLOR_RESET);
+                            printf(COLOR_DARK "  [Press ANY KEY to return to menu]\n" COLOR_RESET);
+                        }
+                        _getch();
+                        set_cursor_visibility(false);
+                        break;
+                    }
+
+                    // Boş slot bulundu, yeni oturum için temizle
+                    memset(&player, 0, sizeof(CharacterProfile));
+                    player.save_slot = empty_slot; // Slotu karaktere mühürle
+
                     player.intel = 5; player.might = 5; player.honor = 5; player.skill = 5; player.faith = 5;
-                    player.affinity = 0;
-                    player.poseidon_veto = 0;
-
-                    // TÜM ROZETLERİ TEK SATIRDA SIFIRLA
-                    reset_all_badges(&player);
-
-                    for(int i=0; i<15; i++) player.study_stats[i] = 0;
-                    player.total_exp = 0;
-
                     strcpy(player.god_alignment, "UNASSIGNED");
+                    strcpy(player.player_name, "Wastrel");
 
                     // Start journey
                     if (!scene_start_journey(&player)) running = false;
                     set_cursor_visibility(false);
                     break;
-                case '2':
+                }
+                case '2': { // YOLCULUĞA DEVAM ET
                     set_cursor_visibility(true);
-                    scene_continue_journey(&player);
+                    if (scene_continue_journey(&player)) {
+                        scene_own_shrine(&player); // Başarıyla yüklendiyse doğrudan Mabet'e gir
+                    }
                     clear_screen();
                     set_cursor_visibility(false);
                     break;
+                }
                 case '3':
                     scene_language_options();
                     break;
@@ -2272,37 +2324,107 @@ void scene_awaken_destiny(CharacterProfile* profile) {
 
 
 // ============================================================================
-// YOLCULUĞA DEVAM ET (KAYIT DOSYASINI YÜKLEME)
+// KOZMİK HAFIZA (KAYIT SEÇME VE SİLME EKRANI)
 // ============================================================================
-void scene_continue_journey(CharacterProfile* profile) {
-    clear_screen();
+bool scene_continue_journey(CharacterProfile* current_player) {
+    CharacterProfile saves[MAX_SAVES];
+    load_all_saves(saves);
 
-    if (current_lang == 1) printf(COLOR_CYAN "\n  SİSTEM: Kozmik hafıza taranıyor...\n" COLOR_RESET);
-    else printf(COLOR_CYAN "\n  SYSTEM: Scanning cosmic memory...\n" COLOR_RESET);
-
-    Sleep(800); // Gerçekçi bir yükleme hissiyatı için
-
-    if (load_game(profile)) {
+    bool in_menu = true;
+    while(in_menu) {
+        clear_screen();
         if (current_lang == 1) {
-            printf(COLOR_GRN "  Kayıt bulundu! Ebedi döngüye geri dönülüyor...\n" COLOR_RESET);
+            printf(COLOR_GOLD "\n  === KOZMİK HAFIZA (KAYITLI KADERLER) ===\n\n" COLOR_RESET);
         } else {
-            printf(COLOR_GRN "  Save found! Returning to the eternal cycle...\n" COLOR_RESET);
+            printf(COLOR_GOLD "\n  === COSMIC MEMORY (SAVED DESTINIES) ===\n\n" COLOR_RESET);
         }
-        Sleep(1000);
 
-        // Karakter yüklendikten sonra doğrudan kendi kulübesinde uyanır
-        scene_own_shrine(profile);
-    }
-    else {
-        if (current_lang == 1) {
-            printf(COLOR_RED "\n  HATA: Hiçbir kader izi bulunamadı. Önce bir yolculuğa başlamalısın.\n" COLOR_RESET);
-            printf(COLOR_DARK "  [Menüye dönmek için HERHANGİ BİR TUŞA bas]\n" COLOR_RESET);
-        } else {
-            printf(COLOR_RED "\n  ERROR: No trace of destiny found. You must start a journey first.\n" COLOR_RESET);
-            printf(COLOR_DARK "  [Press ANY KEY to return to the menu]\n" COLOR_RESET);
+        // 10 Slotu Ekrana Yazdır
+        for(int i = 0; i < MAX_SAVES; i++) {
+            int display_num = (i == 9) ? 0 : (i + 1); // Klavyedeki 1-9 ve 0 düzeni
+
+            // Eğer ismin uzunluğu 0'dan büyükse karakter var demektir
+            if(strlen(saves[i].player_name) > 0) {
+                if (current_lang == 1) {
+                    printf("  [" COLOR_CYAN "%d" COLOR_RESET "] %-15s | EXP: %04d | " COLOR_GOLD "%s" COLOR_RESET " [%s]\n",
+                        display_num, saves[i].player_name, saves[i].total_exp,
+                        saves[i].god_alignment, saves[i].archetype_alignment_tr);
+                } else {
+                    printf("  [" COLOR_CYAN "%d" COLOR_RESET "] %-15s | EXP: %04d | " COLOR_GOLD "%s" COLOR_RESET " [%s]\n",
+                        display_num, saves[i].player_name, saves[i].total_exp,
+                        saves[i].god_alignment, saves[i].archetype_alignment);
+                }
+            } else {
+                if (current_lang == 1) {
+                    printf(COLOR_DARK "  [%d] --- BOŞ KADER YUVASI ---\n" COLOR_RESET, display_num);
+                } else {
+                    printf(COLOR_DARK "  [%d] --- EMPTY DESTINY SLOT ---\n" COLOR_RESET, display_num);
+                }
+            }
         }
-        _getch();
+
+        printf(COLOR_DARK "\n  =================================================================\n" COLOR_RESET);
+        if (current_lang == 1) {
+            printf("  [" COLOR_RED "D" COLOR_RESET "] Bir Kaderi Sil (Delete)\n");
+            printf("  [" COLOR_CYAN "Q" COLOR_RESET "] Ana Menüye Dön\n\n");
+            printf(COLOR_CYAN "  Yüklenecek Slot (1-0) veya Eylem: " COLOR_RESET);
+        } else {
+            printf("  [" COLOR_RED "D" COLOR_RESET "] Delete a Destiny\n");
+            printf("  [" COLOR_CYAN "Q" COLOR_RESET "] Return to Main Menu\n\n");
+            printf(COLOR_CYAN "  Load Slot (1-0) or Action: " COLOR_RESET);
+        }
+
+        char ch;
+        while(1) {
+            if(_kbhit()) {
+                ch = _getch();
+                break;
+            }
+            Sleep(20);
+        }
+
+        // Q: Menüden Çık
+        if(ch == 'q' || ch == 'Q') {
+            return false;
+        }
+        // D: Silme Modu
+        else if(ch == 'd' || ch == 'D') {
+            if (current_lang == 1) printf(COLOR_RED "\n  Silinecek slot numarasını girin (İptal için Q): " COLOR_RESET);
+            else printf(COLOR_RED "\n  Enter slot number to delete (Q to cancel): " COLOR_RESET);
+
+            char del_ch;
+            while(1) {
+                if(_kbhit()) {
+                    del_ch = _getch();
+                    break;
+                }
+                Sleep(20);
+            }
+
+            if((del_ch >= '0' && del_ch <= '9')) {
+                int slot = (del_ch == '0') ? 9 : (del_ch - '1');
+                if(strlen(saves[slot].player_name) > 0) {
+                    memset(&saves[slot], 0, sizeof(CharacterProfile)); // Slotu tamamen sıfırla
+                    save_all_saves(saves); // Değişikliği diske kaydet
+                    if (current_lang == 1) printf(COLOR_GRN "  Kader ipliği kesildi. (Kayıt silindi)\n" COLOR_RESET);
+                    else printf(COLOR_GRN "  Thread of destiny severed. (Save deleted)\n" COLOR_RESET);
+                    Sleep(1200);
+                }
+            }
+        }
+        // Sayıya Basıldıysa Yükleme Yap
+        else if((ch >= '0' && ch <= '9')) {
+            int slot = (ch == '0') ? 9 : (ch - '1');
+            if(strlen(saves[slot].player_name) > 0) {
+                *current_player = saves[slot]; // Karakteri ana yapıya kopyala
+                if (current_lang == 1) printf(COLOR_GRN "\n  Kozmik hafıza geri çağrılıyor... Ebedi döngüye dönülüyor!\n" COLOR_RESET);
+                else printf(COLOR_GRN "\n  Recalling cosmic memory... Returning to the eternal cycle!\n" COLOR_RESET);
+                Sleep(1500);
+                return true; // Başarıyla yüklendi
+            }
+        }
     }
+    return false;
 }
 
 void scene_language_options(void) {
@@ -2566,6 +2688,8 @@ void scene_library_timer(CharacterProfile* profile) {
         profile->intel += 1;
         if (profile->intel > 15) profile->intel = 15;
 
+        save_game(profile);
+
         if (current_lang == 1) printf(COLOR_GRN "  Odaklanma başarıyla tamamlandı! [ STAT A ] +1 arttı.\n\n" COLOR_RESET);
         else printf(COLOR_GRN "  Focus completed successfully! [ STAT A ] increased by +1.\n\n" COLOR_RESET);
     } else {
@@ -2662,6 +2786,9 @@ void scene_library_stopwatch(CharacterProfile* profile) {
         if (earned_exp > 0) {
             profile->study_stats[choice] += earned_exp;
             profile->total_exp += earned_exp;
+
+            save_game(profile);
+
             printf(COLOR_GRN "  Tebrikler! +%d EXP kazandın.\n" COLOR_RESET, earned_exp);
             printf(COLOR_CYAN "  [ STAT %c ] seviyen %d oldu.\n\n" COLOR_RESET, letters[choice], profile->study_stats[choice]);
         } else {
