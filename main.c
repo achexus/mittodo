@@ -3133,40 +3133,165 @@ void scene_init_subjects(CharacterProfile* profile) {
 
 
 
+// ============================================================================
+// KADİM SAVAŞ GÜNLÜĞÜ (LOG OKUYUCU)
+// ============================================================================
+void scene_read_logs(void) {
+    clear_screen();
+    printf(COLOR_DARK "  ==============================================================================================================\n" COLOR_RESET);
+    if (current_lang == 1) {
+        printf(COLOR_GOLD "                                     [ KADİM SAVAŞ GÜNLÜĞÜ ]\n" COLOR_RESET);
+    } else {
+        printf(COLOR_GOLD "                                     [ ANCIENT BATTLE LOGS ]\n" COLOR_RESET);
+    }
+    printf(COLOR_DARK "  ==============================================================================================================\n\n" COLOR_RESET);
+
+    FILE *file = fopen("shrine_chronicles.txt", "r");
+    if (file == NULL) {
+        if (current_lang == 1) {
+            printf(COLOR_DARK "  Masadaki parşömenler henüz bomboş. Tarih yazılmayı bekliyor...\n" COLOR_RESET);
+        } else {
+            printf(COLOR_DARK "  The scrolls on the desk are empty. History waits to be written...\n" COLOR_RESET);
+        }
+    } else {
+        char line[256];
+        printf(COLOR_CYAN);
+        while (fgets(line, sizeof(line), file)) {
+            printf("  > %s", line);
+        }
+        printf(COLOR_RESET);
+        fclose(file);
+    }
+
+    if (current_lang == 1) {
+        printf(COLOR_DARK "\n  ==============================================================================================================\n");
+        printf("  [Mabede dönmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
+    } else {
+        printf(COLOR_DARK "\n  ==============================================================================================================\n");
+        printf("  [Press ANY KEY to return to the shrine]\n" COLOR_RESET);
+    }
+
+    while (_kbhit()) _getch(); // Klavye arabelleğini temizle
+    _getch();
+}
+
+// ============================================================================
+// KEHANET TAKVİMİ (BOSS VE PROJE GÖRÜNTÜLEYİCİ)
+// ============================================================================
+void scene_view_calendar(CharacterProfile* profile) {
+    clear_screen();
+    printf(COLOR_DARK "  ==============================================================================================================\n" COLOR_RESET);
+    if (current_lang == 1) {
+        printf(COLOR_MAG "                                  [ KEHANET TAKVİMİ VE YAKLAŞAN TEHDİTLER ]\n" COLOR_RESET);
+    } else {
+        printf(COLOR_MAG "                                  [ CALENDAR OF PROPHECY & IMPENDING THREATS ]\n" COLOR_RESET);
+    }
+    printf(COLOR_DARK "  ==============================================================================================================\n\n" COLOR_RESET);
+
+    if (profile->active_subject_count == 0) {
+        if (current_lang == 1) {
+            printf(COLOR_DARK "  Ufukta görünen bir tehdit yok. Kader ağları henüz örülmedi...\n" COLOR_RESET);
+        } else {
+            printf(COLOR_DARK "  No threats on the horizon. The threads of destiny are not yet woven...\n" COLOR_RESET);
+        }
+    } else {
+        for (int i = 0; i < profile->active_subject_count; i++) {
+            if (current_lang == 1) {
+                printf(COLOR_WHITE "  [%d] KADER YOLU (Ders) : " COLOR_CYAN "%s\n" COLOR_RESET, i + 1, profile->subject_names[i]);
+                printf(COLOR_RED   "      - Bekleyen Büyük Boss (Sınav) : %d\n" COLOR_RESET, profile->subject_exams[i]);
+                printf(COLOR_GOLD  "      - Bekleyen Kuşatma (Proje)    : %d\n" COLOR_RESET, profile->subject_projects[i]);
+                printf(COLOR_GRN   "      - Mevcut Güç Seviyesi         : %d EXP\n\n" COLOR_RESET, profile->study_stats[i]);
+            } else {
+                printf(COLOR_WHITE "  [%d] PATH OF DESTINY   : " COLOR_CYAN "%s\n" COLOR_RESET, i + 1, profile->subject_names[i]);
+                printf(COLOR_RED   "      - Impending Great Boss (Exam) : %d\n" COLOR_RESET, profile->subject_exams[i]);
+                printf(COLOR_GOLD  "      - Impending Siege (Project)   : %d\n" COLOR_RESET, profile->subject_projects[i]);
+                printf(COLOR_GRN   "      - Current Power Level         : %d EXP\n\n" COLOR_RESET, profile->study_stats[i]);
+            }
+        }
+    }
+
+    if (current_lang == 1) {
+        printf(COLOR_DARK "  ==============================================================================================================\n");
+        printf("  [Mabede dönmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
+    } else {
+        printf(COLOR_DARK "  ==============================================================================================================\n");
+        printf("  [Press ANY KEY to return to the shrine]\n" COLOR_RESET);
+    }
+
+    while (_kbhit()) _getch();
+    _getch();
+}
+
+// ============================================================================
+// KİŞİSEL MABET (ANA MERKEZ / HUB)
+// ============================================================================
 void scene_own_shrine(CharacterProfile* profile) {
     bool in_shrine = true;
 
     while(in_shrine) {
         clear_screen();
         printf("\n");
-        printf(COLOR_GOLD "  === %s KULÜBESİ (KİŞİSEL MABEDİN) ===\n\n" COLOR_RESET, profile->god_alignment);
+
+        // --- MABET İÇİ ASCII SANATI ---
+        printf(COLOR_DARK "  ==============================================================================================================\n" COLOR_RESET);
+        if (current_lang == 1) {
+            printf(COLOR_GOLD "                                     === %s KULÜBESİ ===\n" COLOR_RESET, profile->god_alignment);
+        } else {
+            printf(COLOR_GOLD "                                     === SHRINE OF %s ===\n" COLOR_RESET, profile->god_alignment);
+        }
+        printf(COLOR_DARK "  ==============================================================================================================\n" COLOR_RESET);
+
+        printf(COLOR_WHITE "        ) )\n");
+        printf(COLOR_WHITE "       ( (     \n");
+        printf(COLOR_RED   "      (   )   " COLOR_WHITE "        .---------------------------.\n");
+        printf(COLOR_RED   "        |     " COLOR_WHITE "       /                           / \\\n");
+        printf(COLOR_RED   "       _|_    " COLOR_WHITE "      /___________________________/   \\\n");
+        printf(COLOR_GOLD  "      /___\\   " COLOR_WHITE "      |                           |   |\n");
+        printf(COLOR_GOLD  "     [_____]  " COLOR_WHITE "      |  KADİM PARŞÖMENLER VE     |   |\n");
+        printf(COLOR_DARK  "    /       \\ " COLOR_WHITE "      |  SAVAŞ PLANLARI           |   |\n");
+        printf(COLOR_DARK  "   /_________\\" COLOR_WHITE "      |                           |   /\n");
+        printf(COLOR_DARK  "                      \\___________________________\\_/\n" COLOR_RESET);
+        printf(COLOR_DARK  "  ==============================================================================================================\n" COLOR_RESET);
 
         print_mythic_date(); // Mitolojik tarihi yazdırır
 
-        printf(COLOR_WHITE "\n  Yatağından kalktın. Raflarda kadim parşömenler ve savaş planları duruyor.\n\n" COLOR_RESET);
+        if (current_lang == 1) {
+            printf(COLOR_WHITE "\n  Yatağından kalktın. Loş odanın köşesindeki meşe masanın üzerinde kaderini bekleyen parşömenler duruyor.\n\n" COLOR_RESET);
 
-        printf("  [" COLOR_CYAN "1" COLOR_RESET "] Tapınak Köyüne Çık (Ana Okul'a gitmek için)\n");
-        printf("  [" COLOR_CYAN "2" COLOR_RESET "] Savaş Günlüğünü Oku (Çalışma Logları)\n");
-        printf("  [" COLOR_CYAN "3" COLOR_RESET "] Kehanet Takvimini İncele (Boss Savaşları ve Projeler)\n");
-        printf("  [" COLOR_CYAN "0" COLOR_RESET "] Sisteme Geri Dön (Çıkış)\n\n");
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Tapınak Köyüne Çık (Dış Dünyaya Adım At)\n");
+            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Savaş Günlüğünü Oku (Geçmiş Zaferleri Hatırla)\n");
+            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Kehanet Takvimini İncele (Yaklaşan Düşmanlara Bak)\n");
+            printf("  [" COLOR_CYAN "4" COLOR_RESET "] Ruh Aynasına Bak (Karakter Matrisini İncele)\n");
+            printf("  [" COLOR_CYAN "0" COLOR_RESET "] Uykuya Dal (Sistemi Kapat)\n\n");
 
-        printf(COLOR_CYAN "  Eylem Seçimi: " COLOR_RESET);
+            printf(COLOR_CYAN "  Eylem Seçimi: " COLOR_RESET);
+        } else {
+            printf(COLOR_WHITE "\n  You rise from your bed. Scrolls awaiting your destiny rest on the oak desk in the corner of the dim room.\n\n" COLOR_RESET);
+
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Step out to the Village of Shrines (Enter the Outside World)\n");
+            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Read the Battle Logs (Remember Past Victories)\n");
+            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Examine the Prophecy Calendar (Look at Impending Enemies)\n");
+            printf("  [" COLOR_CYAN "4" COLOR_RESET "] Look into the Mirror of Souls (View Character Matrix)\n");
+            printf("  [" COLOR_CYAN "0" COLOR_RESET "] Fall Asleep (Exit System)\n\n");
+
+            printf(COLOR_CYAN "  Select Action: " COLOR_RESET);
+        }
 
         bool valid_input = false;
         while (!valid_input) {
             if (_kbhit()) {
                 char ch = _getch();
                 if (ch == '1') {
-                    // Tapınak Köyüne çıkış (Buradan Okula gidilebilir)
-                    scene_inner_shrine(profile);
+                    scene_inner_shrine(profile); // Okula/Kütüphaneye geçiş kapısı
                     valid_input = true;
                 } else if (ch == '2') {
-                    // shrine_chronicles.txt dosyasını okuyan bir fonksiyon çağrılacak
-                    // scene_read_logs();
+                    scene_read_logs(); // Yeni yazdığımız fonksiyonu çağırır
                     valid_input = true;
                 } else if (ch == '3') {
-                    // Boss listesini (subject_exams sayılarını) gösteren fonksiyon
-                    // scene_view_calendar(profile);
+                    scene_view_calendar(profile); // Yeni yazdığımız fonksiyonu çağırır
+                    valid_input = true;
+                } else if (ch == '4') {
+                    display_character_sheet(profile); // Statları ve levelleri gösteren aynaya bakış
                     valid_input = true;
                 } else if (ch == '0') {
                     in_shrine = false;
