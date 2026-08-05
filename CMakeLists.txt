@@ -4,3 +4,4 @@ project(mittodo C)
 set(CMAKE_C_STANDARD 17)
 
 add_executable(mittodo main.c)
+target_link_libraries(mittodo winmm)
