@@ -267,7 +267,9 @@ void scene_inside_location(const char* loc_name_tr, const char* loc_name_en);
 void print_mythic_date(void);
 void append_study_log(const char* subject, int earned_exp, int minutes);
 void scene_awaken_destiny(CharacterProfile* profile);
-// Tüm rozetleri tek kalemde sıfırlar (Yeni oyun başlarken kullanılır)
+void scene_library_menu(CharacterProfile* profile);
+void scene_read_logs(void);
+void scene_view_calendar(CharacterProfile* profile);
 void reset_all_badges(CharacterProfile* profile) {
     for (int i = 0; i < MAX_BADGES; i++) {
         profile->badges[i] = 0;
@@ -2017,9 +2019,7 @@ void execute_parametric_test(CharacterProfile* profile) {
             printf(COLOR_GOLD " \"Uyandın demek... Ben Helios! Göğün yanan gözü, Güneşin kudretli Titanı!\"\n" COLOR_RESET);
             printf(COLOR_WHITE " Sesinin tınısı bile gök gürültüsü gibi havayı titretiyor.\n" COLOR_RESET);
             printf(COLOR_GOLD " \"Ve sen de, benim bizzat müdürü olduğum bu kadim akademinin yeni öğrencisisin.\"\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " Şaşkınlıkla etrafına bakınıp fısıldıyorsun: " COLOR_CYAN "\"Peki... Ben kimim?\"\n\n" COLOR_RESET);
-            printf(COLOR_GOLD " \"Madem soruyorsun,\" " COLOR_WHITE "diyor Helios hafifçe gülümseyerek, " COLOR_GOLD "\"Sana ne olarak seslenmemi istersin?\"\n\n" COLOR_RESET);
-            printf(COLOR_CYAN "  Adını Gir: " COLOR_RESET);
+            printf(COLOR_DARK " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
         } else {
             printf(COLOR_GOLD "\n [SCENE VIII] City of the Sun\n\n" COLOR_RESET);
             printf(COLOR_WHITE " You slowly open your eyes... Your vision gradually returns.\n");
@@ -2027,19 +2027,16 @@ void execute_parametric_test(CharacterProfile* profile) {
             printf(COLOR_GOLD " \"So you are awake... I am Helios! The burning eye of the sky, the mighty Titan of the Sun!\"\n" COLOR_RESET);
             printf(COLOR_WHITE " Even the timbre of his voice vibrates the air like thunder.\n" COLOR_RESET);
             printf(COLOR_GOLD " \"And you are the new student of this ancient academy, where I serve as principal.\"\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " You look around in bewilderment and whisper: " COLOR_CYAN "\"Then... Who am I?\"\n\n" COLOR_RESET);
-            printf(COLOR_GOLD " \"Since you ask,\" " COLOR_WHITE "says Helios with a slight smile, " COLOR_GOLD "\"What would you like me to call you?\"\n\n" COLOR_RESET);
-            printf(COLOR_CYAN "  Enter your Name: " COLOR_RESET);
+            printf(COLOR_DARK " [Press ANY KEY to continue]\n" COLOR_RESET);
         }
 
-        set_cursor_visibility(true);
-        read_string_safe(profile->player_name, 50);
-        set_cursor_visibility(false);
+        _getch();
         clear_screen();
+        strcpy(profile->player_name, "Bilinmeyen"); // Form doldurulana kadar geçici atama
 
         if (current_lang == 1) {
             printf(COLOR_GOLD "\n [SAHNE VIII] Kan Bağı\n\n" COLOR_RESET);
-            printf(COLOR_GOLD " \"Hmm, %s...\"\n" COLOR_RESET, profile->player_name);
+            printf(COLOR_GOLD " \"Hmm, ufaklık...\"\n" COLOR_RESET);
             printf(COLOR_WHITE " Helios gözlerini kısarak ruhunun derinliklerine bakıyor.\n" COLOR_RESET);
             printf(COLOR_GOLD " \"Sen herhangi bir insan değilsin. Sen bir melezsin.\n");
             printf(" Kanında %s kudreti akıyor.\"\n\n" COLOR_RESET, profile->god_alignment);
@@ -2222,53 +2219,131 @@ void execute_parametric_test(CharacterProfile* profile) {
     }
 
     // ========================================================================
-    // SCENE IX: THE PERSONAL SHRINE (END OF PROLOGUE)
+    // SCENE IX: THE AWAKENING (SHRINE OR INFIRMARY) & FORM FILLING
     // ========================================================================
     clear_screen();
-    if (current_lang == 1) {
-        printf(COLOR_CYAN "\n\n  Kendini ahşap, tanıdık bir kokusu olan, sessiz bir odada buluyorsun.\n");
-        printf("  Alevlerden veya boğucu sulardan eser yok.\n");
-        printf("  Ebeveynin %s'un sana ayırdığı o kişisel kulübedesin.\n\n" COLOR_RESET, profile->god_alignment);
+    bool in_infirmary = (profile->badges[BADGE_BROKEN_BONES] > 0);
 
-        // Eğer Helios'un kutsaması yoksa (Boğulanlar yolundan geliyorsa), ismini burada bir NPC sorar.
-        if (profile->badges[BADGE_BLESSING_HELIOS] == 0) {
-            printf(COLOR_WHITE "  Odanın loş köşesinde, yüzü gölgelerle örtülü, kadim denizlerin tuzunu taşıyan bir figür dikiliyor.\n");
-            printf("  Sana doğru yavaşça dönerek derin, yankılı bir sesle fısıldıyor:\n\n" COLOR_RESET);
-            printf(COLOR_MAG "  \"Derinliklerden döndün... Peki bu yeni hayatta, hangi isimle anılacaksın?\"\n\n" COLOR_RESET);
-
-            printf(COLOR_CYAN "  Adını Gir: " COLOR_RESET);
-            set_cursor_visibility(true);
-            read_string_safe(profile->player_name, 50);
-            set_cursor_visibility(false);
-
-            printf(COLOR_MAG "\n  \"%s... Kaderin sulara yazıldı bile.\"\n\n" COLOR_RESET, profile->player_name);
+    if (in_infirmary) {
+        if (current_lang == 1) {
+            printf(COLOR_CYAN "\n\n  Gözlerini keskin bir ışık ve yoğun bir ambrosia (tanrı nektarı) kokusu eşliğinde açıyorsun.\n");
+            printf("  Bembeyaz, tertemiz bir yataktasın. Omzundaki kırıklar sarılmış ve ilahi bir ısıyla iyileşiyor.\n");
+            printf("  Apollon Kulübesi'nin bitişiğindeki Revir (Infirmary) odasındasın.\n\n" COLOR_RESET);
+            printf(COLOR_WHITE "  Yanına altın sarısı saçlı, üzerinde şifacı cübbesi olan bir Apollon çocuğu yaklaşıyor.\n");
+            printf("  Elinde kalın bir parşömen ve tüy kalem var. Hafifçe gülümseyerek konuşuyor:\n\n" COLOR_RESET);
+            printf(COLOR_GOLD "  \"Sonunda uyandın. Helios'un arabasına o hızla çarpıp hayatta kalman bir mucize.\n");
+            printf("  Müdür Helios akademiye kaydın için bu formu doldurmanı istedi. Adın ve odaklanacağın epik hedefler...\"\n\n" COLOR_RESET);
+        } else {
+            printf(COLOR_CYAN "\n\n  You open your eyes to a sharp light and the intense scent of ambrosia (nectar of the gods).\n");
+            printf("  You are in a pristine, white bed. Your broken shoulder is bandaged, healing with a divine warmth.\n");
+            printf("  You are in the Infirmary adjacent to the Apollo Shrine.\n\n" COLOR_RESET);
+            printf(COLOR_WHITE "  A child of Apollo with golden hair and a healer's robe approaches you.\n");
+            printf("  Holding a thick parchment and a quill, they speak with a slight smile:\n\n" COLOR_RESET);
+            printf(COLOR_GOLD "  \"You're finally awake. It's a miracle you survived crashing into Helios's chariot at that speed.\n");
+            printf("  Principal Helios wants you to fill out this form for your registration. Your name and your epic targets...\"\n\n" COLOR_RESET);
         }
-
-        printf(COLOR_DARK "  [Kaderini (Derslerini) yazmaya başlamak için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
     } else {
-        printf(COLOR_CYAN "\n\n  You find yourself in a quiet room with a familiar wooden scent.\n");
-        printf("  There is no trace of flames or suffocating waters.\n");
-        printf("  You are in the personal shrine prepared for you by your parent, %s.\n\n" COLOR_RESET, profile->god_alignment);
-
-        if (profile->badges[BADGE_BLESSING_HELIOS] == 0) {
-            printf(COLOR_WHITE "  In the dim corner of the room stands a figure, their face cloaked in shadows, carrying the salt of ancient seas.\n");
-            printf("  Turning slowly towards you, they whisper with a deep, echoing voice:\n\n" COLOR_RESET);
-            printf(COLOR_MAG "  \"You have returned from the depths... By what name shall you be known in this new life?\"\n\n" COLOR_RESET);
-
-            printf(COLOR_CYAN "  Enter your Name: " COLOR_RESET);
-            set_cursor_visibility(true);
-            read_string_safe(profile->player_name, 50);
-            set_cursor_visibility(false);
-
-            printf(COLOR_MAG "\n  \"%s... Your destiny is already written in the waters.\"\n\n" COLOR_RESET, profile->player_name);
+        if (current_lang == 1) {
+            printf(COLOR_CYAN "\n\n  Gözlerini ahşap, tanıdık bir kokusu olan, sessiz bir odada açıyorsun.\n");
+            printf("  Alevlerden, boğucu sulardan veya ölümden eser yok.\n");
+            printf("  Ebeveynin %s'un sana ayırdığı o kişisel kulübedesin.\n\n" COLOR_RESET, profile->god_alignment);
+            printf(COLOR_WHITE "  Odanın köşesinden, seninle aynı kanı taşıyan, kulübenden bir melez (kardeşin) yaklaşıyor.\n");
+            printf("  Elinde kalın bir parşömen ve tüy kalem var. Hafifçe omuz silkerek konuşuyor:\n\n" COLOR_RESET);
+            printf(COLOR_GOLD "  \"Aramıza hoş geldin. Müdür Helios akademiye kaydın için bu formu doldurmanı istedi.\n");
+            printf("  Adın ve odaklanacağın epik hedefler...\"\n\n" COLOR_RESET);
+        } else {
+            printf(COLOR_CYAN "\n\n  You open your eyes in a quiet room with a familiar wooden scent.\n");
+            printf("  There is no trace of flames, suffocating waters, or death.\n");
+            printf("  You are in the personal shrine prepared for you by your parent, %s.\n\n" COLOR_RESET, profile->god_alignment);
+            printf(COLOR_WHITE "  From the corner of the room, a demigod from your cabin (your sibling) approaches.\n");
+            printf("  Holding a thick parchment and a quill, they speak with a slight shrug:\n\n" COLOR_RESET);
+            printf(COLOR_GOLD "  \"Welcome to the cabin. Principal Helios wants you to fill out this form for your registration.\n");
+            printf("  Your name and your epic targets...\"\n\n" COLOR_RESET);
         }
+    }
 
-        printf(COLOR_DARK "  [Press ANY KEY to begin writing your destiny (Subjects)]\n" COLOR_RESET);
+    if (current_lang == 1) printf(COLOR_DARK "  [Kayıt Formunu Doldurmak İçin HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
+    else printf(COLOR_DARK "  [Press ANY KEY to Fill the Registration Form]\n" COLOR_RESET);
+    _getch();
+    clear_screen();
+
+    // --- NPC ELİNDEKİ FORMU DOLDURMA (ESKİ scene_init_subjects MANTIĞI) ---
+    if (current_lang == 1) {
+        printf(COLOR_GOLD " =============================================================\n");
+        printf("                  AKADEMİ KAYIT VE KADER FORMU                \n");
+        printf(" =============================================================\n\n" COLOR_RESET);
+        printf(COLOR_CYAN "  [Mühürlenecek Adın]: " COLOR_RESET);
+    } else {
+        printf(COLOR_GOLD " =============================================================\n");
+        printf("              ACADEMY REGISTRATION & DESTINY FORM             \n");
+        printf(" =============================================================\n\n" COLOR_RESET);
+        printf(COLOR_CYAN "  [Your Name to be Sealed]: " COLOR_RESET);
+    }
+
+    set_cursor_visibility(true);
+    read_string_safe(profile->player_name, 50);
+
+    if (current_lang == 1) printf(COLOR_WHITE "\n  Sisteme toplamda kaç Epik Hedef (Ders) tanımlayacaksın? (1-15): " COLOR_RESET);
+    else printf(COLOR_WHITE "\n  How many Epic Targets (Subjects) will you define? (1-15): " COLOR_RESET);
+
+    profile->active_subject_count = get_safe_natural_number(1, 15);
+
+    for(int i = 0; i < profile->active_subject_count; i++) {
+        printf("\n");
+        if (current_lang == 1) printf(COLOR_CYAN "  [%d. Epik Hedef / Ders Adı]: " COLOR_RESET, i+1);
+        else printf(COLOR_CYAN "  [%d. Epic Target / Subject Name]: " COLOR_RESET, i+1);
+        read_string_safe(profile->subject_names[i], 50);
+
+        if (current_lang == 1) printf(COLOR_RED "  Kaç Büyük Boss (Sınav) var? (0 ve üstü): " COLOR_RESET);
+        else printf(COLOR_RED "  How many Great Bosses (Exams)? (0+): " COLOR_RESET);
+        profile->subject_exams[i] = get_safe_natural_number(0, 100);
+
+        if (current_lang == 1) printf(COLOR_GOLD "  Kaç Kuşatma (Proje) var? (0 ve üstü): " COLOR_RESET);
+        else printf(COLOR_GOLD "  How many Sieges (Projects)? (0+): " COLOR_RESET);
+        profile->subject_projects[i] = get_safe_natural_number(0, 100);
+
+        profile->study_stats[i] = 0;
+    }
+
+    // Temizlik
+    for(int i = profile->active_subject_count; i < 15; i++) {
+        strcpy(profile->subject_names[i], "BOS");
+        profile->subject_exams[i] = 0;
+        profile->subject_projects[i] = 0;
+        profile->study_stats[i] = 0;
+    }
+    set_cursor_visibility(false);
+    save_game(profile);
+
+    clear_screen();
+    if (in_infirmary) {
+        if (current_lang == 1) {
+            printf(COLOR_GOLD "\n  \"Harika, %s. Kaydın tamamlandı.\"\n" COLOR_RESET, profile->player_name);
+            printf(COLOR_WHITE "  Apollon çocuğu parşömeni alıp rulo yapıyor.\n");
+            printf(COLOR_GOLD "  \"Kemiklerin kaynadı. Artık taburcusun. %s Kulübesine gidebilirsin.\"\n\n" COLOR_RESET, profile->god_alignment);
+            printf(COLOR_DARK "  [Kişisel Kulübene Geçmek İçin HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
+        } else {
+            printf(COLOR_GOLD "\n  \"Excellent, %s. Your registration is complete.\"\n" COLOR_RESET, profile->player_name);
+            printf(COLOR_WHITE "  The child of Apollo rolls up the parchment.\n");
+            printf(COLOR_GOLD "  \"Your bones have mended. You are discharged. You may proceed to the Shrine of %s.\"\n\n" COLOR_RESET, profile->god_alignment);
+            printf(COLOR_DARK "  [Press ANY KEY to Proceed to Your Personal Shrine]\n" COLOR_RESET);
+        }
+    } else {
+        if (current_lang == 1) {
+            printf(COLOR_GOLD "\n  \"Harika, %s. Kaydın tamamlandı.\"\n" COLOR_RESET, profile->player_name);
+            printf(COLOR_WHITE "  Kardeşin parşömeni alıp rulo yapıyor.\n");
+            printf(COLOR_GOLD "  \"Dinlenmeye bak. Hedeflerin masanda duruyor olacak.\"\n\n" COLOR_RESET);
+            printf(COLOR_DARK "  [Masa Başına Geçmek İçin HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
+        } else {
+            printf(COLOR_GOLD "\n  \"Excellent, %s. Your registration is complete.\"\n" COLOR_RESET, profile->player_name);
+            printf(COLOR_WHITE "  Your sibling rolls up the parchment.\n");
+            printf(COLOR_GOLD "  \"Get some rest. Your targets will be on your desk.\"\n\n" COLOR_RESET);
+            printf(COLOR_DARK "  [Press ANY KEY to Sit at Your Desk]\n" COLOR_RESET);
+        }
     }
     _getch();
 
-    // Call external setup scenes
-    scene_init_subjects(profile);
+    // Sadece kendi kulübemize geçiyoruz, gereksiz scene_init_subjects çağrısını sildik
     scene_own_shrine(profile);
 }
 
@@ -2968,6 +3043,53 @@ void scene_library_stopwatch(CharacterProfile* profile) {
 #define M_RST "\033[0m"
 
 // ============================================================================
+// KÜTÜPHANE İÇ MENÜSÜ (İSTATİSTİKLER VE ÇALIŞMA)
+// ============================================================================
+void scene_library_menu(CharacterProfile* profile) {
+    bool in_library = true;
+    while(in_library) {
+        clear_screen();
+        printf("\n");
+        printf(COLOR_DARK "  ==============================================================================================================\n" COLOR_RESET);
+        if (current_lang == 1) {
+            printf(COLOR_GOLD "                                      === KÜTÜPHANE ===\n" COLOR_RESET);
+        } else {
+            printf(COLOR_GOLD "                                      === THE LIBRARY ===\n" COLOR_RESET);
+        }
+        printf(COLOR_DARK "  ==============================================================================================================\n\n" COLOR_RESET);
+
+        if (current_lang == 1) {
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Odak Kronometresi (Ders Çalış ve EXP Kazan)\n");
+            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Savaş Günlüğünü Oku (Geçmiş Çalışma Kayıtları)\n");
+            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Kehanet Takvimini İncele (Yaklaşan Sınav ve Projeler)\n");
+            printf("  [" COLOR_CYAN "4" COLOR_RESET "] Ruh Aynasına Bak (Karakter Statları ve Matris)\n");
+            printf("  [" COLOR_CYAN "0" COLOR_RESET "] Koridora Dön (Çıkış)\n\n");
+            printf(COLOR_CYAN "  Eylem Seçimi: " COLOR_RESET);
+        } else {
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Focus Stopwatch (Study and Gain EXP)\n");
+            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Read Battle Logs (Past Study Records)\n");
+            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Examine Prophecy Calendar (Upcoming Exams & Projects)\n");
+            printf("  [" COLOR_CYAN "4" COLOR_RESET "] Mirror of Souls (Character Stats & Matrix)\n");
+            printf("  [" COLOR_CYAN "0" COLOR_RESET "] Return to Hallway (Exit)\n\n");
+            printf(COLOR_CYAN "  Select Action: " COLOR_RESET);
+        }
+
+        bool valid_input = false;
+        while (!valid_input) {
+            if (_kbhit()) {
+                char ch = _getch();
+                if (ch == '1') { scene_library_stopwatch(profile); valid_input = true; }
+                else if (ch == '2') { scene_read_logs(); valid_input = true; }
+                else if (ch == '3') { scene_view_calendar(profile); valid_input = true; }
+                else if (ch == '4') { display_character_sheet(profile); valid_input = true; }
+                else if (ch == '0') { in_library = false; valid_input = true; }
+            }
+            Sleep(20);
+        }
+    }
+}
+
+// ============================================================================
 // THE MAIN SCHOOL INTERIOR: ANA OKUL İÇ PLANI (KÜTÜPHANE VE SINIFLAR)
 // ============================================================================
 void scene_main_school(CharacterProfile* profile) {
@@ -3026,7 +3148,7 @@ void scene_main_school(CharacterProfile* profile) {
                     in_school = false;
                     valid_input = true;
                 } else if (ch == '1') {
-                    scene_library_stopwatch(profile);
+                    scene_library_menu(profile); // Artık alt menüye geçiyor
                     valid_input = true;
                 } else if (ch == '2') {
                     scene_inside_location("1. Sınıf Masası", "Class I Desk");
@@ -3194,13 +3316,12 @@ void scene_inner_shrine(CharacterProfile* profile) {
                M_DRK "||\n" M_RST);
 
         printf(M_DRK "  ||"
-               M_YEL "      [APOLLO]       "
+               M_YEL "  [APOLLO & REVIR]   "
                M_MAG "     [APHRODITE]     "
                M_CYN "       [HERMES]       "
                M_RED "    [HEPHAESTUS]     "
                M_GRN "     [DIONYSUS]      "
                M_DRK "||\n" M_RST);
-
 // Alt Çerçeve
         printf(M_DRK "  ==============================================================================================================\n" M_RST);
         printf("\n");
@@ -3235,11 +3356,9 @@ void scene_inner_shrine(CharacterProfile* profile) {
                     valid_input = true;
                 }
                 else if (ch == '2') {
-                    // Sadece oyuncunun atandığı tanrının kulübesi
-                    char loc_tr[50], loc_en[50];
-                    sprintf(loc_tr, "%s Kulübesi", profile->god_alignment);
-                    sprintf(loc_en, "Shrine of %s", profile->god_alignment);
-                    scene_inside_location(loc_tr, loc_en);
+                    // Köy menüsü döngüsünü sonlandırır, oyuncu zaten arkada çalışan
+                    // scene_own_shrine (Yatak Odası) döngüsüne pürüzsüzce geri döner.
+                    in_village = false;
                     valid_input = true;
                 }
             }
@@ -3653,7 +3772,7 @@ void draw_shrine_interior(const char* god_name) {
 }
 
 // ============================================================================
-// KİŞİSEL MABET (ANA MERKEZ / HUB)
+// KİŞİSEL MABET (YATAK ODASI / GÜVENLİ ALAN)
 // ============================================================================
 void scene_own_shrine(CharacterProfile* profile) {
     bool in_shrine = true;
@@ -3662,7 +3781,6 @@ void scene_own_shrine(CharacterProfile* profile) {
         clear_screen();
         printf("\n");
 
-        // --- MABET İÇİ ASCII SANATI ---
         printf(COLOR_DARK "  ==============================================================================================================\n" COLOR_RESET);
         if (current_lang == 1) {
             printf(COLOR_GOLD "                                     === %s KULÜBESİ ===\n" COLOR_RESET, profile->god_alignment);
@@ -3671,37 +3789,24 @@ void scene_own_shrine(CharacterProfile* profile) {
         }
         printf(COLOR_DARK "  ==============================================================================================================\n" COLOR_RESET);
 
-        printf(COLOR_WHITE "        ) )\n");
-        printf(COLOR_WHITE "       ( (     \n");
-        printf(COLOR_RED   "      (   )   " COLOR_WHITE "        .---------------------------.\n");
-        printf(COLOR_RED   "        |     " COLOR_WHITE "       /                           / \\\n");
-        printf(COLOR_RED   "       _|_    " COLOR_WHITE "      /___________________________/   \\\n");
-        printf(COLOR_GOLD  "      /___\\   " COLOR_WHITE "      |                           |   |\n");
-        printf(COLOR_GOLD  "     [_____]  " COLOR_WHITE "      |  KADİM PARŞÖMENLER VE     |   |\n");
-        printf(COLOR_DARK  "    /       \\ " COLOR_WHITE "      |  SAVAŞ PLANLARI           |   |\n");
-        printf(COLOR_DARK  "   /_________\\" COLOR_WHITE "      |                           |   /\n");
-        printf(COLOR_DARK  "                      \\___________________________\\_/\n" COLOR_RESET);
+        // Yeni iç mekan tasarım fonksiyonunu çağırır (Ekran hatasını çözen kısım budur)
+        draw_shrine_interior(profile->god_alignment);
+
         printf(COLOR_DARK  "  ==============================================================================================================\n" COLOR_RESET);
 
         print_mythic_date(); // Mitolojik tarihi yazdırır
 
         if (current_lang == 1) {
-            printf(COLOR_WHITE "\n  Yatağından kalktın. Loş odanın köşesindeki meşe masanın üzerinde kaderini bekleyen parşömenler duruyor.\n\n" COLOR_RESET);
+            printf(COLOR_WHITE "\n  Yatağından kalktın. Burası senin dinlendiğin güvenli alanın.\n\n" COLOR_RESET);
 
             printf("  [" COLOR_CYAN "1" COLOR_RESET "] Tapınak Köyüne Çık (Dış Dünyaya Adım At)\n");
-            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Savaş Günlüğünü Oku (Geçmiş Zaferleri Hatırla)\n");
-            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Kehanet Takvimini İncele (Yaklaşan Düşmanlara Bak)\n");
-            printf("  [" COLOR_CYAN "4" COLOR_RESET "] Ruh Aynasına Bak (Karakter Matrisini İncele)\n");
-            printf("  [" COLOR_CYAN "0" COLOR_RESET "] Uykuya Dal (Sistemi Kapat)\n\n");
+            printf("  [" COLOR_CYAN "0" COLOR_RESET "] Uykuya Dal (Sistemi Kapat ve Çık)\n\n");
 
             printf(COLOR_CYAN "  Eylem Seçimi: " COLOR_RESET);
         } else {
-            printf(COLOR_WHITE "\n  You rise from your bed. Scrolls awaiting your destiny rest on the oak desk in the corner of the dim room.\n\n" COLOR_RESET);
+            printf(COLOR_WHITE "\n  You rise from your bed. This is your safe haven to rest.\n\n" COLOR_RESET);
 
             printf("  [" COLOR_CYAN "1" COLOR_RESET "] Step out to the Village of Shrines (Enter the Outside World)\n");
-            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Read the Battle Logs (Remember Past Victories)\n");
-            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Examine the Prophecy Calendar (Look at Impending Enemies)\n");
-            printf("  [" COLOR_CYAN "4" COLOR_RESET "] Look into the Mirror of Souls (View Character Matrix)\n");
             printf("  [" COLOR_CYAN "0" COLOR_RESET "] Fall Asleep (Exit System)\n\n");
 
             printf(COLOR_CYAN "  Select Action: " COLOR_RESET);
@@ -3712,20 +3817,12 @@ void scene_own_shrine(CharacterProfile* profile) {
             if (_kbhit()) {
                 char ch = _getch();
                 if (ch == '1') {
-                    scene_inner_shrine(profile); // Okula/Kütüphaneye geçiş kapısı
-                    valid_input = true;
-                } else if (ch == '2') {
-                    scene_read_logs(); // Yeni yazdığımız fonksiyonu çağırır
-                    valid_input = true;
-                } else if (ch == '3') {
-                    scene_view_calendar(profile); // Yeni yazdığımız fonksiyonu çağırır
-                    valid_input = true;
-                } else if (ch == '4') {
-                    display_character_sheet(profile); // Statları ve levelleri gösteren aynaya bakış
+                    scene_inner_shrine(profile); // Dışarı çıkış
                     valid_input = true;
                 } else if (ch == '0') {
-                    in_shrine = false;
+                    in_shrine = false; // Döngüyü kırar ve ana menüye döner
                     valid_input = true;
+                    clear_screen();
                 }
             }
             Sleep(20);
