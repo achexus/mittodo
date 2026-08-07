@@ -799,24 +799,22 @@ bool scene_start_journey(CharacterProfile* profile) {
     // 1. Absolute darkness and silence
     Sleep(2000); // Wait in darkness
 
-    // 2. The subtle trigger
+    // 2. The subtle trigger (Mistik ve derin bir ambiyans)
     if (current_lang == 1) {
-        printf(COLOR_DARK "\n\n\n\n\n\n\n\n\n\n                                  * pısst *\n" COLOR_RESET);
+        printf(COLOR_DARK "\n\n\n\n\n\n\n\n\n\n              ...okyanusun kalbinden gelen, kemiklerini titreten boğuk bir çatırdama...\n" COLOR_RESET);
     } else {
-        printf(COLOR_DARK "\n\n\n\n\n\n\n\n\n\n                                  * psst *\n" COLOR_RESET);
+        printf(COLOR_DARK "\n\n\n\n\n\n\n\n\n\n              ...a muffled, bone-rattling crack echoing from the heart of the ocean...\n" COLOR_RESET);
     }
 
-    Sleep(1800); // Let the realization sink in
+    Sleep(2500); // Let the realization sink in
 
-    // 3. Sudden awakening (Lightning flash effect)
-    for (int i = 0; i < 3; i++) {
+    // 3. Sudden awakening (Daha gerçekçi bir şimşek efekti - Ekran flaşı)
+    for (int i = 0; i < 2; i++) {
         clear_screen();
-        printf(COLOR_WHITE);
-        printf("\n\n\n\n          ,/\n        ,///\n      ,/////\n    ,///////\n   /////////\n      //\n      /\n");
-        printf(COLOR_RESET);
-        Sleep(50);
+        printf(COLOR_WHITE "\n\n\n\n\n\n\n\n\n\n                                     [ KÖR EDİCİ BİR IŞIK ]\n\n\n\n\n\n\n\n\n\n" COLOR_RESET);
+        Sleep(40);
         clear_screen();
-        Sleep(50);
+        Sleep(60);
     }
 
     // Immediately jump into the chaos of Trial 1
@@ -1226,11 +1224,13 @@ void execute_parametric_test(CharacterProfile* profile) {
         if (current_lang == 1) {
             printf(COLOR_DARK "\n\n  Oksijenin tamamen tükendi...\n");
             printf("  Su basıncı ciğerlerini eziyor, bilincin yavaşça kapanıyor.\n\n");
-            printf("  Gözlerin karanlığa teslim olmadan hemen önce, uzaklardan kan donduran bir ciyaklama sesi\n");
-            printf("  duyuyorsun. Okyanusun dibinden devasa, parlayan bir mızrak (Trident) yanından mermi gibi\n");
-            printf("  geçip gökyüzüne fırlıyor. Arkasından Poseidon'un devasa silüeti umursamazca yanından geçerek\n");
-            printf("  yüzeye doğru yükseliyor...\n");
-            printf("  Ve sonra her şey zifiri karanlığa bürünüyor...\n\n" COLOR_RESET);
+            printf("  Gözlerin karanlığa teslim olmadan hemen önce, suyun yüzeyinde devasa bir çarpışmanın\n");
+            printf("  şok dalgasını hissediyorsun. Okyanusun dibinden devasa, parlayan bir mızrak (Trident)\n");
+            printf("  yanından mermi gibi geçip yüzeye fırlıyor ve saniyeler sonra aynı hızla geri dönüyor!\n\n");
+            printf("  Hemen ardından, Poseidon'un devasa silüeti suları yararak yüzeye, karanlık canavarın\n");
+            printf("  üzerine doğru atılıyor! Su yüzeyinde üç devasa çizik açıldığını ve okyanusa parlayan,\n");
+            printf("  altın rengi tanrı kanı (İkor) döküldüğünü görüyorsun...\n");
+            printf("  Altın damlalar karanlık suları aydınlatırken, her şey zifiri karanlığa bürünüyor...\n\n" COLOR_RESET);
             Sleep(2500);
             printf(COLOR_CYAN "  [ Zihninin derinliklerinde, suların çok altından gelen, yankılı, kadim bir ses duyuluyor ]\n\n" COLOR_RESET);
             printf(COLOR_MAG "  \"Boğuluyorsun galiba...\"\n\n" COLOR_RESET);
@@ -1238,10 +1238,13 @@ void execute_parametric_test(CharacterProfile* profile) {
         } else {
             printf(COLOR_DARK "\n\n  Your oxygen is completely depleted...\n");
             printf("  Water pressure crushes your lungs, your consciousness slowly fades.\n\n");
-            printf("  Right before your eyes surrender to the darkness, you hear a bloodcurdling screech from afar.\n");
-            printf("  From the ocean floor, a colossal, glowing spear (Trident) shoots past you like a missile\n");
-            printf("  towards the sky. Poseidon's massive silhouette rises past you carelessly towards the surface...\n");
-            printf("  And then, everything fades to pitch black...\n\n" COLOR_RESET);
+            printf("  Right before your eyes surrender to the darkness, you feel the shockwave of a massive\n");
+            printf("  collision on the surface. From the ocean floor, a colossal, glowing spear (Trident)\n");
+            printf("  shoots past you like a missile to the surface, returning just as fast seconds later!\n\n");
+            printf("  Immediately after, Poseidon's massive silhouette tears through the waters, lunging towards\n");
+            printf("  the surface at the dark monster! You see three colossal slashes open above, and glowing,\n");
+            printf("  golden god blood (Ichor) spills into the ocean...\n");
+            printf("  As the golden drops illuminate the dark waters, everything fades to pitch black...\n\n" COLOR_RESET);
             Sleep(2500);
             printf(COLOR_CYAN "  [ Deep within your mind, an echoing, ancient voice from beneath the waters resonates ]\n\n" COLOR_RESET);
             printf(COLOR_MAG "  \"You seem to be drowning...\"\n\n" COLOR_RESET);
@@ -1508,35 +1511,57 @@ void execute_parametric_test(CharacterProfile* profile) {
     else if (helios_path) {
         if (current_lang == 1) {
             printf(COLOR_GOLD "\n [SAHNE V] Kıyametin Kırılma Anı\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " Savaşın zirvesi... Poseidon aniden elini uzatıyor ve okyanusu yaran Trident'i geri çağırıyor.\n");
-            printf(" Tam o sırada gökyüzü, sanki bir kumaşmış gibi ortadan ikiye yırtılıyor! Güneşin Titanı\n");
-            printf(" Helios, tüm kibriyle bulutların arasından saf, kör edici ilahi bir enerji ışını yolluyor.\n");
-            printf(" Ancak denizdeki karanlık canavar, bu devasa gücü adeta bir karadelik gibi soğuruyor!\n\n");
+            printf(COLOR_WHITE " Savaşın zirvesi... Denizdeki karanlık canavar, gökyüzünde yorulmaya başlayan\n");
+            printf(" Apollon'un üzerine ölümcül bir şiddetle atılıyor. Tam o saniyede suları yaran,\n");
+            printf(" ışık hızındaki Trident mermi gibi canavara çarpıyor ve onun devasa atılma ivmesini\n");
+            printf(" bıçak gibi kesiyor! Poseidon, okyanusu titreten bir hamleyle mızrağını geri çağırıyor.\n\n");
 
-            printf(COLOR_RED " TSUNAMİ!\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " Apollon, güneş kadar parlak bitirici okunu fırlatırken, yaratık soğurduğu tüm enerjiyi\n");
-            printf(" tek seferde göğe doğru kusuyor. İki muazzam ilahi güç, tam senin üzerinde çarpışıyor!\n");
-            printf(" Ok sekiyor ve okyanusa çakılarak denizi ortadan ikiye yaran, gökyüzüne uzanan devasa bir\n");
-            printf(" TSUNAMİ yaratıyor!\n\n" COLOR_RESET);
+            printf(COLOR_DARK " O sırada gökyüzü, sanki bir kumaşmış gibi ortadan ikiye yırtılıyor!\n" COLOR_RESET);
+            printf(COLOR_WHITE " Güneşin Titanı Helios, bulutların arasından saf, kör edici ilahi bir enerji ışını\n");
+            printf(" yolluyor. Ancak karanlık canavar, bu devasa gücü adeta bir karadelik gibi soğuruyor.\n\n");
 
-            printf(COLOR_DARK " Tsunami gemiyi bir kibrit çöpü gibi yutuyor. Suyun devasa, ezici gücüyle metrelerce\n");
-            printf(" havaya, fırtına bulutlarının içine doğru fırlatılıyorsun!\n\n" COLOR_RESET);
+            printf(COLOR_CYAN " Helios'un saldırısı etkisiz kalınca, Poseidon suların içinden devasa bir gölge\n");
+            printf(" gibi fırlayarak bizzat canavarın üzerine atılıyor! Trident'inin ucuyla yaratığın\n");
+            printf(" gövdesini boydan boya yaran ince, uzun üç çizgi çekiyor. Karanlık bedenden parlayan\n");
+            printf(" altın rengi ikor damlaları okyanusa dökülüyor...\n\n" COLOR_RESET);
+
+            printf(COLOR_WHITE " Apollon kalan son gücüyle yayını geriyor ve tüm enerjisini toplayıp, ikor sızan\n");
+            printf(" bu taze yaraları hedefleyen bitirici bir ok yolluyor! Ancak yaratık soğurduğu tüm\n");
+            printf(" enerjiyi tam o an dışarı kusuyor. Ok yaraya ulaşamadan şiddetle sekiyor ve okyanusa\n");
+            printf(" çakılarak denizi ortadan ikiye yarıyor!\n\n" COLOR_RESET);
+
+            printf(COLOR_RED " Çarpışmanın merkezinden kopan, gökyüzüne uzanan devasa bir kıyamet dalgası,\n");
+            printf(" güneşi bile kapatarak geminin üzerine doğru katlanarak büyüyor!\n\n" COLOR_RESET);
+
+            printf(COLOR_DARK " Devasa dalga gemiyi bir kibrit çöpü gibi yutuyor. Suyun o amansız, ezici gücüyle\n");
+            printf(" metrelerce havaya, fırtına bulutlarının içine doğru fırlatılıyorsun!\n\n" COLOR_RESET);
             printf(COLOR_CYAN " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
         } else {
             printf(COLOR_GOLD "\n [SCENE V] The Breaking Point\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " The climax of war... Poseidon suddenly extends his hand, calling back his Trident.\n");
-            printf(" At that moment, the sky tears in half like fabric! Helios, the Titan of the Sun, sends\n");
-            printf(" down a pure, blinding ray of divine energy through the clouds. But the dark monster in\n");
-            printf(" the sea absorbs this colossal power like a black hole!\n\n");
+            printf(COLOR_WHITE " The climax of war... The dark monster in the sea lunges with fatal ferocity at\n");
+            printf(" an exhausted Apollo. At that exact second, tearing through the waters, the light-speed\n");
+            printf(" Trident strikes the beast, halting its massive momentum instantly!\n");
+            printf(" With an ocean-shaking motion, Poseidon calls his spear back to his hand.\n\n");
 
-            printf(COLOR_RED " TSUNAMI!\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " As Apollo fires his finishing arrow bright as the sun, the creature violently expels\n");
-            printf(" all the absorbed energy. Two immense divine forces collide right above you!\n");
-            printf(" The arrow ricochets and crashes into the ocean, splitting the sea in half and creating\n");
-            printf(" a colossal TSUNAMI that reaches the heavens!\n\n" COLOR_RESET);
+            printf(COLOR_DARK " At that moment, the sky tears in half like fabric!\n" COLOR_RESET);
+            printf(COLOR_WHITE " Helios, the Titan of the Sun, sends down a pure, blinding ray of divine energy.\n");
+            printf(" But the dark monster absorbs this colossal power like a black hole.\n\n");
 
-            printf(COLOR_DARK " The Tsunami swallows the ship like a matchstick. With the massive, crushing force of the\n");
-            printf(" water, you are launched meters into the sky, straight into the storm clouds!\n\n" COLOR_RESET);
+            printf(COLOR_CYAN " Seeing Helios's attack fail, Poseidon himself leaps from the waters like a\n");
+            printf(" colossal shadow, lunging at the beast! With the tip of his Trident, he slashes\n");
+            printf(" three long, thin wounds across its body. Glowing, golden drops of ichor begin\n");
+            printf(" to spill into the ocean from the dark flesh...\n\n" COLOR_RESET);
+
+            printf(COLOR_WHITE " Apollo draws his bow with his last ounce of strength, channeling all his energy,\n");
+            printf(" and fires a finishing arrow aiming directly at these fresh wounds seeping with ichor!\n");
+            printf(" But the creature expels all the absorbed energy at once. The arrow fiercely ricochets\n");
+            printf(" before reaching the wound, crashing into the ocean and splitting the sea in half!\n\n" COLOR_RESET);
+
+            printf(COLOR_RED " From the center of the collision, an apocalyptic, massive wave reaching the heavens\n");
+            printf(" rises, blocking out the sun as it folds over the ship!\n\n" COLOR_RESET);
+
+            printf(COLOR_DARK " The giant wave swallows the ship like a matchstick. With the massive, crushing force\n");
+            printf(" of the water, you are launched meters into the sky, straight into the storm clouds!\n\n" COLOR_RESET);
             printf(COLOR_CYAN " [Press ANY KEY to continue]\n" COLOR_RESET);
         }
         _getch(); clear_screen();
