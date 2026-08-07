@@ -3326,19 +3326,17 @@ void scene_inner_shrine(CharacterProfile* profile) {
         printf(M_DRK "  ==============================================================================================================\n" M_RST);
         printf("\n");
 
-        // --- Menü Arayüzünün Çizilmesi (Sadece Kendi Kulüben ve Okul Görünür) ---
+        // --- Menü Arayüzünün Çizilmesi ---
         if (current_lang == 1) {
-            printf(M_YEL "  === TAPINAK KÖYÜ (INNER SHRINE) ===\n\n" M_RST);
-            printf("  [" M_CYN "1" M_RST "] Ana Okul'a Gir (Çalışma Merkezi)\n");
-            printf("  [" M_CYN "2" M_RST "] %s Kulübesi (Açık)\n\n", profile->god_alignment);
-            printf("  [" M_CYN "0" M_RST "] Güneş Sarayı Merkezine (Haritaya) Dön\n\n");
-            printf(M_CYN "  Eylem Seçimi: " M_RST);
+            printf(COLOR_GOLD "  === TAPINAK KÖYÜ (INNER SHRINE) ===\n\n" COLOR_RESET);
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Ana Okul'a Gir (Kütüphane & Sınıflar)\n");
+            printf("  [" COLOR_CYAN "0" COLOR_RESET "] Güneş Sarayı Haritasına Dön (Geri)\n\n");
+            printf(COLOR_CYAN "  Eylem Seçimi: " COLOR_RESET);
         } else {
-            printf(M_YEL "  === THE VILLAGE OF SHRINES ===\n\n" M_RST);
-            printf("  [" M_CYN "1" M_RST "] Enter Main School (Study Center)\n");
-            printf("  [" M_CYN "2" M_RST "] Shrine of %s (Open)\n\n", profile->god_alignment);
-            printf("  [" M_CYN "0" M_RST "] Return to The Sun Nexus (Map)\n\n");
-            printf(M_CYN "  Select Action: " M_RST);
+            printf(COLOR_GOLD "  === THE VILLAGE OF SHRINES ===\n\n" COLOR_RESET);
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Enter Main School (Library & Classes)\n");
+            printf("  [" COLOR_CYAN "0" COLOR_RESET "] Return to Sun Nexus Map (Back)\n\n");
+            printf(COLOR_CYAN "  Select Action: " COLOR_RESET);
         }
 
         // --- Girdi Kontrolü ---
@@ -3347,18 +3345,12 @@ void scene_inner_shrine(CharacterProfile* profile) {
             if (_kbhit()) {
                 char ch = _getch();
 
-                if (ch == '0') {
-                    in_village = false; // Haritaya Dön
+                if (ch == '1') {
+                    scene_main_school(profile); // Hiyerarşi Adım 3: Okula ve Kütüphaneye giriş
                     valid_input = true;
                 }
-                else if (ch == '1') {
-                    scene_main_school(profile);
-                    valid_input = true;
-                }
-                else if (ch == '2') {
-                    // Köy menüsü döngüsünü sonlandırır, oyuncu zaten arkada çalışan
-                    // scene_own_shrine (Yatak Odası) döngüsüne pürüzsüzce geri döner.
-                    in_village = false;
+                else if (ch == '0') {
+                    in_village = false; // Döngüyü kırar ve oyuncuyu haritaya geri bırakır
                     valid_input = true;
                 }
             }
@@ -3412,16 +3404,17 @@ void scene_map(CharacterProfile* profile) {
         printf(COLOR_DARK  "                            V\n" COLOR_RESET);
         printf("\n");
 
+
         // --- 3. Navigation Menu ---
         if (current_lang == 1) {
             printf(COLOR_GOLD "  === GÜNEŞ SARAYI MERKEZİ (THE GRAND SUN FORTRESS) ===\n\n" COLOR_RESET);
-            printf("  [" COLOR_CYAN "1" COLOR_RESET "] %s Kulübesine Doğru İlerle (Inner Shrine)\n", profile->god_alignment);
-            printf("  [" COLOR_CYAN "0" COLOR_RESET "] Sisteme Geri Dön (Çıkış)\n\n");
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Aşağı İn (Tapınak Köyüne Git)\n");
+            printf("  [" COLOR_CYAN "0" COLOR_RESET "] Kendi Kulübene Dön (Geri)\n\n");
             printf(COLOR_CYAN "  Yol Seçimi (0-1): " COLOR_RESET);
         } else {
             printf(COLOR_GOLD "  === THE GRAND SUN FORTRESS ===\n\n" COLOR_RESET);
-            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Walk towards the Shrine of %s\n", profile->god_alignment);
-            printf("  [" COLOR_CYAN "0" COLOR_RESET "] Return to System Menu (Exit)\n\n");
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Go Down (Walk to the Village of Shrines)\n");
+            printf("  [" COLOR_CYAN "0" COLOR_RESET "] Return to Your Cabin (Back)\n\n");
             printf(COLOR_CYAN "  Select Path (0-1): " COLOR_RESET);
         }
 
@@ -3431,10 +3424,10 @@ void scene_map(CharacterProfile* profile) {
             if (_kbhit()) {
                 char ch = _getch();
                 if (ch == '1') {
-                    scene_inner_shrine(profile);
+                    scene_inner_shrine(profile); // Hiyerarşi Adım 2: Köye iniş
                     valid_input = true;
                 } else if (ch == '0') {
-                    exploring = false;
+                    exploring = false; // Döngüyü kırar ve oyuncuyu doğrudan yatağına geri bırakır
                     valid_input = true;
                 }
             }
@@ -3612,162 +3605,66 @@ void scene_view_calendar(CharacterProfile* profile) {
     _getch();
 }
 // ============================================================================
-// KULÜBE (SHRINE) İÇ MEKAN TASARIM YÖNETİCİSİ (YATAK ODASI)
+// KULÜBE (SHRINE) ÜSTTEN GÖRÜNÜM KROKİSİ (BLUEPRINT)
 // ============================================================================
 void draw_shrine_interior(const char* god_name) {
-    char* left[8];
-    char* l_color = COLOR_WHITE;
+    char* b_color = COLOR_WHITE;
+    char* item = "";
+    bool big3 = false;
 
-    // SOL TARAF: Tanrıya Özel Duvar Dekoru ve Yatak Tasarımı (Sabit 40 Karakter Genişlik)
-    if (strcmp(god_name, "Zeus") == 0) {
-        left[0] = "  .. Gok Gurultusu & Simsekler ..       ";
-        left[1] = "      \\_\\_          _/_/                ";
-        left[2] = "        \\_\\_      _/_/                  ";
-        left[3] = "   _|\\========================/|_       ";
-        left[4] = "   \\____________________________/       ";
-        left[5] = "    ||      [ BULUT YATAGI ]      ||    ";
-        left[6] = "   _||________________________||_       ";
-        left[7] = "  /______________________________\\      ";
-        l_color = COLOR_CYAN;
-    }
-    else if (strcmp(god_name, "Poseidon") == 0) {
-        left[0] = "  ~ ~ Okyanus & Mercan Resifleri ~ ~    ";
-        left[1] = "      _\\|/_         _\\|/_               ";
-        left[2] = "      \\ | /         \\ | /               ";
-        left[3] = "   _|\\========================/|_       ";
-        left[4] = "   \\____________________________/       ";
-        left[5] = "    ||    [ ISTIRIDYE YATAK ]     ||    ";
-        left[6] = "   _||________________________||_       ";
-        left[7] = "  /______________________________\\      ";
-        l_color = COLOR_CYAN;
-    }
-    else if (strcmp(god_name, "Hades") == 0) {
-        left[0] = "  ... Karanlik Taslar & Zincirler ...   ";
-        left[1] = "        ( )         ( )                 ";
-        left[2] = "       _| |_       _| |_                ";
-        left[3] = "   _|\\========================/|_       ";
-        left[4] = "   \\____________________________/       ";
-        left[5] = "    ||     [ OBSIDYEN YATAK ]     ||    ";
-        left[6] = "   _||________________________||_       ";
-        left[7] = "  /______________________________\\      ";
-        l_color = COLOR_MAG;
-    }
-    else if (strcmp(god_name, "Athena") == 0) {
-        left[0] = "  === Zirhlar & Bilgi Parsomenleri ===  ";
-        left[1] = "       {o,o}       {o,o}                ";
-        left[2] = "       /)__)       /)__)                ";
-        left[3] = "   _|\\========================/|_       ";
-        left[4] = "   \\____________________________/       ";
-        left[5] = "    ||    [ STRATEJI YATAGI ]     ||    ";
-        left[6] = "   _||________________________||_       ";
-        left[7] = "  /______________________________\\      ";
-        l_color = COLOR_WHITE;
-    }
-    else if (strcmp(god_name, "Ares") == 0) {
-        left[0] = "  \\|/ Kanli Silahlar & Kalkanlar \\|/    ";
-        left[1] = "       /   \\       /   \\                ";
-        left[2] = "      | / \\ |     | / \\ |               ";
-        left[3] = "   _|\\========================/|_       ";
-        left[4] = "   \\____________________________/       ";
-        left[5] = "    ||     [ SPARTA YATAGI ]      ||    ";
-        left[6] = "   _||________________________||_       ";
-        left[7] = "  /______________________________\\      ";
-        l_color = COLOR_RED;
-    }
-    else if (strcmp(god_name, "Apollo") == 0) {
-        left[0] = "  * * * Altin Isik Huzmeleri * * *      ";
-        left[1] = "       \\ | /       \\ | /                ";
-        left[2] = "       - O -       - O -                ";
-        left[3] = "   _|\\========================/|_       ";
-        left[4] = "   \\____________________________/       ";
-        left[5] = "    ||      [ GUNES YATAGI ]      ||    ";
-        left[6] = "   _||________________________||_       ";
-        left[7] = "  /______________________________\\      ";
-        l_color = COLOR_GOLD;
-    }
-    else if (strcmp(god_name, "Demeter") == 0) {
-        left[0] = "  #%# Sarmasiklar & Basaklar #%#        ";
-        left[1] = "        \\|/         \\|/                 ";
-        left[2] = "       -\\|/-       -\\|/-                ";
-        left[3] = "   _|\\========================/|_       ";
-        left[4] = "   \\____________________________/       ";
-        left[5] = "    ||     [ TOPRAK YATAGI ]      ||    ";
-        left[6] = "   _||________________________||_       ";
-        left[7] = "  /______________________________\\      ";
-        l_color = COLOR_GRN;
-    }
-    else if (strcmp(god_name, "Aphrodite") == 0) {
-        left[0] = "  ~ ~ ~ Ipek Perdeler & Guller ~ ~ ~    ";
-        left[1] = "       _   _       _   _                ";
-        left[2] = "      / \\ / \\     / \\ / \\               ";
-        left[3] = "   _|\\========================/|_       ";
-        left[4] = "   \\____________________________/       ";
-        left[5] = "    ||    [ ISTIRAHAT YATAGI ]    ||    ";
-        left[6] = "   _||________________________||_       ";
-        left[7] = "  /______________________________\\      ";
-        l_color = COLOR_MAG;
-    }
-    else if (strcmp(god_name, "Hermes") == 0) {
-        left[0] = "  >>> Haritalar & Kanatli Cizmeler >>>  ";
-        left[1] = "        / \\         / \\                 ";
-        left[2] = "       /| |\\       /| |\\                ";
-        left[3] = "   _|\\========================/|_       ";
-        left[4] = "   \\____________________________/       ";
-        left[5] = "    ||     [ SEYYAH YATAGI ]      ||    ";
-        left[6] = "   _||________________________||_       ";
-        left[7] = "  /______________________________\\      ";
-        l_color = COLOR_CYAN;
-    }
-    else if (strcmp(god_name, "Hephaestus") == 0) {
-        left[0] = "  +++ Carklar & Ors & Cekicler +++      ";
-        left[1] = "       [___]       [___]                ";
-        left[2] = "       /   \\       /   \\                ";
-        left[3] = "   _|\\========================/|_       ";
-        left[4] = "   \\____________________________/       ";
-        left[5] = "    ||     [ DEMIRCI YATAGI ]     ||    ";
-        left[6] = "   _||________________________||_       ";
-        left[7] = "  /______________________________\\      ";
-        l_color = COLOR_RED;
-    }
-    else if (strcmp(god_name, "Dionysus") == 0) {
-        left[0] = "  &&& Uzum Baglari & Kadehler &&&       ";
-        left[1] = "        ooo         ooo                 ";
-        left[2] = "       ooooo       ooooo                ";
-        left[3] = "   _|\\========================/|_       ";
-        left[4] = "   \\____________________________/       ";
-        left[5] = "    ||      [ SOLEN YATAGI ]      ||    ";
-        left[6] = "   _||________________________||_       ";
-        left[7] = "  /______________________________\\      ";
-        l_color = COLOR_MAG;
-    }
-    else {
-        left[0] = "  ... Sessiz ve Gosterissiz ...         ";
-        left[1] = "                                        ";
-        left[2] = "                                        ";
-        left[3] = "   _|\\========================/|_       ";
-        left[4] = "   \\____________________________/       ";
-        left[5] = "    ||      [ FANI YATAGI ]       ||    ";
-        left[6] = "   _||________________________||_       ";
-        left[7] = "  /______________________________\\      ";
-        l_color = COLOR_WHITE;
+    if (strcmp(god_name, "Zeus") == 0) { b_color = COLOR_CYAN; item = "< DEVASA KARTAL HEYKELI VE YILDIRIM SUNAGI >"; big3 = true; }
+    else if (strcmp(god_name, "Poseidon") == 0) { b_color = COLOR_CYAN; item = "< UC DISLI MIZRAK (TRIDENT) VE MERCAN HAVUZU >"; big3 = true; }
+    else if (strcmp(god_name, "Hades") == 0) { b_color = COLOR_MAG; item = "< KERBEROS ZINCIRLERI VE KARANLIK ATES MANGALI >"; big3 = true; }
+    else if (strcmp(god_name, "Athena") == 0) { b_color = COLOR_WHITE; item = "< BAYKUS HEYKELI VE KADIM STRATEJI HARITALARI >"; }
+    else if (strcmp(god_name, "Ares") == 0) { b_color = COLOR_RED; item = "< KANLI SILAHLIK VE SPARTA KALKANLARI >"; }
+    else if (strcmp(god_name, "Apollo") == 0) { b_color = COLOR_GOLD; item = "< ALTIN ARB VE GUNES SAATI >"; }
+    else if (strcmp(god_name, "Demeter") == 0) { b_color = COLOR_GRN; item = "< BEREKET BOYNUZU VE BUGDAY DEMETLERI >"; }
+    else if (strcmp(god_name, "Aphrodite") == 0) { b_color = COLOR_MAG; item = "< DENIZ KABUGU SUNAGI VE GUL YAPRAKLARI >"; }
+    else if (strcmp(god_name, "Hermes") == 0) { b_color = COLOR_CYAN; item = "< KANATLI CIZMELER VE SEYYAH CANTALARI >"; }
+    else if (strcmp(god_name, "Hephaestus") == 0) { b_color = COLOR_RED; item = "< SONMEYEN ORS VE DEMIRCI ALETLERI >"; }
+    else if (strcmp(god_name, "Dionysus") == 0) { b_color = COLOR_MAG; item = "< UZUM BAGLARI VE SARAP FICILARI >"; }
+    else { b_color = COLOR_WHITE; item = "< BOS BIR KULUBE SUNAGI >"; }
+
+    printf("%s  +========================================================================================================+\n", b_color);
+
+    if (big3) {
+        printf("%s  |  [_] YATAK 1                                                                              [_] YATAK 2  |\n", b_color);
+        printf("%s  |                                                                                                        |\n", b_color);
+        printf("%s  |                       %s[====== KADIM CALISMA MASASI VE SAVAS PLANLARI ======]%s                         |\n", b_color, COLOR_WHITE, b_color);
+        printf("%s  |                                                                                                        |\n", b_color);
+
+        // Item'ı odaya (104 karakter) kusursuz ortalama matematiği
+        int total_pad = 104 - strlen(item);
+        int left_pad = total_pad / 2;
+        int right_pad = total_pad - left_pad;
+        int space_after_bed = left_pad - 13; // "  [_] YATAK 3" 13 karakter kaplar
+
+        printf("%s  |  [_] YATAK 3", b_color);
+        for(int i = 0; i < space_after_bed; i++) printf(" ");
+        printf("%s%s%s", COLOR_WHITE, item, b_color);
+        for(int i = 0; i < right_pad; i++) printf(" ");
+        printf("|\n");
+
+        printf("%s  |                                                                                                        |\n", b_color);
+    } else {
+        printf("%s  |  [_] [_] [_] [_] [_]                                                                                   |\n", b_color);
+        printf("%s  |                                     %s[====== KADIM CALISMA MASASI ======]%s                             |\n", b_color, COLOR_WHITE, b_color);
+        printf("%s  |  [_] [_] [_] [_] [_]                                                                                   |\n", b_color);
+        printf("%s  |                                                                                                        |\n", b_color);
+
+        int pad1 = (104 - strlen(item)) / 2;
+        int pad2 = 104 - strlen(item) - pad1;
+
+        printf("%s  |", b_color);
+        for(int i = 0; i < pad1; i++) printf(" ");
+        printf("%s%s%s", COLOR_WHITE, item, b_color);
+        for(int i = 0; i < pad2; i++) printf(" ");
+        printf("|\n");
+
+        printf("%s  |                                                                                                        |\n", b_color);
     }
 
-    // SAĞ TARAF: Kadim Çalışma Masası ve Parşömenler (Sabit 40 Karakter Genişlik)
-    char* right[8];
-    right[0] = "         .---------------------------.  ";
-    right[1] = "        /                           / \\ ";
-    right[2] = "       /___________________________/   \\";
-    right[3] = "       |                           |   |";
-    right[4] = "       |  KADIM PARSOMENLER VE     |   |";
-    right[5] = "       |  SAVAS PLANLARI           |   |";
-    right[6] = "       |                           |   /";
-    right[7] = "       \\___________________________\\_/  ";
-
-    // ODAYI ÇİZ (Sol ve Sağ tarafı mükemmel birleştirir)
-    for (int i = 0; i < 8; i++) {
-        // Sol tarafı yatağın/tanrının kendi renginde, sağdaki masayı beyaz çizer
-        printf("%s%s" COLOR_WHITE "%s\n", l_color, left[i], right[i]);
-    }
+    printf("%s  +===============================================%s[ KAPI ]%s===============================================+\n", b_color, COLOR_WHITE, b_color);
     printf(COLOR_RESET);
 }
 
@@ -3798,17 +3695,13 @@ void scene_own_shrine(CharacterProfile* profile) {
 
         if (current_lang == 1) {
             printf(COLOR_WHITE "\n  Yatağından kalktın. Burası senin dinlendiğin güvenli alanın.\n\n" COLOR_RESET);
-
-            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Tapınak Köyüne Çık (Dış Dünyaya Adım At)\n");
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Kapıdan Çık (Güneş Sarayı Haritasına Git)\n");
             printf("  [" COLOR_CYAN "0" COLOR_RESET "] Uykuya Dal (Sistemi Kapat ve Çık)\n\n");
-
             printf(COLOR_CYAN "  Eylem Seçimi: " COLOR_RESET);
         } else {
             printf(COLOR_WHITE "\n  You rise from your bed. This is your safe haven to rest.\n\n" COLOR_RESET);
-
-            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Step out to the Village of Shrines (Enter the Outside World)\n");
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Step out the Door (Go to Sun Nexus Map)\n");
             printf("  [" COLOR_CYAN "0" COLOR_RESET "] Fall Asleep (Exit System)\n\n");
-
             printf(COLOR_CYAN "  Select Action: " COLOR_RESET);
         }
 
@@ -3817,10 +3710,11 @@ void scene_own_shrine(CharacterProfile* profile) {
             if (_kbhit()) {
                 char ch = _getch();
                 if (ch == '1') {
-                    scene_inner_shrine(profile); // Dışarı çıkış
+                    scene_map(profile); // Hiyerarşi Adım 1: Haritaya çıkış
                     valid_input = true;
+                    clear_screen();
                 } else if (ch == '0') {
-                    in_shrine = false; // Döngüyü kırar ve ana menüye döner
+                    in_shrine = false;
                     valid_input = true;
                     clear_screen();
                 }
