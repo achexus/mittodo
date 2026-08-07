@@ -579,6 +579,7 @@ int main(void) {
                         }
                         _getch();
                         set_cursor_visibility(false);
+                        clear_screen();
                         break;
                     }
 
@@ -593,6 +594,7 @@ int main(void) {
                     // Start journey
                     if (!scene_start_journey(&player)) running = false;
                     set_cursor_visibility(false);
+                    clear_screen(); // HATA BURADAYDI: Ekranı temizleyip ana menüye dönmesini sağlıyoruz.
                     break;
                 }
                 case '2': { // YOLCULUĞA DEVAM ET
@@ -1702,7 +1704,7 @@ void execute_parametric_test(CharacterProfile* profile) {
             clear_screen();
             if (current_lang == 1) {
                 printf(COLOR_DARK "\n\n  ...Cevapsız kalıyor...\n\n" COLOR_RESET);
-                Sleep(10000);
+                Sleep(5000);
                 clear_screen();
                 printf(COLOR_DARK " Zihnindeki o kadim ses, senin bu çaresizliğine inat soğuk ve alaycı bir tonda fısıldar:\n\n" COLOR_RESET);
                 printf(COLOR_MAG " \"Görünüşe göre fanilerin kaderi hep denizin dibinde son buluyor...\"\n\n" COLOR_RESET);
@@ -1712,7 +1714,7 @@ void execute_parametric_test(CharacterProfile* profile) {
                 printf(COLOR_CYAN " [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
             } else {
                 printf(COLOR_DARK "\n\n  ...No answer...\n\n" COLOR_RESET);
-                Sleep(10000);
+                Sleep(5000);
                 clear_screen();
                 printf(COLOR_DARK " Mocking your despair, that ancient voice in your mind whispers in a cold tone:\n\n" COLOR_RESET);
                 printf(COLOR_MAG " \"It seems the fate of mortals always ends at the bottom of the sea...\"\n\n" COLOR_RESET);
@@ -3489,6 +3491,165 @@ void scene_view_calendar(CharacterProfile* profile) {
 
     while (_kbhit()) _getch();
     _getch();
+}
+// ============================================================================
+// KULÜBE (SHRINE) İÇ MEKAN TASARIM YÖNETİCİSİ (YATAK ODASI)
+// ============================================================================
+void draw_shrine_interior(const char* god_name) {
+    char* left[8];
+    char* l_color = COLOR_WHITE;
+
+    // SOL TARAF: Tanrıya Özel Duvar Dekoru ve Yatak Tasarımı (Sabit 40 Karakter Genişlik)
+    if (strcmp(god_name, "Zeus") == 0) {
+        left[0] = "  .. Gok Gurultusu & Simsekler ..       ";
+        left[1] = "      \\_\\_          _/_/                ";
+        left[2] = "        \\_\\_      _/_/                  ";
+        left[3] = "   _|\\========================/|_       ";
+        left[4] = "   \\____________________________/       ";
+        left[5] = "    ||      [ BULUT YATAGI ]      ||    ";
+        left[6] = "   _||________________________||_       ";
+        left[7] = "  /______________________________\\      ";
+        l_color = COLOR_CYAN;
+    }
+    else if (strcmp(god_name, "Poseidon") == 0) {
+        left[0] = "  ~ ~ Okyanus & Mercan Resifleri ~ ~    ";
+        left[1] = "      _\\|/_         _\\|/_               ";
+        left[2] = "      \\ | /         \\ | /               ";
+        left[3] = "   _|\\========================/|_       ";
+        left[4] = "   \\____________________________/       ";
+        left[5] = "    ||    [ ISTIRIDYE YATAK ]     ||    ";
+        left[6] = "   _||________________________||_       ";
+        left[7] = "  /______________________________\\      ";
+        l_color = COLOR_CYAN;
+    }
+    else if (strcmp(god_name, "Hades") == 0) {
+        left[0] = "  ... Karanlik Taslar & Zincirler ...   ";
+        left[1] = "        ( )         ( )                 ";
+        left[2] = "       _| |_       _| |_                ";
+        left[3] = "   _|\\========================/|_       ";
+        left[4] = "   \\____________________________/       ";
+        left[5] = "    ||     [ OBSIDYEN YATAK ]     ||    ";
+        left[6] = "   _||________________________||_       ";
+        left[7] = "  /______________________________\\      ";
+        l_color = COLOR_MAG;
+    }
+    else if (strcmp(god_name, "Athena") == 0) {
+        left[0] = "  === Zirhlar & Bilgi Parsomenleri ===  ";
+        left[1] = "       {o,o}       {o,o}                ";
+        left[2] = "       /)__)       /)__)                ";
+        left[3] = "   _|\\========================/|_       ";
+        left[4] = "   \\____________________________/       ";
+        left[5] = "    ||    [ STRATEJI YATAGI ]     ||    ";
+        left[6] = "   _||________________________||_       ";
+        left[7] = "  /______________________________\\      ";
+        l_color = COLOR_WHITE;
+    }
+    else if (strcmp(god_name, "Ares") == 0) {
+        left[0] = "  \\|/ Kanli Silahlar & Kalkanlar \\|/    ";
+        left[1] = "       /   \\       /   \\                ";
+        left[2] = "      | / \\ |     | / \\ |               ";
+        left[3] = "   _|\\========================/|_       ";
+        left[4] = "   \\____________________________/       ";
+        left[5] = "    ||     [ SPARTA YATAGI ]      ||    ";
+        left[6] = "   _||________________________||_       ";
+        left[7] = "  /______________________________\\      ";
+        l_color = COLOR_RED;
+    }
+    else if (strcmp(god_name, "Apollo") == 0) {
+        left[0] = "  * * * Altin Isik Huzmeleri * * *      ";
+        left[1] = "       \\ | /       \\ | /                ";
+        left[2] = "       - O -       - O -                ";
+        left[3] = "   _|\\========================/|_       ";
+        left[4] = "   \\____________________________/       ";
+        left[5] = "    ||      [ GUNES YATAGI ]      ||    ";
+        left[6] = "   _||________________________||_       ";
+        left[7] = "  /______________________________\\      ";
+        l_color = COLOR_GOLD;
+    }
+    else if (strcmp(god_name, "Demeter") == 0) {
+        left[0] = "  #%# Sarmasiklar & Basaklar #%#        ";
+        left[1] = "        \\|/         \\|/                 ";
+        left[2] = "       -\\|/-       -\\|/-                ";
+        left[3] = "   _|\\========================/|_       ";
+        left[4] = "   \\____________________________/       ";
+        left[5] = "    ||     [ TOPRAK YATAGI ]      ||    ";
+        left[6] = "   _||________________________||_       ";
+        left[7] = "  /______________________________\\      ";
+        l_color = COLOR_GRN;
+    }
+    else if (strcmp(god_name, "Aphrodite") == 0) {
+        left[0] = "  ~ ~ ~ Ipek Perdeler & Guller ~ ~ ~    ";
+        left[1] = "       _   _       _   _                ";
+        left[2] = "      / \\ / \\     / \\ / \\               ";
+        left[3] = "   _|\\========================/|_       ";
+        left[4] = "   \\____________________________/       ";
+        left[5] = "    ||    [ ISTIRAHAT YATAGI ]    ||    ";
+        left[6] = "   _||________________________||_       ";
+        left[7] = "  /______________________________\\      ";
+        l_color = COLOR_MAG;
+    }
+    else if (strcmp(god_name, "Hermes") == 0) {
+        left[0] = "  >>> Haritalar & Kanatli Cizmeler >>>  ";
+        left[1] = "        / \\         / \\                 ";
+        left[2] = "       /| |\\       /| |\\                ";
+        left[3] = "   _|\\========================/|_       ";
+        left[4] = "   \\____________________________/       ";
+        left[5] = "    ||     [ SEYYAH YATAGI ]      ||    ";
+        left[6] = "   _||________________________||_       ";
+        left[7] = "  /______________________________\\      ";
+        l_color = COLOR_CYAN;
+    }
+    else if (strcmp(god_name, "Hephaestus") == 0) {
+        left[0] = "  +++ Carklar & Ors & Cekicler +++      ";
+        left[1] = "       [___]       [___]                ";
+        left[2] = "       /   \\       /   \\                ";
+        left[3] = "   _|\\========================/|_       ";
+        left[4] = "   \\____________________________/       ";
+        left[5] = "    ||     [ DEMIRCI YATAGI ]     ||    ";
+        left[6] = "   _||________________________||_       ";
+        left[7] = "  /______________________________\\      ";
+        l_color = COLOR_RED;
+    }
+    else if (strcmp(god_name, "Dionysus") == 0) {
+        left[0] = "  &&& Uzum Baglari & Kadehler &&&       ";
+        left[1] = "        ooo         ooo                 ";
+        left[2] = "       ooooo       ooooo                ";
+        left[3] = "   _|\\========================/|_       ";
+        left[4] = "   \\____________________________/       ";
+        left[5] = "    ||      [ SOLEN YATAGI ]      ||    ";
+        left[6] = "   _||________________________||_       ";
+        left[7] = "  /______________________________\\      ";
+        l_color = COLOR_MAG;
+    }
+    else {
+        left[0] = "  ... Sessiz ve Gosterissiz ...         ";
+        left[1] = "                                        ";
+        left[2] = "                                        ";
+        left[3] = "   _|\\========================/|_       ";
+        left[4] = "   \\____________________________/       ";
+        left[5] = "    ||      [ FANI YATAGI ]       ||    ";
+        left[6] = "   _||________________________||_       ";
+        left[7] = "  /______________________________\\      ";
+        l_color = COLOR_WHITE;
+    }
+
+    // SAĞ TARAF: Kadim Çalışma Masası ve Parşömenler (Sabit 40 Karakter Genişlik)
+    char* right[8];
+    right[0] = "         .---------------------------.  ";
+    right[1] = "        /                           / \\ ";
+    right[2] = "       /___________________________/   \\";
+    right[3] = "       |                           |   |";
+    right[4] = "       |  KADIM PARSOMENLER VE     |   |";
+    right[5] = "       |  SAVAS PLANLARI           |   |";
+    right[6] = "       |                           |   /";
+    right[7] = "       \\___________________________\\_/  ";
+
+    // ODAYI ÇİZ (Sol ve Sağ tarafı mükemmel birleştirir)
+    for (int i = 0; i < 8; i++) {
+        // Sol tarafı yatağın/tanrının kendi renginde, sağdaki masayı beyaz çizer
+        printf("%s%s" COLOR_WHITE "%s\n", l_color, left[i], right[i]);
+    }
+    printf(COLOR_RESET);
 }
 
 // ============================================================================
