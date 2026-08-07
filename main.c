@@ -796,28 +796,79 @@ bool scene_start_journey(CharacterProfile* profile) {
     clear_screen();
     set_cursor_visibility(false);
 
-    // 1. Absolute darkness and silence
-    Sleep(2000); // Wait in darkness
+    // 1. Zifiri karanlık ve sessizlik
+    Sleep(2000);
 
-    // 2. The subtle trigger (Mistik ve derin bir ambiyans)
+    // 2. The subtle trigger (Gerilimi başlatan fısıltı)
     if (current_lang == 1) {
-        printf(COLOR_DARK "\n\n\n\n\n\n\n\n\n\n              ...okyanusun kalbinden gelen, kemiklerini titreten boğuk bir çatırdama...\n" COLOR_RESET);
+        printf(COLOR_DARK "\n\n\n\n\n\n\n\n\n\n                                  * pısst *\n" COLOR_RESET);
     } else {
-        printf(COLOR_DARK "\n\n\n\n\n\n\n\n\n\n              ...a muffled, bone-rattling crack echoing from the heart of the ocean...\n" COLOR_RESET);
+        printf(COLOR_DARK "\n\n\n\n\n\n\n\n\n\n                                  * psst *\n" COLOR_RESET);
     }
 
-    Sleep(2500); // Let the realization sink in
+    Sleep(1500); // Oyuncunun tepki vermesi ve gerilim için kısa bir süre
 
-    // 3. Sudden awakening (Daha gerçekçi bir şimşek efekti - Ekran flaşı)
-    for (int i = 0; i < 2; i++) {
-        clear_screen();
-        printf(COLOR_WHITE "\n\n\n\n\n\n\n\n\n\n                                     [ KÖR EDİCİ BİR IŞIK ]\n\n\n\n\n\n\n\n\n\n" COLOR_RESET);
-        Sleep(40);
-        clear_screen();
-        Sleep(60);
-    }
+    // 3. SANATSAL VE GENİŞ ALAN ŞİMŞEK ANİMASYONU (Gök Yarığı)
 
-    // Immediately jump into the chaos of Trial 1
+    // ÇERÇEVE 1: Kör Edici Beyaz Patlama (Ana Şimşekler)
+    clear_screen();
+    printf(COLOR_WHITE "\n\n\n");
+    printf("        /|        \\\\               / /        _.-''-._        \\ \\               //        |\\   \n");
+    printf("      _/_|_       _\\\\_     _      / /      ,-'        '-,      \\ \\      _     _//_       _|_\\_ \n");
+    printf("     / |/ /        \\\\     /' \\    / /      /              \\      \\ \\    / '\\     //        \\ \\| \\\n");
+    printf("    /    /          \\\\  /'    \\  / /      /                \\      \\ \\  /    '\\  //          \\    \\\n");
+    printf("   /    /           _\\\\/'      \\/ /      /                  \\      \\ \\/      '\\_          \\    \\\n");
+    printf("  /    /          /'  \\\\       / /      /                    \\      \\ \\       //  '\\        \\    \\\n");
+    printf("      /         /'     \\\\     / /     /'                      '\\     \\ \\     //     '\\       \\    \n");
+    printf("     /        /'        \\\\   / /     /                          \\     \\ \\   //        '\\      \\   \n");
+    printf("    /       /'           \\\\ / /     /                            \\     \\ \\ //           '\\     \\  \n");
+    printf("   /      /'              \\V /     /                              \\     \\ V/              '\\    \\ \n");
+    printf("  /     /'                  V     /                                \\     V                  '\\   \\\n");
+    printf(" /    /'                         /                                  \\                         '\\  \\\n");
+    printf(COLOR_RESET);
+    Sleep(70);
+
+    // ÇERÇEVE 2: Retina İzi (Cyan Afterglow)
+    clear_screen();
+    printf(COLOR_CYAN "\n\n\n");
+    printf("        /|        \\\\               / /        _.-''-._        \\ \\               //        |\\   \n");
+    printf("      _/_|_       _\\\\_     _      / /      ,-'        '-,      \\ \\      _     _//_       _|_\\_ \n");
+    printf("     / |/ /        \\\\     /' \\    / /      /              \\      \\ \\    / '\\     //        \\ \\| \\\n");
+    printf("    /    /          \\\\  /'    \\  / /      /                \\      \\ \\  /    '\\  //          \\    \\\n");
+    printf("   /    /           _\\\\/'      \\/ /      /                  \\      \\ \\/      '\\_          \\    \\\n");
+    printf("  /    /          /'  \\\\       / /      /                    \\      \\ \\       //  '\\        \\    \\\n");
+    printf("      /         /'     \\\\     / /     /'                      '\\     \\ \\     //     '\\       \\    \n");
+    printf("     /        /'        \\\\   / /     /                          \\     \\ \\   //        '\\      \\   \n");
+    printf("    /       /'           \\\\ / /     /                            \\     \\ \\ //           '\\     \\  \n");
+    printf("   /      /'              \\V /     /                              \\     \\ V/              '\\    \\ \n");
+    printf("  /     /'                  V     /                                \\     V                  '\\   \\\n");
+    printf(" /    /'                         /                                  \\                         '\\  \\\n");
+    printf(COLOR_RESET);
+    Sleep(90);
+
+    // ÇERÇEVE 3: Karanlıkta Kayboluş (Fading Out)
+    clear_screen();
+    printf(COLOR_DARK "\n\n\n");
+    printf("        /|        \\\\               / /        _.-''-._        \\ \\               //        |\\   \n");
+    printf("      _/_|_       _\\\\_     _      / /      ,-'        '-,      \\ \\      _     _//_       _|_\\_ \n");
+    printf("     / |/ /        \\\\     /' \\    / /      /              \\      \\ \\    / '\\     //        \\ \\| \\\n");
+    printf("    /    /          \\\\  /'    \\  / /      /                \\      \\ \\  /    '\\  //          \\    \\\n");
+    printf("   /    /           _\\\\/'      \\/ /      /                  \\      \\ \\/      '\\_          \\    \\\n");
+    printf("  /    /          /'  \\\\       / /      /                    \\      \\ \\       //  '\\        \\    \\\n");
+    printf("      /         /'     \\\\     / /     /'                      '\\     \\ \\     //     '\\       \\    \n");
+    printf("     /        /'        \\\\   / /     /                          \\     \\ \\   //        '\\      \\   \n");
+    printf("    /       /'           \\\\ / /     /                            \\     \\ \\ //           '\\     \\  \n");
+    printf("   /      /'              \\V /     /                              \\     \\ V/              '\\    \\ \n");
+    printf("  /     /'                  V     /                                \\     V                  '\\   \\\n");
+    printf(" /    /'                         /                                  \\                         '\\  \\\n");
+    printf(COLOR_RESET);
+    Sleep(120);
+
+    // ÇERÇEVE 4: Tam Sessizlik ve Boşluk
+    clear_screen();
+    Sleep(800);
+
+    // Kaosun içine (1. Sınava) doğrudan atlayış
     execute_parametric_test(profile);
     return true;
 }
@@ -1530,6 +1581,10 @@ void execute_parametric_test(CharacterProfile* profile) {
             printf(" enerjiyi tam o an dışarı kusuyor. Ok yaraya ulaşamadan şiddetle sekiyor ve okyanusa\n");
             printf(" çakılarak denizi ortadan ikiye yarıyor!\n\n" COLOR_RESET);
 
+            printf(COLOR_DARK " Önce suların çekilmesiyle oluşan o ürkütücü sessizlik...\n");
+            printf(" Ardından havayı paramparça eden inanılmaz bir şok dalgası ve ciğerlerini yerinden\n");
+            printf(" söken sağır edici bir 'GÜMM!' sesi tüm evrende yankılanıyor!\n\n" COLOR_RESET);
+
             printf(COLOR_RED " Çarpışmanın merkezinden kopan, gökyüzüne uzanan devasa bir kıyamet dalgası,\n");
             printf(" güneşi bile kapatarak geminin üzerine doğru katlanarak büyüyor!\n\n" COLOR_RESET);
 
@@ -1556,6 +1611,10 @@ void execute_parametric_test(CharacterProfile* profile) {
             printf(" and fires a finishing arrow aiming directly at these fresh wounds seeping with ichor!\n");
             printf(" But the creature expels all the absorbed energy at once. The arrow fiercely ricochets\n");
             printf(" before reaching the wound, crashing into the ocean and splitting the sea in half!\n\n" COLOR_RESET);
+
+            printf(COLOR_DARK " First, the eerie silence of the waters drawing back...\n");
+            printf(" Then, an incredible shockwave that shatters the air, followed by a deafening 'BOOM!'\n");
+            printf(" that tears at your lungs and echoes through the entire universe!\n\n" COLOR_RESET);
 
             printf(COLOR_RED " From the center of the collision, an apocalyptic, massive wave reaching the heavens\n");
             printf(" rises, blocking out the sun as it folds over the ship!\n\n" COLOR_RESET);
@@ -1914,17 +1973,35 @@ void execute_parametric_test(CharacterProfile* profile) {
         }
 
         if (current_lang == 1) {
-            printf(COLOR_RED "  TAM O AN...\n\n");
-            printf("  Karanlığın içinden devasa, tanrısal bir el müthiş bir hızla yükseliyor!\n");
-            printf("  Seni parmaklarının arasına aldığı gibi acımasızca, kemiklerini çatırdatırcasına sıkıyor!\n\n" COLOR_RESET);
-            printf(COLOR_DARK "  Nefesin kesiliyor...\n  Gözlerin kararıyor...\n  Hiçliğe karışıyorsun...\n\n" COLOR_RESET);
+            printf(COLOR_RED "  TAM O AN...\n\n" COLOR_RESET);
+            printf(COLOR_CYAN "  Zihnin hala olmaması gerektiği kadar zinde ve hızlı çalışıyor.\n");
+            printf("  Sanki iki kişi kadar düşünüyor, aynı oranda da çevreni algılıyorsun.\n");
+            printf("  Gözlerini derin denizlerin en dibinde açıyorsun. Ölmüşsün gibi, pamuk gibi bir his bedenini sarıyor.\n\n" COLOR_RESET);
+
+            printf(COLOR_DARK "  Aşağıdan gelen karanlık bir hareketlilik seni alttan desteklemeye başlıyor.\n");
+            printf("  Devasa bir platformun üzerindeymişsin gibi hızla yukarı doğru yükseliyorsun...\n");
+            printf("  Etrafında sütuna benzer ince, uzun kapkara yapılar yavaşça üzerine doğru kapanıyor.\n\n" COLOR_RESET);
+
+            printf(COLOR_WHITE "  O an idrak ediyorsun: Devasa bir avucun içindesin.\n\n" COLOR_RESET);
+
+            printf(COLOR_DARK "  Nefes yok...\n  Nabız yok...\n  Hiçlik yavaşça bilincine işliyor...\n\n  Ve karanlık.\n\n" COLOR_RESET);
+
             printf(COLOR_CYAN "  [Devam etmek için HERHANGİ BİR TUŞA BAS]\n" COLOR_RESET);
             _getch();
         } else {
-            printf(COLOR_RED "  JUST THEN...\n\n");
-            printf("  A colossal, divine hand rises from the darkness at terrifying speed!\n");
-            printf("  It catches you in its fingers and crushes you mercilessly, making your bones crack!\n\n" COLOR_RESET);
-            printf(COLOR_DARK "  You lose your breath...\n  Your vision fades to black...\n  You merge with the void...\n\n" COLOR_RESET);
+            printf(COLOR_RED "  JUST THEN...\n\n" COLOR_RESET);
+            printf(COLOR_CYAN "  Your mind is still incredibly sharp and working faster than it should be.\n");
+            printf("  You are thinking with the capacity of two people, aware of your surroundings just as intensely.\n");
+            printf("  You open your eyes at the very bottom of the deep sea. A feeling as soft as cotton surrounds you, as if you were dead.\n\n" COLOR_RESET);
+
+            printf(COLOR_DARK "  A dark movement from below begins to support you.\n");
+            printf("  You rise rapidly, as if standing on a colossal platform...\n");
+            printf("  Tall, thin, pitch-black structures resembling pillars slowly close in around you.\n\n" COLOR_RESET);
+
+            printf(COLOR_WHITE "  In that moment, you realize: You are inside a massive palm.\n\n" COLOR_RESET);
+
+            printf(COLOR_DARK "  No breath...\n  No pulse...\n  The void slowly seeps into your consciousness...\n\n  And darkness.\n\n" COLOR_RESET);
+
             printf(COLOR_CYAN "  [Press ANY KEY to continue]\n" COLOR_RESET);
             _getch();
         }
