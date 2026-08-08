@@ -1478,21 +1478,31 @@ void execute_parametric_test(CharacterProfile* profile) {
 
         if (current_lang == 1) {
             printf(COLOR_GOLD "\n [SAHNE IV] Karıncanın Bakışı\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " Güvertede hareketsiz kaldın. Apollon gökyüzünden alevler içinde dalışa geçiyor,\n");
-            printf(" Poseidon ise tüm okyanusu göğe doğru yükseltiyor.\n");
-            printf(" Bu muazzam kozmik savaşı izleyen basit bir fani olarak aklından geçen ilk düşünce nedir?\n\n" COLOR_RESET);
-            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Gözlerimi kısmadan izlerken, \"Bir gün ben de gökleri ve denizleri sarsacak bu güce ulaşacağım,\" diye yemin ederim.\n");
-            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Tanrıların savaşında bir karınca olduğumu kabullenir, \"Sadece hayatta kalıp bu destanı anlatmalıyım,\" diye düşünürüm.\n");
-            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Bu kozmik terazi karşısında küçülür, \"Kim kazanırsa kazansın, onun iradesine boyun eğeceğim,\" derim.\n\n");
+            printf(COLOR_WHITE " Güvertenin parçalanmış tahtaları üzerinde, fırtınanın ortasında yapayalnızsın. Etrafındaki\n");
+            printf(" okyanus artık bir su kütlesi değil, tanrıların iradesiyle şekil değiştiren bir savaş alanı.\n\n");
+            printf(COLOR_DARK " Gökyüzünde Apollon, güneşin alevlerine bürünmüş halde altın yayını geriyor; ancak ilahi ışığı\n");
+            printf(" yorgunlukla titriyor. Okyanusun kalbinden ise Poseidon'un devasa silüeti yükseliyor; elindeki\n");
+            printf(" parlayan Trident, suları bir dağ gibi göğe şahlandırıyor. Karşılarında ise ışığı yutan o kadim canavar var.\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Bu üç devasa kozmik gücün dünyayı yok edebilecek çarpışmasını izlerken, kendini ebedi bir\n");
+            printf(" savaşta ezilmek üzere olan bir karınca gibi hissediyorsun. Aklından geçen o saf düşünce nedir?\n\n" COLOR_RESET);
+
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Gözlerimi kısmadan bu yıkımı izlerken dişlerimi sıkarak yemin ederim: \"Bir gün ben de gökleri ve denizleri titretecek bu mutlak güce ulaşacağım.\"\n");
+            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Tanrıların bu kibirli savaşında bir hiç olduğumu kabullenir, zihnimi tamamen kapatarak düşünürüm: \"Sadece hayatta kal... Bu destanı anlatmak için hayatta kal.\"\n");
+            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Bu kozmik terazi karşısında ruhumun küçüldüğünü hisseder, dizlerimin üzerine çökerek fısıldarım: \"Kimin iradesi galip gelirse gelsin, o mutlak kadere boyun eğeceğim.\"\n\n");
             printf(COLOR_CYAN "  Düşüncen nedir? (1-3): " COLOR_RESET);
         } else {
             printf(COLOR_GOLD "\n [SCENE IV] Gaze of the Ant\n\n" COLOR_RESET);
-            printf(COLOR_WHITE " You remain motionless on the deck. Apollo dives in flames from the sky,\n");
-            printf(" while Poseidon raises the entire ocean towards the heavens.\n");
-            printf(" As a mere mortal watching this cosmic war, what is your primary thought?\n\n" COLOR_RESET);
-            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Staring unblinking, I vow, \"One day, I too will attain this power to shake the heavens and seas.\"\n");
-            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Accepting I am an ant in a war of gods, I think, \"I just need to survive so I can tell this epic tale.\"\n");
-            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Shrinking before this cosmic scale, I say, \"Whoever wins, I shall bow to their will.\"\n\n");
+            printf(COLOR_WHITE " You are completely alone on the splintered planks of the deck, in the heart of the storm. The\n");
+            printf(" ocean around you is no longer a body of water, but a battlefield warping under the will of gods.\n\n");
+            printf(COLOR_DARK " In the sky, Apollo draws his golden bow, cloaked in the flames of the sun; yet his divine light\n");
+            printf(" trembles with exhaustion. From the depths rises the colossal silhouette of Poseidon; his glowing\n");
+            printf(" Trident rears the waters up like a mountain. Facing them is the ancient monster swallowing the light.\n\n" COLOR_RESET);
+            printf(COLOR_WHITE " Watching the world-ending clash of these three massive cosmic forces, you feel like an ant\n");
+            printf(" about to be crushed in an eternal war. What is the pure thought that crosses your mind?\n\n" COLOR_RESET);
+
+            printf("  [" COLOR_CYAN "1" COLOR_RESET "] Watching this destruction unblinking, I grit my teeth and vow: \"One day, I too will attain this absolute power to shake the heavens and the seas.\"\n");
+            printf("  [" COLOR_CYAN "2" COLOR_RESET "] Accepting that I am nothing in this arrogant war of gods, I shut my mind entirely and think: \"Just survive... Survive to tell this epic tale.\"\n");
+            printf("  [" COLOR_CYAN "3" COLOR_RESET "] Feeling my soul shrink before this cosmic scale, I fall to my knees and whisper: \"Whosever will prevails, I shall bow to that absolute destiny.\"\n\n");
             printf(COLOR_CYAN "  What is your thought? (1-3): " COLOR_RESET);
         }
         while (1) {
